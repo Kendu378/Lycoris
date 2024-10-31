@@ -2,8 +2,8 @@
 local CombatTab = {}
 
 ---Initialize tab.
-function CombatTab.init(window)
-end
+---@param window table
+function CombatTab.init(window) end
 
 -- Return CombatTab module.
 return CombatTab

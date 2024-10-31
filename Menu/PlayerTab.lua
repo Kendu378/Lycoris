@@ -141,7 +141,6 @@ function PlayerTab.initMovementSection(groupbox)
 		Default = false,
 	})
 
-	---@todo: Add removals section.
 	---@todo: After, add ESP.
 
 	infiniteJumpDepBox:SetupDependencies({
