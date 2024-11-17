@@ -294,6 +294,7 @@ local function updateRemovalEffects(effect)
 
 	local stunEffects = { "Stun", "LightAttack", "Action", "MobileAction", "OffhandAttack" }
 
+	---@note: Broken - attempt to remove ServerEffects :(
 	if Configuration.expectToggleValue("NoStun") and table.find(stunEffects, effect.Class) then
 		effect:Remove()
 	end
@@ -302,6 +303,7 @@ local function updateRemovalEffects(effect)
 		effect:Remove()
 	end
 
+	---@note: Broken - attempt to remove ServerEffects :(
 	if
 		(effect.Class == "NoJump" or effect.Class == "NoJumpAlt") and Configuration.expectToggleValue("NoJumpCooldown")
 	then

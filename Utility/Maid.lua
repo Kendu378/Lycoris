@@ -23,8 +23,8 @@ end
 
 ---Clean or add a task with a specific key.
 ---@param index any
----@param new_task any
-function Maid:__newindex(index, new_task)
+---@param newTask any
+function Maid:__newindex(index, newTask)
 	if Maid[index] ~= nil then
 		return warn(("'%s' is reserved"):format(tostring(index)), 2)
 	end
@@ -32,11 +32,11 @@ function Maid:__newindex(index, new_task)
 	local tasks = self._tasks
 	local oldTask = tasks[index]
 
-	if oldTask == new_task then
+	if oldTask == newTask then
 		return
 	end
 
-	tasks[index] = new_task
+	tasks[index] = newTask
 
 	if oldTask then
 		if type(oldTask) == "function" then

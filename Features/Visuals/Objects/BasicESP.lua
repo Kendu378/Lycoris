@@ -27,7 +27,7 @@ function BasicESP:update()
 	local position = Vector3.zero
 
 	if self.usePivot then
-		position = self.instance:GetPivot()
+		position = self.instance:GetPivot().Position
 	elseif self.usePosition then
 		position = self.instance.Position
 	end
@@ -48,7 +48,7 @@ function BasicESP:update()
 	local text = self:getDrawing("baseText")
 	text:set("Position", headPosition)
 	text:set("Text", self.nameCallback(self, distance, parent))
-	text:set("Color", Options[VisualsTab.identify(self.identifier, "Color")].Value)
+	text:set("Color", Configuration.expectOptionValue(VisualsTab.identify(self.identifier, "Color")))
 	text:set("Visible", true)
 end
 

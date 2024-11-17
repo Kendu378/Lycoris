@@ -30,7 +30,7 @@ function HumanoidESP:update()
 	local position = Vector3.zero
 
 	if self.usePivot then
-		position = self.instance:GetPivot()
+		position = self.instance:GetPivot().Position
 	elseif self.usePosition then
 		position = self.instance.Position
 	end

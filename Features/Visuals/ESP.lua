@@ -31,8 +31,8 @@ local players = game:GetService("Players")
 
 -- Signals.
 local renderStepped = Signal.new(runService.RenderStepped)
-local gameDescendantAdded = Signal.new(game.DescendantAdded)
-local gameDescendantRemoving = Signal.new(game.DescendantRemoving)
+local workspaceDescendantAdded = Signal.new(workspace.DescendantAdded)
+local workspaceDescendantRemoving = Signal.new(workspace.DescendantRemoving)
 
 -- Maids.
 local espMaid = Maid.new()
@@ -227,8 +227,14 @@ end
 -- Initialize ESP.
 function ESP.init()
 	espMaid:add(renderStepped:connect("ESP_RenderStepped", updateESP))
-	espMaid:add(gameDescendantAdded:connect("ESP_DescendantAdded", onDescendantAdded))
-	espMaid:add(gameDescendantRemoving:connect("ESP_DescendantRemoving", onDescendantRemoving))
+	espMaid:add(workspaceDescendantAdded:connect("ESP_DescendantAdded", onDescendantAdded))
+	espMaid:add(workspaceDescendantRemoving:connect("ESP_DescendantRemoving", onDescendantRemoving))
+
+	---@note: Massive freeze here while loading.
+	---When I'm not lazy, let's try to more specifically search for the instances we need.
+	for _, descendant in pairs(workspace:GetDescendants()) do
+		onDescendantAdded(descendant)
+	end
 end
 
 -- Detach ESP.

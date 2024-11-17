@@ -18,10 +18,10 @@ function InstanceWrapper.tween(instanceMaid, identifier, ...)
 	end
 
 	local instance = tweenService:Create(...)
-	local on_ancestor_change = Signal.new(instance.AncestryChanged)
+	local onAncestorChange = Signal.new(instance.AncestryChanged)
 
 	instanceMaid[identifier] = instance
-	instanceMaid:add(on_ancestor_change:connect("SerenityInstance_OnAncestorChange", function(_)
+	instanceMaid:add(onAncestorChange:connect("SerenityInstance_OnAncestorChange", function(_)
 		if instance:IsDescendantOf(game) then
 			return
 		end
@@ -45,14 +45,14 @@ function InstanceWrapper.create(instanceMaid, identifier, type, parent)
 	end
 
 	local newInstance = Instance.new(type, parent)
-	local on_ancestor_change = Signal.new(newInstance.AncestryChanged)
+	local onAncestorChange = Signal.new(newInstance.AncestryChanged)
 
 	if newInstance:IsA("BodyVelocity") then
 		collectionService:AddTag(newInstance, "AllowedBM")
 	end
 
-	instanceMaid[identifier] = maidInstance
-	instanceMaid:add(on_ancestor_change:connect("SerenityInstance_OnAncestorChange", function(_)
+	instanceMaid[identifier] = newInstance
+	instanceMaid:add(onAncestorChange:connect("SerenityInstance_OnAncestorChange", function(_)
 		if newInstance:IsDescendantOf(game) then
 			return
 		end

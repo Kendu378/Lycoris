@@ -1,5 +1,5 @@
 -- Player scanning is handled here.
-local PlayerScanning = { scanDataCache = {} }
+local PlayerScanning = { scanQueue = {}, scanDataCache = {}, waitingForLoad = {}, scanning = false }
 
 ---@module Utility.Signal
 local Signal = require("Utility/Signal")
@@ -17,32 +17,51 @@ local Configuration = require("GUI/Configuration")
 local players = game:GetService("Players")
 local httpService = game:GetService("HttpService")
 local collectionService = game:GetService("CollectionService")
+local runService = game:GetService("RunService")
 
 -- Maid.
 local playerScanningMaid = Maid.new()
+
+-- Timestamp.
+local lastRateLimit = nil
+
+---Are there moderators in the server?
+---@return table
+function PlayerScanning.hasModerators()
+	for _, scanData in next, PlayerScanning.scanDataCache do
+		if not scanData.staffRank then
+			continue
+		end
+
+		return true
+	end
+
+	return false
+end
 
 ---Fetch roblox data.
 ---@param url string
 ---@return table
 local function fetchRobloxData(url)
-	local response = nil
+	if lastRateLimit and os.clock() - lastRateLimit <= 30 then
+		return error("On rate-limit cooldown.")
+	end
 
-	while true do
-		response = request({
-			Url = url,
-			Method = "GET",
-			Headers = {
-				["Content-Type"] = "application/json",
-			},
-		})
+	local response = request({
+		Url = url,
+		Method = "GET",
+		Headers = {
+			["Content-Type"] = "application/json",
+		},
+	})
 
-		if response.StatusCode ~= 429 then
-			break
-		end
+	if response.StatusCode == 429 then
+		Logger.longNotify("Player scanning is being rate-limited and results will be delayed.")
+		Logger.longNotify("Please stay in the server with caution.")
 
-		Logger.notify("Player scanning is being rate-limited and results will be delayed - proceed with caution.")
+		lastRateLimit = os.clock()
 
-		task.wait(30)
+		return error("Rate-limited.")
 	end
 
 	if not response then
@@ -60,20 +79,6 @@ local function fetchRobloxData(url)
 	end
 
 	return httpService:JSONDecode(response.Body)
-end
-
----Are there moderators in the server?
----@return table
-function PlayerScanning.hasModerators()
-	for _, scanData in next, PlayerScanning.scanDataCache do
-		if not scanData.staffRank then
-			continue
-		end
-
-		return false
-	end
-
-	return true
 end
 
 ---Get staff rank - nil if they're not a staff.
@@ -98,6 +103,132 @@ function PlayerScanning.getStaffRank(player)
 	return nil
 end
 
+---Update player scanning.
+---@note: Request will yield - so we need a debounce to prevent multiple scan loops.
+function PlayerScanning.update()
+	if PlayerScanning.scanning then
+		return
+	end
+
+	PlayerScanning.scanning = true
+
+	for player, _ in next, PlayerScanning.scanQueue do
+		if not PlayerScanning.scanDataCache[player] then
+			local success, result = pcall(PlayerScanning.getStaffRank, player)
+
+			if not success then
+				if result:match("Rate-limited.") then
+					continue
+				end
+
+				if result:match("On rate-limit cooldown.") then
+					continue
+				end
+
+				Logger.warn("Scan player %s ran into error '%s' while getting staff rank.", player.Name, result)
+
+				Logger.longNotify("Failed to scan player %s for moderator status.", player.Name, result)
+
+				PlayerScanning.scanQueue[player] = nil
+
+				continue
+			end
+
+			if Configuration.expectToggleValue("NotifyMod") and result then
+				local moderatorSound = Instance.new("Sound", game:GetService("CoreGui"))
+				moderatorSound.SoundId = "rbxassetid://247824088"
+				moderatorSound.PlaybackSpeed = 1
+				moderatorSound.Volume = 5
+				moderatorSound.PlayOnRemove = true
+				moderatorSound:Destroy()
+
+				Logger.longNotify("%s is a staff member with the rank '%s' in group.", player.Name, result)
+			end
+
+			PlayerScanning.scanDataCache[player] = { staffRank = result }
+		end
+
+		if not collectionService:HasTag(player.Backpack, "Loaded") or #player.Backpack:GetChildren() < 1 then
+			if not PlayerScanning.waitingForLoad[player] then
+				Logger.notify("Player scanning is waiting for %s to load in the game.", player.Name)
+			end
+
+			PlayerScanning.waitingForLoad[player] = true
+
+			continue
+		end
+
+		if
+			Configuration.expectToggleValue("NotifyVoidWalker")
+			and player.Backpack:FindFirstChild("Talent:Voidwalker Contract")
+		then
+			Logger.longNotify("%s has the Voidwalker Contract talent.", player.Name)
+		end
+
+		if Configuration.expectToggleValue("NotifyMythic") then
+			for _, tool in next, player.Backpack:GetChildren() do
+				if not tool:IsA("Tool") then
+					continue
+				end
+
+				local rarity = tool:FindFirstChild("Rarity")
+				if not rarity then
+					continue
+				end
+
+				if rarity.Value ~= "Mythic" then
+					continue
+				end
+
+				local weaponData = tool:FindFirstChild("WeaponData")
+				if not weaponData then
+					continue
+				end
+
+				local weaponDataJson = base64.decode(weaponData.Value):sub(1, #base64.decode(weaponData.Value) - 2)
+				local weaponDataDecoded = httpService:JSONDecode(weaponDataJson)
+
+				if weaponDataDecoded.SoulBound then
+					continue
+				end
+
+				local toolName = tool.Name:split("$")[1]
+
+				local toolQuality = tool:FindFirstChild("Quality") and tool.Quality.Value or 0
+				local toolEnchant = tool:FindFirstChild("Enchant") and tool.Enchant.Value
+
+				local toolEnchantTag = nil
+
+				if not toolEnchant or toolEnchant == "" then
+					toolEnchantTag = "[No Enchant]"
+				else
+					toolEnchantTag = string.format("[%s Enchant]", toolEnchant)
+				end
+
+				local toolQualityTag = string.format("[%i Stars]", toolQuality)
+
+				if toolQuality == 0 then
+					toolQualityTag = "[No Stars]"
+				end
+
+				Logger.longNotify(
+					"%s has the Legendary Weapon '%s' %s %s and it is non-soulbound.",
+					player.Name,
+					toolName,
+					toolQualityTag,
+					toolEnchantTag
+				)
+			end
+		end
+
+		PlayerScanning.scanQueue[player] = nil
+
+		Logger.notify("Player scanning finished scanning %s in queue.", player.Name)
+	end
+
+	PlayerScanning.scanning = false
+end
+
 ---On player added.
 ---@param player Player
 function PlayerScanning.onPlayerAdded(player)
@@ -105,100 +236,13 @@ function PlayerScanning.onPlayerAdded(player)
 		return
 	end
 
-	Logger.warn("Scanning player %s for notifiers.", player.Name)
-
-	local success, result = pcall(PlayerScanning.getStaffRank, player)
-	if not success then
-		Logger.warn("Failure to get staff rank for %s due to error '%s'", player.Name, result)
-		return Logger.longNotify("Failed to get staff rank for %s - this server is potentially unsafe.", player.Name)
-	end
-
-	local scanData = { staffRank = result }
-
-	if Configuration.expectToggleValue("NotifyMod") and scanData.staffRank then
-		local moderatorSound = Instance.new("Sound", game:GetService("CoreGui"))
-		moderatorSound.SoundId = "rbxassetid://247824088"
-		moderatorSound.PlaybackSpeed = 1
-		moderatorSound.Volume = 5
-		moderatorSound.PlayOnRemove = true
-		moderatorSound:Destroy()
-
-		Logger.notify("%s is a staff member with the rank '%s' in group.", player.Name, scanData.staffRank)
-	end
-
-	PlayerScanning.scanDataCache[player] = scanData
-
-	repeat
-		task.wait()
-	until collectionService:HasTag(player.Backpack, "Loaded") and #player.Backpack:GetChildren() >= 1
-
-	if
-		Configuration.expectToggleValue("NotifyVoidWalker")
-		and player.Backpack:FindFirstChild("Talent:Voidwalker Contract")
-	then
-		Logger.notify("%s has the Voidwalker Contract talent.", player.Name)
-	end
-
-	if not Configuration.expectToggleValue("NotifyMythic") then
-		return
-	end
-
-	for _, tool in next, player.Backpack:GetChildren() do
-		if not tool:IsA("Tool") then
-			continue
-		end
-
-		local rarity = tool:FindFirstChild("Rarity")
-		if not rarity then
-			continue
-		end
-
-		if rarity.Value ~= "Mythic" then
-			continue
-		end
-
-		local weaponData = tool:FindFirstChild("WeaponData")
-		if not weaponData then
-			continue
-		end
-
-		local weaponDataJson = base64.decode(weaponData.Value):sub(1, #base64.decode(weaponData.Value) - 2)
-		local weaponDataDecoded = httpService:JSONDecode(weaponDataJson)
-
-		if weaponDataDecoded.SoulBound then
-			continue
-		end
-
-		local toolName = tool.Name:split("$")[1]
-
-		local toolQuality = tool:FindFirstChild("Quality") and tool.Quality.Value or 0
-		local toolEnchant = tool:FindFirstChild("Enchant") and tool.Enchant.Value
-
-		local toolEnchantTag = string.format("[%s Enchant]", toolEnchant)
-
-		if not toolEnchant or toolEnchant == "" then
-			toolEnchantTag = "[No Enchant]"
-		end
-
-		local toolQualityTag = string.format("[%i Stars]", toolQuality)
-
-		if toolQuality == 0 then
-			toolQualityTag = "[No Stars]"
-		end
-
-		Logger.notify(
-			"%s has the Legendary Weapon %s %s %s and it is non-soulbound.",
-			player.Name,
-			toolName,
-			toolQualityTag,
-			toolEnchantTag
-		)
-	end
+	PlayerScanning.scanQueue[player] = true
 end
 
 ---On player removing.
 ---@param player Player
 function PlayerScanning.onPlayerRemoving(player)
+	PlayerScanning.scanQueue[player] = nil
 	PlayerScanning.scanDataCache[player] = nil
 end
 
@@ -207,8 +251,10 @@ function PlayerScanning.init()
 	-- Signals.
 	local playerAddedSignal = Signal.new(players.PlayerAdded)
 	local playerRemovingSignal = Signal.new(players.PlayerRemoving)
+	local renderSteppedSignal = Signal.new(runService.RenderStepped)
 
 	-- Connect events.
+	playerScanningMaid:add(renderSteppedSignal:connect("PlayerScanning_Update", PlayerScanning.update))
 	playerScanningMaid:add(playerAddedSignal:connect("PlayerScanning_OnPlayerAdded", PlayerScanning.onPlayerAdded))
 	playerScanningMaid:add(
 		playerRemovingSignal:connect("PlayerScanning_OnPlayerRemoving", PlayerScanning.onPlayerRemoving)
@@ -218,9 +264,6 @@ function PlayerScanning.init()
 	for _, player in next, players:GetPlayers() do
 		PlayerScanning.onPlayerAdded(player)
 	end
-
-	-- Log initialization.
-	Logger.notify("Player scanning has finished initial scan.")
 end
 
 ---Detach PlayerScanning.

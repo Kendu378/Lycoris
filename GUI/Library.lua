@@ -3137,6 +3137,7 @@ function Library:CreateWindow(...)
 
 	function Window:AddTab(Name)
 		local Tab = {
+			GroupboxCount = 0,
 			Groupboxes = {},
 			Tabboxes = {},
 		}
@@ -3344,6 +3345,7 @@ function Library:CreateWindow(...)
 			Groupbox:AddBlank(3)
 			Groupbox:Resize()
 
+			Tab.GroupboxCount = Tab.GroupboxCount + 1
 			Tab.Groupboxes[Info.Name] = Groupbox
 
 			return Groupbox

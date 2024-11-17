@@ -16,12 +16,6 @@ local ControlModule = require("Utility/ControlModule")
 ---@module GUI.Configuration
 local Configuration = require("GUI/Configuration")
 
----@module Utility.Logger
-local Logger = require("Utility/Logger")
-
----@module Game.KeyHandling
-local KeyHandling = require("Game/KeyHandling")
-
 -- Services.
 local runService = game:GetService("RunService")
 local players = game:GetService("Players")
@@ -139,11 +133,9 @@ local function updateNoClip(character, rootPart)
 			continue
 		end
 
-		if originalCanCollideMap[instance] then
-			continue
+		if not originalCanCollideMap[instance] then
+			originalCanCollideMap[instance] = instance.CanCollide
 		end
-
-		originalCanCollideMap[instance] = instance.CanCollide
 
 		instance.CanCollide = shouldCollide
 	end
@@ -183,7 +175,7 @@ local function updateInfiniteJump(rootPart)
 		return
 	end
 
-	rootPart.AssemblyLinearVelocity = rootPart.AssemblyLinearVelocity * Vector3.new(0, 1, 0)
+	rootPart.AssemblyLinearVelocity = rootPart.AssemblyLinearVelocity * Vector3.new(1, 0, 1)
 	rootPart.AssemblyLinearVelocity = rootPart.AssemblyLinearVelocity
 		+ Vector3.new(0, Configuration.expectOptionValue("InfiniteJumpBoost"), 0)
 end
@@ -364,12 +356,12 @@ local function updateMovement()
 	end
 
 	if Configuration.expectToggleValue("InfiniteJump") then
-		updateInfiniteJump(humanoid)
+		updateInfiniteJump(rootPart)
 	end
 
 	if Configuration.expectToggleValue("NoClip") then
 		updateNoClip(character, rootPart)
-	elseif #originalCanCollideMap > 0 then
+	else
 		resetNoClip()
 	end
 

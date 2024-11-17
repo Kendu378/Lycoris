@@ -6,7 +6,7 @@ local VisualsTab = {}
 ---@param title string
 ---@return table
 local function createGroupbox(tab, title)
-	if #tab.Groupboxes % 2 == 0 then
+	if tab.GroupboxCount % 2 == 0 then
 		return tab:AddLeftGroupbox(title)
 	else
 		return tab:AddRightGroupbox(title)
@@ -70,11 +70,35 @@ function VisualsTab.initHumanoidESPSection(identifier, groupbox)
 		})
 end
 
+---Initialize player alerts section.
+---@param groupbox table
+function VisualsTab.initPlayerAlertsSection(groupbox)
+	groupbox:AddToggle("NotifyMod", {
+		Text = "Mod Notifications",
+		Default = true,
+	})
+
+	groupbox:AddToggle("NotifyVoidWalker", {
+		Text = "Void Walker Notifications",
+		Tooltip = "This will notify you when a player has a Void Walker contract.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("NotifyMythic", {
+		Text = "Legendary Weapon Notifications",
+		Tooltip = "This will notify you when a player has a Legendary Weapon in their inventory.",
+		Default = false,
+	})
+end
+
 -- Initialize tab.
 ---@param window table
 function VisualsTab.init(window)
 	-- Create tab.
 	local tab = window:AddTab("Visuals")
+
+	-- Initialize Visual sections.
+	VisualsTab.initPlayerAlertsSection(createGroupbox(tab, "Player Alerts"))
 
 	-- Initialize ESP sections.
 	VisualsTab.initHumanoidESPSection("Player", createGroupbox(tab, "Player ESP"))

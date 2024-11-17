@@ -28,6 +28,24 @@ local SettingsTab = require("Menu/SettingsTab")
 ---@module Utility.Logger
 local Logger = require("Utility/Logger")
 
+---@module Utility.Maid
+local Maid = require("Utility/Maid")
+
+---@module Utility.Signal
+local Signal = require("Utility/Signal")
+
+-- Services.
+local runService = game:GetService("RunService")
+
+-- Signals.
+local renderStepped = Signal.new(runService.RenderStepped)
+
+-- Maids.
+local menuMaid = Maid.new()
+
+-- Timestamp.
+local sloganTimestamp = os.clock()
+
 ---Initialize menu.
 function Menu.init()
 	-- Create window.
@@ -58,7 +76,6 @@ function Menu.init()
 	SaveManager:SetLibrary(Library)
 	SaveManager:IgnoreThemeSettings()
 	SaveManager:SetFolder("Lycoris")
-	SaveManager:LoadAutoloadConfig()
 
 	-- Initialize all tabs.
 	CombatTab.init(window)
@@ -67,8 +84,42 @@ function Menu.init()
 	VisualsTab.init(window)
 	SettingsTab.init(window)
 
+	-- Slogans.
+	local slogans = {
+		"Get good, get 'Biggie Smalls Hack' today.",
+		"What, the third rewrite in a row?",
+		"God, I need better slogans.",
+		"Chicken... chicken wings.",
+		"I love Pistachio Ice Cream.",
+		"Is this a good slogan?",
+		"I'm running out of ideas.",
+		"Please help me escape the Temu factory.",
+		"A chinese tracker unit is on your way.",
+		"No updates for the next 9 years.",
+	}
+
+	-- Slogan loop.
+	menuMaid:add(renderStepped:connect("Menu_SloganLoop", function()
+		-- Check if we can change the slogan.
+		if os.clock() - sloganTimestamp < 5 then
+			return
+		end
+
+		-- Get random slogan.
+		local slogan = string.format("Biggie Smalls Hack - %s", slogans[math.random(1, #slogans)])
+
+		-- Log slogan.
+		window:SetWindowTitle(slogan)
+
+		-- Update timestamp.
+		sloganTimestamp = os.clock()
+	end))
+
 	-- Configure Library.
 	Library.ToggleKeybind = Options.MenuKeybind
+
+	-- Load auto-load config.
+	SaveManager:LoadAutoloadConfig()
 
 	-- Log menu initialization.
 	Logger.warn("Menu initialized.")
@@ -76,7 +127,10 @@ end
 
 ---Detach menu.
 function Menu.detach()
+	menuMaid:clean()
+
 	Library:Unload()
+
 	Logger.warn("Menu detached.")
 end
 
