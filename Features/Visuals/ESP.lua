@@ -349,13 +349,13 @@ local function onDescendantRemoving(descendant)
 
 		---@note: it's O(N) unless we want to manage a map and a stack at the same time :(
 		--- oh well, who cares.
-		local objectIdx = findInstanceInStack(stack, descendant)
-		if not objectIdx then
+		local object = findInstanceInStack(stack, descendant)
+		if not object then
 			continue
 		end
 
-		stack[objectIdx]:detach()
-		stack[objectIdx] = nil
+		object:detach()
+		object = nil
 	end
 end
 
