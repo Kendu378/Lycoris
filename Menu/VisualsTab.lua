@@ -1,105 +1,45 @@
+---@module Utility.Logger
+local Logger = require("Utility/Logger")
+
 -- Visuals tab.
 local VisualsTab = {}
 
----Create a groupbox with the proper alignment based on if the amount of groupboxes is even or odd.
----@param tab table
----@param title string
----@return table
-local function createGroupbox(tab, title)
-	if tab.GroupboxCount % 2 == 0 then
-		return tab:AddLeftGroupbox(title)
-	else
-		return tab:AddRightGroupbox(title)
-	end
-end
-
----Create identifier based on proper identifier name based on top-level identifier.
+---Identify ESP object.
 ---@param identifier string
 ---@param topLevelIdentifier string
+---@return string
 function VisualsTab.identify(identifier, topLevelIdentifier)
-	return ("ESP_%s_%s"):format(identifier, topLevelIdentifier)
+	return identifier .. topLevelIdentifier
 end
 
----Initialize basic ESP section.
+---Fetch ESP toggle value.
 ---@param identifier string
----@param groupbox table
-function VisualsTab.initBasicESPSection(identifier, groupbox)
-	groupbox
-		:AddToggle(VisualsTab.identify(identifier, "Enable"), {
-			Text = "Enable ESP",
-			Default = false,
-		})
-		:AddColorPicker(VisualsTab.identify(identifier, "Color"), {
-			Default = Color3.new(1, 1, 1),
-		})
-
-	groupbox:AddToggle(VisualsTab.identify(identifier, "Distance"), {
-		Text = "Show Distance",
-		Default = false,
-	})
-
-	groupbox:AddSlider(VisualsTab.identify(identifier, "DistanceThreshold"), {
-		Text = "Distance Threshold",
-		Tooltip = "If the distance is greater than this value, the ESP object will not be shown.",
-		Default = 2000,
-		Min = 0,
-		Max = 10000,
-		Suffix = "studs",
-		Rounding = 0,
-	})
+---@param topLevelIdentifier string
+---@return any
+function VisualsTab.toggleValue(identifier, topLevelIdentifier)
+	return Toggles[identifier .. topLevelIdentifier].Value
 end
 
----Initialize humanoid ESP section.
+---Fetch ESP option value.
 ---@param identifier string
----@param groupbox table
-function VisualsTab.initHumanoidESPSection(identifier, groupbox)
-	VisualsTab.initBasicESPSection(identifier, groupbox)
-
-	---@todo: Re-implement health bars and box ESP when we get actorization because these are so ugly
+---@param topLevelIdentifier string
+---@return any
+function VisualsTab.optionValue(identifier, topLevelIdentifier)
+	return Options[identifier .. topLevelIdentifier].Value
 end
 
----Initialize player ESP section.
+---Fetch ESP option values.
 ---@param identifier string
----@param groupbox table
-function VisualsTab.initPlayerESPSection(identifier, groupbox)
-	VisualsTab.initHumanoidESPSection(identifier, groupbox)
-
-	groupbox:AddToggle(VisualsTab.identify(identifier, "ShowExtraInformation"), {
-		Text = "Show Extra Information",
-		Default = false,
-	})
-
-	groupbox:AddToggle(VisualsTab.identify(identifier, "UseRobloxUsername"), {
-		Text = "Use Roblox Username",
-		Default = false,
-	})
+---@param topLevelIdentifier string
+---@return any
+function VisualsTab.optionValues(identifier, topLevelIdentifier)
+	return Options[identifier .. topLevelIdentifier].Values
 end
 
----Initialize player alerts section.
+---Initialize ESP Customization section.
 ---@param groupbox table
-function VisualsTab.initPlayerAlertsSection(groupbox)
-	groupbox:AddToggle("NotifyMod", {
-		Text = "Mod Notifications",
-		Default = true,
-	})
-
-	groupbox:AddToggle("NotifyVoidWalker", {
-		Text = "Void Walker Notifications",
-		Tooltip = "This will notify you when a player has a Void Walker contract.",
-		Default = false,
-	})
-
-	groupbox:AddToggle("NotifyMythic", {
-		Text = "Legendary Weapon Notifications",
-		Tooltip = "This will notify you when a player has a Legendary Weapon in their inventory.",
-		Default = false,
-	})
-end
-
----Initialize ESP adjustment section.
----@param groupbox table
-function VisualsTab.initESPAdjustment(groupbox)
-	groupbox:AddSlider("ESPFontSize", {
+function VisualsTab.initESPCustomization(groupbox)
+	groupbox:AddSlider("FontSize", {
 		Text = "ESP Font Size",
 		Default = 16,
 		Min = 4,
@@ -107,6 +47,12 @@ function VisualsTab.initESPAdjustment(groupbox)
 		Rounding = 0,
 	})
 
+	groupbox:AddDropdown("Font", { Text = "ESP Fonts", Default = 1, Values = { "Plex", "Monospace", "UI", "System" } })
+end
+
+---Initialize ESP Optimizations section.
+---@param groupbox table
+function VisualsTab.initESPOptimizations(groupbox)
 	groupbox:AddToggle("ESPSplitUpdates", {
 		Text = "ESP Split Updates",
 		Tooltip = "This is an optimization where the ESP will split updating the object pool into multiple frames.",
@@ -133,14 +79,14 @@ function VisualsTab.initESPAdjustment(groupbox)
 
 	local ecdDepBox = groupbox:AddDependencyBox()
 
-	ecdDepBox:AddToggle("ESPCheckDelayIgnoreHumanoid", {
-		Text = "ESP Check Delay Ignore Humanoid",
-		Tooltip = "Ignore Humanoid ESP types and don't delay updating them.",
+	ecdDepBox:AddToggle("DelayIgnorePlayers", {
+		Text = "Ignore Players",
+		Tooltip = "Ignore Player ESP types and don't delay updating them.",
 		Default = false,
 	})
 
 	ecdDepBox:AddSlider("ESPCheckDelayTime", {
-		Text = "ESP Check Delay Time",
+		Text = "Delay Time",
 		Suffix = "s",
 		Default = 1,
 		Min = 0.1,
@@ -148,28 +94,52 @@ function VisualsTab.initESPAdjustment(groupbox)
 		Rounding = 2,
 	})
 
-	groupbox:AddDropdown(
-		"ESPFont",
-		{ Text = "ESP Fonts", Default = 1, Values = { "Plex", "Monospace", "UI", "System" } }
-	)
-
 	ecdDepBox:SetupDependencies({
 		{ Toggles.ESPCheckDelay, true },
 	})
 end
 
----Initialize world section.
+---Initialize Interface Visuals section.
 ---@param groupbox table
-function VisualsTab.initWorldSection(groupbox)
-	groupbox
-		:AddToggle("ModifyAmbience", {
-			Text = "Modify Ambience",
-			Tooltip = "Modify the ambience of the game.",
-			Default = false,
-		})
-		:AddColorPicker("AmbienceColor", {
-			Default = Color3.fromHex("FFFFFF"),
-		})
+function VisualsTab.initInterfaceVisuals(groupbox)
+	groupbox:AddToggle("ShowRobloxChat", {
+		Text = "Show Roblox Chat",
+		Default = true,
+	})
+end
+
+---Initialize World Visuals section.
+---@param groupbox table
+function VisualsTab.initWorldVisualsSection(groupbox)
+	groupbox:AddToggle("ModifyFieldOfView", {
+		Text = "Modify Field Of View",
+		Default = true,
+	})
+
+	local fovDepBox = groupbox:AddDependencyBox()
+
+	fovDepBox:AddSlider("FieldOfView", {
+		Text = "Field Of View Slider",
+		Default = 90,
+		Min = 0,
+		Max = 120,
+		Suffix = "°",
+		Rounding = 0,
+	})
+
+	fovDepBox:SetupDependencies({
+		{ Toggles.ModifyFieldOfView, true },
+	})
+
+	local modifyAmbienceToggle = groupbox:AddToggle("ModifyAmbience", {
+		Text = "Modify Ambience",
+		Tooltip = "Modify the ambience of the game.",
+		Default = false,
+	})
+
+	modifyAmbienceToggle:AddColorPicker("AmbienceColor", {
+		Default = Color3.fromHex("FFFFFF"),
+	})
 
 	local oacDepBox = groupbox:AddDependencyBox()
 
@@ -179,7 +149,7 @@ function VisualsTab.initWorldSection(groupbox)
 		Default = false,
 	})
 
-	local umacDepBox = groupbox:AddDependencyBox()
+	local umacDepBox = oacDepBox:AddDependencyBox()
 
 	umacDepBox:AddSlider("OriginalAmbienceColorBrightness", {
 		Text = "Original Ambience Brightness",
@@ -199,38 +169,222 @@ function VisualsTab.initWorldSection(groupbox)
 	})
 end
 
+---Initialize Visual Removals section.
+---@param groupbox table
+function VisualsTab.initVisualRemovalsSection(groupbox)
+	groupbox:AddToggle("NoFog", {
+		Text = "No Fog",
+		Tooltip = "Atmosphere and Fog effects are hidden.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("NoBlind", {
+		Text = "No Blind",
+		Tooltip = "Blinding effects are hidden.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("NoBlur", {
+		Text = "No Blur",
+		Tooltip = "Blurry effects are hidden.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("NoShadows", {
+		Text = "No Shadows",
+		Tooltip = "Shadow effects are hidden.",
+		Default = false,
+	})
+end
+
+---Initialize Base ESP section.
+---@note: Every ESP object has access to these options.
+---@param identifier string
+---@param groupbox table
+---@return string, table, table
+function VisualsTab.initBaseESPSection(identifier, groupbox)
+	local enableToggle = groupbox:AddToggle(VisualsTab.identify(identifier, "Enable"), {
+		Text = "Enable ESP",
+		Default = false,
+	})
+
+	enableToggle:AddColorPicker(VisualsTab.identify(identifier, "Color"), {
+		Default = Color3.new(1, 1, 1),
+	})
+
+	local enableDepBox = groupbox:AddDependencyBox()
+
+	enableDepBox:AddToggle(VisualsTab.identify(identifier, "ShowDistance"), {
+		Text = "Show Distance",
+		Default = false,
+	})
+
+	enableDepBox:AddSlider(VisualsTab.identify(identifier, "MaxDistance"), {
+		Text = "Distance Threshold",
+		Tooltip = "If the distance is greater than this value, the ESP object will not be shown.",
+		Default = 2000,
+		Min = 0,
+		Max = 10000,
+		Suffix = "studs",
+		Rounding = 0,
+	})
+
+	enableDepBox:SetupDependencies({
+		{ enableToggle, true },
+	})
+
+	return identifier, enableDepBox
+end
+
+---Add Player ESP section.
+---@param identifier string
+---@param depbox table
+function VisualsTab.addPlayerESP(identifier, depbox)
+	local markAlliesToggle = depbox:AddToggle(VisualsTab.identify(identifier, "MarkAllies"), {
+		Text = "Mark Allies",
+		Default = false,
+	})
+
+	markAlliesToggle:AddColorPicker(VisualsTab.identify(identifier, "AllyColor"), {
+		Default = Color3.new(1, 1, 1),
+	})
+
+	depbox:AddToggle(VisualsTab.identify(identifier, "ShowBlood"), {
+		Text = "Show Blood Tag",
+		Default = false,
+	})
+
+	depbox:AddToggle(VisualsTab.identify(identifier, "ShowPosture"), {
+		Text = "Show Posture Tag",
+		Default = false,
+	})
+
+	depbox:AddToggle(VisualsTab.identify(identifier, "ShowTempo"), {
+		Text = "Show Tempo Tag",
+		Default = false,
+	})
+
+	depbox:AddToggle(VisualsTab.identify(identifier, "ShowHealthPercentage"), {
+		Text = "Show Health Percentage",
+		Default = false,
+	})
+
+	depbox:AddToggle(VisualsTab.identify(identifier, "ShowHealthBars"), {
+		Text = "Show Health In Bars",
+		Default = false,
+	})
+
+	depbox:AddDropdown(VisualsTab.identify(identifier, "PlayerNameType"), {
+		Text = "Player Name Type",
+		Default = 1,
+		Values = { "Character Name", "Roblox Display Name", "Roblox Username" },
+	})
+end
+
+---Add Filtered ESP section.
+---@param identifier string
+---@param depbox table
+function VisualsTab.addFilterESP(identifier, depbox)
+	local filterObjectsToggle = depbox:AddToggle(VisualsTab.identify(identifier, "FilterObjects"), {
+		Text = "Filter Objects",
+		Default = false,
+	})
+
+	local foDepBox = depbox:AddDependencyBox()
+
+	local filterLabelList = foDepBox:AddDropdown(VisualsTab.identify(identifier, "FilterLabelList"), {
+		Text = "Filter Label List",
+		Default = {},
+		SaveValues = true,
+		Multi = true,
+		Values = {},
+	})
+
+	local filterLabel = foDepBox:AddInput(VisualsTab.identify(identifier, "FilterLabel"), {
+		Text = "Filter Label",
+		Placeholder = "Partial or exact object label.",
+	})
+
+	foDepBox:AddDropdown(VisualsTab.identify(identifier, "FilterLabelListType"), {
+		Text = "Filter List Type",
+		Default = 1,
+		Values = { "Hide Labels Out Of List", "Hide Labels In List" },
+	})
+
+	foDepBox:AddButton("Add Name To Filter", function()
+		local filterLabelValue = filterLabel.Value
+
+		if #filterLabelValue <= 0 then
+			return Logger.notify("Please enter a valid filter name.")
+		end
+
+		local filterLabelListValues = filterLabelList.Values
+
+		if not table.find(filterLabelListValues, filterLabelValue) then
+			table.insert(filterLabelListValues, filterLabelValue)
+		end
+
+		filterLabelList:SetValues(filterLabelListValues)
+		filterLabelList:SetValue({})
+		filterLabelList:Display()
+	end)
+
+	foDepBox:AddButton("Remove Selected Names", function()
+		local filterLabelListValues = filterLabelList.Values
+		local selectedFilterNames = filterLabelList.Value
+
+		for selectedFilterName, _ in next, selectedFilterNames do
+			local selectedIndex = table.find(filterLabelListValues, selectedFilterName)
+			if not selectedIndex then
+				return Logger.notify("The selected filter name %s does not exist in the list", selectedFilterName)
+			end
+
+			table.remove(filterLabelListValues, selectedIndex)
+		end
+
+		filterLabelList:SetValues(filterLabelListValues)
+		filterLabelList:SetValue({})
+		filterLabelList:Display()
+	end)
+
+	foDepBox:SetupDependencies({
+		{ filterObjectsToggle, true },
+	})
+end
+
 ---Initialize tab.
 ---@param window table
 function VisualsTab.init(window)
 	-- Create tab.
 	local tab = window:AddTab("Visuals")
 
-	-- Initialize Visual sections.
-	VisualsTab.initPlayerAlertsSection(createGroupbox(tab, "Player Alerts"))
-	VisualsTab.initESPAdjustment(createGroupbox(tab, "ESP Adjustment"))
-	VisualsTab.initWorldSection(createGroupbox(tab, "World Visuals"))
-
-	-- Initialize ESP sections.
-	VisualsTab.initPlayerESPSection("Player", createGroupbox(tab, "Player ESP"))
-	VisualsTab.initHumanoidESPSection("Mob", createGroupbox(tab, "Mob ESP"))
-	VisualsTab.initBasicESPSection("NPC", createGroupbox(tab, "NPC ESP"))
-	VisualsTab.initBasicESPSection("Chest", createGroupbox(tab, "Chest ESP"))
-	VisualsTab.initBasicESPSection("AreaMarker", createGroupbox(tab, "Area Marker ESP"))
-	VisualsTab.initBasicESPSection("JobBoard", createGroupbox(tab, "Job Board ESP"))
-	VisualsTab.initBasicESPSection("Artifact", createGroupbox(tab, "Artifact ESP"))
-	VisualsTab.initBasicESPSection("Whirlpool", createGroupbox(tab, "Whirlpool ESP"))
-	VisualsTab.initBasicESPSection("ExplosiveBarrel", createGroupbox(tab, "Explosive Barrel ESP"))
-	VisualsTab.initBasicESPSection("OwlFeathers", createGroupbox(tab, "Owl Feathers ESP"))
-	VisualsTab.initBasicESPSection("GuildDoor", createGroupbox(tab, "Guild Door ESP"))
-	VisualsTab.initBasicESPSection("GuildBanner", createGroupbox(tab, "Guild Banner ESP"))
-	VisualsTab.initBasicESPSection("Obelisk", createGroupbox(tab, "Obelisk ESP"))
-	VisualsTab.initBasicESPSection("Ingredient", createGroupbox(tab, "Ingredient ESP"))
-	VisualsTab.initBasicESPSection("ArmorBrick", createGroupbox(tab, "Armor Brick ESP"))
-	VisualsTab.initBasicESPSection("BellMeteor", createGroupbox(tab, "Bell Meteor ESP"))
-	VisualsTab.initBasicESPSection("RareObelisk", createGroupbox(tab, "Rare Obelisk ESP"))
-	VisualsTab.initBasicESPSection("HealBrick", createGroupbox(tab, "Heal Brick ESP"))
-	VisualsTab.initBasicESPSection("MantraObelisk", createGroupbox(tab, "Mantra Obelisk ESP"))
-	VisualsTab.initBasicESPSection("BRWeapon", createGroupbox(tab, "BR Weapon ESP"))
+	-- Initialize sections.
+	VisualsTab.initESPCustomization(tab:AddDynamicGroupbox("ESP Customization"))
+	VisualsTab.initESPOptimizations(tab:AddDynamicGroupbox("ESP Optimizations"))
+	VisualsTab.initInterfaceVisuals(tab:AddDynamicGroupbox("Interface Visuals"))
+	VisualsTab.initWorldVisualsSection(tab:AddDynamicGroupbox("World Visuals"))
+	VisualsTab.initVisualRemovalsSection(tab:AddDynamicGroupbox("Visual Removals"))
+	VisualsTab.addPlayerESP(VisualsTab.initBaseESPSection("Player", tab:AddDynamicGroupbox("Player ESP")))
+	VisualsTab.initBaseESPSection("Mob", tab:AddDynamicGroupbox("Mob ESP"))
+	VisualsTab.initBaseESPSection("NPC", tab:AddDynamicGroupbox("NPC ESP"))
+	VisualsTab.initBaseESPSection("Chest", tab:AddDynamicGroupbox("Chest ESP"))
+	VisualsTab.initBaseESPSection("BagDrop", tab:AddDynamicGroupbox("Bag ESP"))
+	VisualsTab.addFilterESP(VisualsTab.initBaseESPSection("AreaMarker", tab:AddDynamicGroupbox("Area Marker ESP")))
+	VisualsTab.initBaseESPSection("JobBoard", tab:AddDynamicGroupbox("Job Board ESP"))
+	VisualsTab.initBaseESPSection("Artifact", tab:AddDynamicGroupbox("Artifact ESP"))
+	VisualsTab.initBaseESPSection("Whirlpool", tab:AddDynamicGroupbox("Whirlpool ESP"))
+	VisualsTab.initBaseESPSection("ExplosiveBarrel", tab:AddDynamicGroupbox("Explosive Barrel ESP"))
+	VisualsTab.initBaseESPSection("OwlFeathers", tab:AddDynamicGroupbox("Owl Feathers ESP"))
+	VisualsTab.initBaseESPSection("GuildDoor", tab:AddDynamicGroupbox("Guild Door ESP"))
+	VisualsTab.initBaseESPSection("GuildBanner", tab:AddDynamicGroupbox("Guild Banner ESP"))
+	VisualsTab.initBaseESPSection("Obelisk", tab:AddDynamicGroupbox("Obelisk ESP"))
+	VisualsTab.addFilterESP(VisualsTab.initBaseESPSection("Ingredient", tab:AddDynamicGroupbox("Ingredient ESP")))
+	VisualsTab.initBaseESPSection("ArmorBrick", tab:AddDynamicGroupbox("Armor Brick ESP"))
+	VisualsTab.initBaseESPSection("BellMeteor", tab:AddDynamicGroupbox("Bell Meteor ESP"))
+	VisualsTab.initBaseESPSection("RareObelisk", tab:AddDynamicGroupbox("Rare Obelisk ESP"))
+	VisualsTab.initBaseESPSection("HealBrick", tab:AddDynamicGroupbox("Heal Brick ESP"))
+	VisualsTab.initBaseESPSection("MantraObelisk", tab:AddDynamicGroupbox("Mantra Obelisk ESP"))
+	VisualsTab.initBaseESPSection("BRWeapon", tab:AddDynamicGroupbox("BR Weapon ESP"))
 end
 
 -- Return VisualsTab module.

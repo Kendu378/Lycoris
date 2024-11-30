@@ -44,5 +44,7 @@
         "**/_Index/**",
         "Output/"
     ],
-    "robloxLsp.diagnostics.disable": [],
+    "robloxLsp.diagnostics.disable": [
+        "duplicate-doc-class"
+    ],
 }

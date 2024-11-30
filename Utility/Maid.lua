@@ -39,6 +39,10 @@ function Maid:__newindex(index, newTask)
 	tasks[index] = newTask
 
 	if oldTask then
+		if typeof(oldTask) == "thread" then
+			return coroutine.status(oldTask) == "suspended" and task.cancel(oldTask) or nil
+		end
+
 		if type(oldTask) == "function" then
 			oldTask()
 		elseif typeof(oldTask) == "RBXScriptConnection" then
@@ -55,6 +59,14 @@ function Maid:__newindex(index, newTask)
 	end
 end
 
+---Add a task without a specific ID and return the task.
+---@param task any
+---@return any
+function Maid:mark(task)
+	self:add(task)
+	return task
+end
+
 ---Add a task without a specific ID.
 ---@param task any
 ---@return number
@@ -65,10 +77,6 @@ function Maid:add(task)
 
 	local taskId = #self._tasks + 1
 	self[taskId] = task
-
-	if type(task) == "table" and not task.Destroy then
-		warn("gave table task without .Destroy\n\n" .. debug.traceback(1))
-	end
 
 	return taskId
 end
@@ -93,26 +101,32 @@ function Maid:clean()
 	end
 
 	-- Clear out tasks table completely, even if clean up tasks add more tasks to the maid.
-	local index, task = next(tasks)
+	local index, _task = next(tasks)
 
-	while task ~= nil do
+	while _task ~= nil do
 		tasks[index] = nil
 
-		if type(task) == "function" then
-			task()
-		elseif typeof(task) == "RBXScriptConnection" then
-			task:Disconnect()
-		elseif typeof(task) == "Instance" and task:IsA("Tween") then
-			task:Pause()
-			task:Cancel()
-			task:Destroy()
-		elseif task.Destroy then
-			task:Destroy()
-		elseif task.detach then
-			task:detach()
+		if typeof(_task) == "thread" then
+			if coroutine.status(_task) == "suspended" then
+				task.cancel(_task)
+			end
+		else
+			if type(_task) == "function" then
+				_task()
+			elseif typeof(_task) == "RBXScriptConnection" then
+				_task:Disconnect()
+			elseif typeof(_task) == "Instance" and _task:IsA("Tween") then
+				_task:Pause()
+				_task:Cancel()
+				_task:Destroy()
+			elseif _task.Destroy then
+				_task:Destroy()
+			elseif _task.detach then
+				_task:detach()
+			end
 		end
 
-		index, task = next(tasks)
+		index, _task = next(tasks)
 	end
 end
 

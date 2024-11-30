@@ -36,5 +36,19 @@ function Configuration.expectOptionValue(key)
 	return option.Value
 end
 
+---Direct toggle value.
+---@param key string
+---@return any?
+function Configuration.toggleValue(key)
+	return Toggles[key].Value
+end
+
+---Direct option value.
+---@param key string
+---@return any?
+function Configuration.optionValue(key)
+	return Options[key].Value
+end
+
 -- Return Configuration module.
 return Configuration

@@ -7,8 +7,11 @@ local KeyHandling = require("Game/KeyHandling")
 ---@module Utility.Logger
 local Logger = require("Utility/Logger")
 
----@module GUI.Configuration
-local Configuration = require("GUI/Configuration")
+---@module Utility.Configuration
+local Configuration = require("Utility/Configuration")
+
+---@module Features.Game.Monitoring
+local Monitoring = require("Features/Game/Monitoring")
 
 -- Services.
 local playersService = game:GetService("Players")
@@ -26,7 +29,6 @@ local oldNewIndex = nil
 local oldTick = nil
 local oldCoroutineWrap = nil
 local oldTaskSpawn = nil
-local oldGetRemote = nil
 local oldProtectedCall = nil
 local oldError = nil
 local oldToString = nil
@@ -39,21 +41,9 @@ local lastErrorLevel = nil
 ---@param gestureName string
 local function replicateGesture(gestureName)
 	local assets = replicatedStorage:FindFirstChild("Assets")
-	if not assets then
-		return
-	end
-
-	local anims = assets:FindFirstChild("Anims")
-	if not anims then
-		return
-	end
-
-	local gestures = anims:FindFirstChild("Gestures")
-	if not gestures then
-		return
-	end
-
-	local gesture = gestures:FindFirstChild(gestureName)
+	local anims = assets and assets:FindFirstChild("Anims")
+	local gestures = anims and anims:FindFirstChild("Gestures")
+	local gesture = gestures and gestures:FindFirstChild(gestureName)
 	if not gesture then
 		return
 	end
@@ -74,18 +64,18 @@ local function replicateGesture(gestureName)
 	end
 
 	local effectReplicator = replicatedStorage:FindFirstChild("EffectReplicator")
-	if not effectReplicator then
+	local effectReplicatorModule = effectReplicator and require(effectReplicator)
+	if not effectReplicatorModule then
 		return
 	end
 
-	local effectHandler = require(effectReplicator)
-	if not effectHandler.FindEffect or not effectHandler.CreateEffect or not effectHandler:FindEffect("Gesturing") then
+	if effectReplicatorModule:FindEffect("Gesturing") then
 		return
 	end
 
-	local actionEffect = effectHandler:CreateEffect("Action")
-	local gesturingEffect = effectHandler:CreateEffect("Gesturing")
-	local mobileActionEffect = effectHandler:CreateEffect("MobileAction")
+	local actionEffect = effectReplicatorModule:CreateEffect("Action")
+	local gesturingEffect = effectReplicatorModule:CreateEffect("Gesturing")
+	local mobileActionEffect = effectReplicatorModule:CreateEffect("MobileAction")
 
 	---Stop gesture animations.
 	local function stopGestureAnimations()
@@ -181,8 +171,8 @@ local function onNameCall(...)
 		return true
 	end
 
-	if self.Name == "Gesture" and Configuration.expectToggleValue("UnlockEmotes") and typeof(args[2]) == "string" then
-		replicateGesture(args[2])
+	if self.Name == "Gesture" and Configuration.expectToggleValue("EmoteSpoofer") and typeof(args[2]) == "string" then
+		return replicateGesture(args[2])
 	end
 
 	if
@@ -298,6 +288,16 @@ local function onNewIndex(...)
 		return oldNewIndex(self, index, modifyAmbienceColor(value))
 	end
 
+	if not checkcaller() and self == workspace.CurrentCamera then
+		if index == "FieldOfView" and Configuration.expectToggleValue("ModifyFieldOfView") then
+			return
+		end
+
+		if index == "CameraSubject" and Monitoring.subject then
+			return
+		end
+	end
+
 	return oldNewIndex(...)
 end
 
@@ -378,8 +378,8 @@ local function onToString(...)
 	local variable = args[1]
 
 	if typeof(variable) == "string" and variable:match("EEKE") and checkcaller() then
-		warn("Crash has been deferred.")
-		return error("KeyHandler crash prevention hook.")
+		Logger.longNotify("[1] Screenshot this message, send it to the developers, and leave the game when possible.")
+		return error("LYCORIS_ON_TOP")
 	end
 
 	return oldToString(...)
