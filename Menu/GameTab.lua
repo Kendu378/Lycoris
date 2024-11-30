@@ -1,0 +1,326 @@
+-- GameTab module.
+local GameTab = {}
+
+---Initialize local character section.
+---@param groupbox table
+function GameTab.initLocalCharacterSection(groupbox)
+	local speedHackToggle = groupbox:AddToggle("Speedhack", {
+		Text = "Speedhack",
+		Tooltip = "Modify your character's velocity while moving.",
+		Default = false,
+	})
+
+	speedHackToggle:AddKeyPicker("SpeedhackKeybind", { Default = "X", SyncToggleState = true, Text = "Speedhack" })
+
+	local speedDepBox = groupbox:AddDependencyBox()
+
+	speedDepBox:AddSlider("SpeedhackSpeed", {
+		Text = "Speedhack Speed",
+		Default = 200,
+		Min = 0,
+		Max = 300,
+		Suffix = "/s",
+		Rounding = 0,
+	})
+
+	local flyToggle = groupbox:AddToggle("Fly", {
+		Text = "Fly",
+		Tooltip = "Set your character's velocity while moving to imitate flying.",
+		Default = false,
+	})
+
+	flyToggle:AddKeyPicker("FlyKeybind", { Default = "CapsLock", SyncToggleState = true, Text = "Fly" })
+
+	local flyDepBox = groupbox:AddDependencyBox()
+
+	flyDepBox:AddSlider("FlySpeed", {
+		Text = "Fly Speed",
+		Default = 200,
+		Min = 0,
+		Max = 300,
+		Suffix = "/s",
+		Rounding = 0,
+	})
+
+	flyDepBox:AddSlider("FlyUpSpeed", {
+		Text = "Spacebar Fly Speed",
+		Default = 150,
+		Min = 0,
+		Max = 300,
+		Suffix = "/s",
+		Rounding = 0,
+	})
+
+	local noclipToggle = groupbox:AddToggle("NoClip", {
+		Text = "NoClip",
+		Tooltip = "Disable collision(s) for your character.",
+		Default = false,
+	})
+
+	noclipToggle:AddKeyPicker("NoClipKeybind", { Default = "CapsLock", SyncToggleState = true, Text = "NoClip" })
+
+	local noclipDepBox = groupbox:AddDependencyBox()
+
+	noclipDepBox:AddToggle("NoClipCollisionsKnocked", {
+		Text = "Collisions While Knocked",
+		Tooltip = "Enable collisions while knocked.",
+		Default = false,
+	})
+
+	local atbToggle = groupbox:AddToggle("AttachToBack", {
+		Text = "Attach To Back",
+		Tooltip = "Start following the nearest entity based on a distance and height offset.",
+		Default = false,
+	})
+
+	atbToggle:AddKeyPicker(
+		"AttachToBackKeybind",
+		{ Default = "LeftBracket", SyncToggleState = true, Text = "Attach To Back" }
+	)
+
+	local atbDepBox = groupbox:AddDependencyBox()
+
+	atbDepBox:AddSlider("BackOffset", {
+		Text = "Distance To Entity",
+		Default = 5,
+		Min = -30,
+		Max = 30,
+		Suffix = "studs",
+		Rounding = 0,
+	})
+
+	atbDepBox:AddSlider("HeightOffset", {
+		Text = "Height Offset",
+		Default = 0,
+		Min = -30,
+		Max = 30,
+		Suffix = "studs",
+		Rounding = 0,
+	})
+
+	groupbox:AddToggle("InfiniteJump", {
+		Text = "Infinite Jump",
+		Tooltip = "Boost your velocity while the jump key is held.",
+		Default = false,
+	})
+
+	local infiniteJumpDepBox = groupbox:AddDependencyBox()
+
+	infiniteJumpDepBox:AddSlider("InfiniteJumpBoost", {
+		Text = "Infinite Jump Boost",
+		Default = 50,
+		Min = 0,
+		Max = 500,
+		Suffix = "/s",
+		Rounding = 0,
+	})
+
+	groupbox:AddToggle("AgilitySpoof", {
+		Text = "Agility Spoofer",
+		Tooltip = "Set your Agility investment points to boost movement realistically.",
+		Default = false,
+	})
+
+	local agilitySpoofDepBox = groupbox:AddDependencyBox()
+
+	agilitySpoofDepBox:AddSlider("AgilitySpoof", {
+		Text = "Agility Value",
+		Default = 0,
+		Min = 0,
+		Max = 200,
+		Suffix = "pts",
+		Rounding = 0,
+	})
+
+	groupbox
+		:AddToggle("TweenToObjectives", {
+			Text = "Tween To Objectives",
+			Tooltip = "Smoothly move to objectives inside of Ethiron and Chaser's boss fights.",
+			Default = false,
+		})
+		:AddKeyPicker(
+			"TweenToObjectivesKeybind",
+			{ Default = "V", SyncToggleState = true, Text = "Tween To Objectives" }
+		)
+
+	groupbox:AddToggle("AutoSprint", {
+		Text = "Auto Sprint",
+		Tooltip = "Instantly invoke a sprint when pressing a key in any direction.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("FreestylersBandSpoof", {
+		Text = "Freestylers Band Spoofer",
+		Tooltip = "Use the Freestylers Band without equipping it.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("KongaClutchRingSpoof", {
+		Text = "Konga Clutch Ring Spoofer",
+		Tooltip = "Use the Konga Clutch Ring without equipping it.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("EmoteSpoofer", {
+		Text = "Emote Spoofer",
+		Tooltip = "Unlock all emotes and use them without owning them.",
+		Default = false,
+	})
+
+	infiniteJumpDepBox:SetupDependencies({
+		{ Toggles.InfiniteJump, true },
+	})
+
+	speedDepBox:SetupDependencies({
+		{ Toggles.Speedhack, true },
+	})
+
+	flyDepBox:SetupDependencies({
+		{ Toggles.Fly, true },
+	})
+
+	noclipDepBox:SetupDependencies({
+		{ Toggles.NoClip, true },
+	})
+
+	atbDepBox:SetupDependencies({
+		{ Toggles.AttachToBack, true },
+	})
+end
+
+---Initialize player monitoring section.
+---@param groupbox table
+function GameTab.initPlayerMonitoringSection(groupbox)
+	groupbox:AddToggle("NotifyMod", {
+		Text = "Mod Notifications",
+		Default = true,
+	})
+
+	groupbox:AddToggle("NotifyVoidWalker", {
+		Text = "Void Walker Notifications",
+		Tooltip = "This will notify you when a player has a Void Walker contract.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("NotifyMythic", {
+		Text = "Legendary Weapon Notifications",
+		Tooltip = "This will notify you when a player has a Legendary Weapon in their inventory.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("PlayerSpectating", {
+		Text = "Player List Spectating",
+		Tooltip = "Click on a player on the player list to spectate them.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("ShowHiddenPlayers", {
+		Text = "Show Hidden Players",
+		Tooltip = "Show hidden players on the player list.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("PlayerProximity", {
+		Text = "Player Proximity Notifications",
+		Tooltip = "When other players are within specified distance, notify the user.",
+		Default = false,
+	})
+
+	local ppDepBox = groupbox:AddDependencyBox()
+
+	ppDepBox:AddSlider("PlayerProximityRange", {
+		Text = "Player Proximity Distance",
+		Default = 350,
+		Min = 50,
+		Max = 1000,
+		Suffix = "studs",
+		Rounding = 0,
+	})
+
+	ppDepBox:AddToggle("PlayerProximityVW", {
+		Text = "Only Allow Voidwalkers",
+		Tooltip = "The other players must have a Voidwalker Contract for us to be warned.",
+		Default = false,
+	})
+
+	ppDepBox:AddToggle("PlayerProximityBeep", {
+		Text = "Play Beep Sound",
+		Tooltip = "Use a beep sound along with the proximity notification.",
+		Default = false,
+	})
+
+	ppDepBox:SetupDependencies({
+		{ Toggles.PlayerProximity, true },
+	})
+end
+
+---Initialize effect removals section.
+---@param groupbox table
+function GameTab.initEffectRemovalsSection(groupbox)
+	groupbox:AddToggle("NoStun", {
+		Text = "No Stun",
+		Tooltip = "Remove any incoming 'Stun' effects from the server.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("NoSpeedDebuff", {
+		Text = "No Speed Debuff",
+		Tooltip = "Remove any incoming 'Speed Debuff' effects from the server.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("NoFallDamage", {
+		Text = "No Fall Damage",
+		Tooltip = "Remove any 'Fall Damage' requests to the server.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("NoAcid", {
+		Text = "No Acid",
+		Tooltip = "Remove any 'Acid Damage' requests to the server.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("No Wind", {
+		Text = "No Wind",
+		Tooltip = "Remove any 'Wind' effects from the server.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("NoJumpCooldown", {
+		Text = "No Jump Cooldown",
+		Tooltip = "Remove any 'Jump Cooldown' effects from the server.",
+		Default = false,
+	})
+end
+
+---Initialize instance removals.
+---@param groupbox table
+function GameTab.initInstanceRemovalsSection(groupbox)
+	groupbox:AddToggle("NoEchoModifiers", {
+		Text = "No Echo Modifiers",
+		Tooltip = "Remove any 'Echo Modifiers' instances on the client.",
+		Default = false,
+	})
+
+	groupbox:AddToggle("NoKillBricks", {
+		Text = "No Kill Bricks",
+		Tooltip = "Remove any 'Kill Brick' parts on the client.",
+		Default = false,
+	})
+end
+
+---Initialize tab.
+function GameTab.init(window)
+	-- Create tab.
+	local tab = window:AddTab("Game")
+
+	-- Initialize sections.
+	GameTab.initLocalCharacterSection(tab:AddDynamicGroupbox("Local Character"))
+	GameTab.initEffectRemovalsSection(tab:AddDynamicGroupbox("Effect Removals"))
+	GameTab.initInstanceRemovalsSection(tab:AddDynamicGroupbox("Instance Removals"))
+	GameTab.initPlayerMonitoringSection(tab:AddDynamicGroupbox("Player Monitoring"))
+end
+
+-- Return GameTab module.
+return GameTab

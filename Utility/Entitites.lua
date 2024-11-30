@@ -38,6 +38,12 @@ end
 ---@param range number
 ---@return Player[]
 function Entitites.getPlayersInRange(range)
+	local localCharacter = players.LocalPlayer.Character
+	local localRootPart = localCharacter and localCharacter:FindFirstChild("HumanoidRootPart")
+	if not localRootPart then
+		return
+	end
+
 	local playersInRange = {}
 	local playersDistance = {}
 
@@ -56,13 +62,14 @@ function Entitites.getPlayersInRange(range)
 			continue
 		end
 
-		local playerDistance = player:DistanceFromCharacter(rootPart.Position)
+		local playerDistance = (rootPart.Position - localRootPart.Position).Magnitude
 		if playerDistance > range then
 			continue
 		end
 
 		table.insert(playersInRange, player)
-		table.insert(playersDistance, playerDistance)
+
+		playersDistance[player] = playerDistance
 	end
 
 	table.sort(playersInRange, function(playerOne, playerTwo)
@@ -77,33 +84,42 @@ end
 ---@param range number
 ---@return Model[]
 function Entitites.getMobsInRange(range)
+	local live = workspace:FindFirstChild("Live")
+	if not live then
+		return
+	end
+
+	local localCharacter = players.LocalPlayer.Character
+	local localRootPart = localCharacter and localCharacter:FindFirstChild("HumanoidRootPart")
+	if not localRootPart then
+		return
+	end
+
 	local mobsInRange = {}
 	local mobsDistance = {}
 
-	local character = players.LocalPlayer.Character
-	local playerRootPart = character and character:FindFirstChild("HumanoidRootPart")
-
-	for _, mob in next, workspace.Live:GetChildren() do
-		if not playerRootPart then
+	for _, entity in next, live:GetChildren() do
+		if entity == localCharacter then
 			continue
 		end
 
-		if mob == character then
+		if players:GetPlayerFromCharacter(entity) then
 			continue
 		end
 
-		local rootPart = mob:FindFirstChild("HumanoidRootPart")
+		local rootPart = entity:FindFirstChild("HumanoidRootPart")
 		if not rootPart then
 			continue
 		end
 
-		local mobDistance = (rootPart.Position - playerRootPart.Position).Magnitude
+		local mobDistance = (rootPart.Position - localRootPart.Position).Magnitude
 		if mobDistance > range then
 			continue
 		end
 
-		table.insert(mobsInRange, mob)
-		table.insert(mobsDistance, mobDistance)
+		table.insert(mobsInRange, entity)
+
+		mobsDistance[entity] = mobDistance
 	end
 
 	table.sort(mobsInRange, function(mobOne, mobTwo)
@@ -113,58 +129,64 @@ function Entitites.getMobsInRange(range)
 	return mobsInRange
 end
 
----Get the nearest mob to the local player.
----@return Model?
-function Entitites.findNearestMob()
-	local nearestMob = nil
-	local nearestDistance = nil
-
+---This function is sorted from the nearest to the farthest entity.
+---Get entity within a certain range in studs from the local player.
+---@param range number
+---@return Model[]
+function Entitites.getEntitiesInRange(range)
 	local live = workspace:FindFirstChild("Live")
 	if not live then
 		return
 	end
 
-	local character = players.LocalPlayer.Character
-	if not character then
+	local localCharacter = players.LocalPlayer.Character
+	local localRootPart = localCharacter and localCharacter:FindFirstChild("HumanoidRootPart")
+	if not localRootPart then
 		return
 	end
 
-	local rootPart = character:FindFirstChild("HumanoidRootPart")
-	if not rootPart then
-		return
+	local entitiesInRange = {}
+	local entitiesDistance = {}
+
+	for _, entity in next, live:GetChildren() do
+		if entity == localCharacter then
+			continue
+		end
+
+		local rootPart = entity:FindFirstChild("HumanoidRootPart")
+		if not rootPart then
+			continue
+		end
+
+		local entityDistance = (rootPart.Position - localRootPart.Position).Magnitude
+		if entityDistance > range then
+			continue
+		end
+
+		table.insert(entitiesInRange, entity)
+
+		entitiesDistance[entity] = entityDistance
 	end
 
-	for _, instance in pairs(live:GetChildren()) do
-		if not instance:FindFirstChild("HumanoidRootPart") then
-			continue
-		end
+	table.sort(entitiesInRange, function(mobOne, mobTwo)
+		return entitiesDistance[mobOne] < entitiesDistance[mobTwo]
+	end)
 
-		if not instance:FindFirstChild("Humanoid") then
-			continue
-		end
+	return entitiesInRange
+end
 
-		if not instance:FindFirstChild("CustomRig") then
-			continue
-		end
+---Get the nearest entity to the local player.
+---@param range number
+---@return Model?
+function Entitites.findNearestEntity(range)
+	return Entitites.getEntitiesInRange(range or math.huge)[1]
+end
 
-		local torso = instance:FindFirstChild("Torso")
-		if torso and torso:FindFirstChild("RagdollAttach") then
-			continue
-		end
-
-		if instance == character then
-			continue
-		end
-
-		local distance = (instance.HumanoidRootPart.Position - rootPart.Position).Magnitude
-
-		if not nearestDistance or distance < nearestDistance then
-			nearestDistance = distance
-			nearestMob = instance
-		end
-	end
-
-	return nearestMob
+---Get the nearest mob to the local player.
+---@param range number
+---@return Model?
+function Entitites.findNearestMob(range)
+	return Entitites.getMobsInRange(range or math.huge)[1]
 end
 
 -- Return Entitites module.

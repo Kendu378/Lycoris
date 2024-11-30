@@ -149,6 +149,28 @@ function Lycoris.init()
 	Logger.notify("Script has been initialized in %ims.", (os.clock() - startTimestamp) * 1000)
 
 	PlayerScanning.init()
+
+	local modules = replicatedStorage:FindFirstChild("Modules")
+	local bloxstrapRPC = modules and modules:FindFirstChild("BloxstrapRPC")
+	local bloxstrapRPCModule = bloxstrapRPC and require(bloxstrapRPC)
+
+	if not bloxstrapRPCModule then
+		return
+	end
+
+	bloxstrapRPCModule.SetRichPresence({
+		details = "Biggie Smalls Hack (Attached)",
+		state = "No, I'm not idling on VSCode.",
+		timeStart = os.time(),
+		largeImage = {
+			assetId = 17278722162,
+			hoverText = "[REDACTED]",
+		},
+		smallImage = {
+			assetId = 17278571027,
+			hoverText = "Deepwoken",
+		},
+	})
 end
 
 ---Detach instance.
@@ -164,6 +186,28 @@ function Lycoris.detach()
 	Logger.warn("Script has been detached.")
 
 	PlayerScanning.detach()
+
+	local modules = replicatedStorage:FindFirstChild("Modules")
+	local bloxstrapRPC = modules and modules:FindFirstChild("BloxstrapRPC")
+	local bloxstrapRPCModule = bloxstrapRPC and require(bloxstrapRPC)
+
+	if not bloxstrapRPCModule then
+		return
+	end
+
+	bloxstrapRPCModule.SetRichPresence({
+		details = "Biggie Smalls Hack (Detached)",
+		state = "Yes, I'm too lazy to make it properly reset.",
+		timeStart = os.time(),
+		largeImage = {
+			assetId = 17278722162,
+			hoverText = "[REDACTED]",
+		},
+		smallImage = {
+			assetId = 17278571027,
+			hoverText = "Deepwoken",
+		},
+	})
 end
 
 -- Return Lycoris module.

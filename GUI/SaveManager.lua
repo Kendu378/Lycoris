@@ -27,11 +27,23 @@ do
 		},
 		Dropdown = {
 			Save = function(idx, object)
-				return { type = "Dropdown", idx = idx, value = object.Value, mutli = object.Multi }
+				return {
+					type = "Dropdown",
+					idx = idx,
+					value = object.Value,
+					values = object.SaveValues and object.Values or nil,
+					mutli = object.Multi,
+				}
 			end,
 			Load = function(idx, data)
 				if Options[idx] then
 					Options[idx]:SetValue(data.value)
+
+					if not data.values then
+						return
+					end
+
+					Options[idx]:SetValues(data.values)
 				end
 			end,
 		},
@@ -228,7 +240,7 @@ do
 	function SaveManager:BuildConfigSection(tab)
 		assert(self.Library, "Must set SaveManager.Library")
 
-		local section = tab:AddRightGroupbox("Configuration")
+		local section = tab:AddRightGroupbox("Config Manager")
 
 		section:AddInput("SaveManager_ConfigName", { Text = "Config name" })
 		section:AddDropdown(

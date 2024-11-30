@@ -10,8 +10,14 @@ local Signal = require("Utility/Signal")
 ---@module Game.KeyHandling
 local KeyHandling = require("Game/KeyHandling")
 
----@module GUI.Configuration
-local Configuration = require("GUI/Configuration")
+---@module Utility.Configuration
+local Configuration = require("Utility/Configuration")
+
+---@module Utility.OriginalStoreManager
+local OriginalStoreManager = require("Utility/OriginalStoreManager")
+
+---@module Utility.OriginalStore
+local OriginalStore = require("Utility/OriginalStore")
 
 -- Services.
 local runService = game:GetService("RunService")
@@ -19,37 +25,23 @@ local players = game:GetService("Players")
 local replicatedStorage = game:GetService("ReplicatedStorage")
 local lighting = game:GetService("Lighting")
 
--- Instances.
-local originalAtmosphereDensity = nil
-local originalFogEnd = nil
-local originalFogStart = nil
-local originalBlindInstance = nil
-local originalBlurSize = nil
-local originalEchoModifiersMap = {}
-
--- Kill bricks.
-local killBricksMap = {}
-
 -- Maids.
 local removalMaid = Maid.new()
+
+-- Original stores.
+local noShadows = removalMaid:mark(OriginalStore.new())
+local noBlur = removalMaid:mark(OriginalStore.new())
+
+-- Original store managers.
+local echoModifiersMap = removalMaid:mark(OriginalStoreManager.new())
+local noFogMap = removalMaid:mark(OriginalStoreManager.new())
+local noBlindMap = removalMaid:mark(OriginalStoreManager.new())
+local killBricksMap = removalMaid:mark(OriginalStoreManager.new())
 
 -- Signals.
 local renderStepped = Signal.new(runService.RenderStepped)
 local workspaceDescendantAdded = Signal.new(workspace.DescendantAdded)
 local workspaceDescendantRemoving = Signal.new(workspace.DescendantRemoving)
-
----@note: These setters are completely unnecessary - they're used to make the code look cleaner.
----It's really ugly when we want to return and set something at the same time.
-
----Reset original atmosphere density.
-local function resetOriginalAtmospherDensity()
-	originalAtmosphereDensity = nil
-end
-
----Reset original blur size.
-local function resetOriginalBlurSize()
-	originalBlurSize = nil
-end
 
 ---Update no echo modifiers.
 ---@param localPlayer Player
@@ -59,79 +51,33 @@ local function updateNoEchoModifiers(localPlayer)
 			continue
 		end
 
-		originalEchoModifiersMap[#originalEchoModifiersMap + 1] = instance
-
-		instance.Parent = nil
+		echoModifiersMap:add(instance, "Parent", nil)
 	end
-end
-
----Reset no echo modifiers.
----@param localPlayer Player
-local function resetNoEchoModifiers(localPlayer)
-	for _, instance in pairs(originalEchoModifiersMap) do
-		instance.Parent = localPlayer.Backpack
-	end
-
-	originalEchoModifiersMap = {}
 end
 
 ---Update no kill bricks.
 local function updateNoKillBricks()
-	for instance, _ in next, killBricksMap do
-		instance.CFrame = CFrame.new(math.huge, math.huge, math.huge)
-	end
-end
+	for _, store in next, killBricksMap:data() do
+		local data = store.data
+		if not data then
+			continue
+		end
 
----Reset no kill bricks.
-local function resetNoKillBricks()
-	for instance, cframe in next, killBricksMap do
-		instance.CFrame = cframe
+		store:set(store.data, "CFrame", CFrame.new(math.huge, math.huge, math.huge))
 	end
 end
 
 ---Update no fog.
 local function updateNoFog()
-	if not originalFogStart then
-		originalFogStart = lighting.FogStart
-	end
-
-	if not originalFogEnd then
-		originalFogEnd = lighting.FogEnd
-	end
-
-	lighting.FogStart = math.huge
-	lighting.FogEnd = math.huge
+	noFogMap:add(lighting, "FogStart", 0)
+	noFogMap:add(lighting, "FogEnd", 0)
 
 	local atmosphere = lighting:FindFirstChildOfClass("Atmosphere")
 	if not atmosphere then
 		return
 	end
 
-	if not originalAtmosphereDensity then
-		originalAtmosphereDensity = atmosphere.Density
-	end
-
-	atmosphere.Density = 0
-end
-
----Reset no fog.
-local function resetNoFog()
-	if not originalFogStart or not originalFogEnd then
-		return
-	end
-
-	lighting.FogStart = originalFogStart
-	lighting.FogEnd = originalFogEnd
-
-	originalFogStart = nil
-	originalFogEnd = nil
-
-	local atmosphere = lighting:FindFirstChildOfClass("Atmosphere")
-	if not atmosphere or not originalAtmosphereDensity then
-		return resetOriginalAtmospherDensity()
-	end
-
-	atmosphere.Density = originalAtmosphereDensity
+	noFogMap:add(atmosphere, "Density", 0)
 end
 
 ---Update no blind.
@@ -147,8 +93,8 @@ local function updateNoBlind(localPlayer)
 		return
 	end
 
-	sanityDof.Enabled = false
-	sanityCorrect.Enabled = false
+	noBlindMap:add(sanityDof, "Enabled", false)
+	noBlindMap:add(sanityCorrect, "Enabled", false)
 
 	local backpack = localPlayer.Backpack
 	local blindInstance = backpack:FindFirstChild("Talent:Blinded") or backpack:FindFirstChild("Flaw:Blind")
@@ -156,33 +102,7 @@ local function updateNoBlind(localPlayer)
 		return
 	end
 
-	originalBlindInstance = blindInstance
-
-	blindInstance.Parent = nil
-end
-
----Reset no blind.
----@param localPlayer Player
-local function resetNoBlind(localPlayer)
-	if not originalBlindInstance then
-		return
-	end
-
-	originalBlindInstance.Parent = localPlayer.Backpack
-	originalBlindInstance = nil
-
-	local sanityDof = lighting:FindFirstChild("SanityDoF")
-	if not sanityDof then
-		return
-	end
-
-	local sanityCorrect = lighting:FindFirstChild("SanityCorrect")
-	if not sanityCorrect then
-		return
-	end
-
-	sanityDof.Enabled = true
-	sanityCorrect.Enabled = true
+	noBlindMap:add(blindInstance, "Parent", nil)
 end
 
 ---Update no blur.
@@ -192,23 +112,7 @@ local function updateNoBlur()
 		return
 	end
 
-	if not originalBlurSize then
-		originalBlurSize = genericBlur.Size
-	end
-
-	genericBlur.Size = 0.0
-end
-
----Reset no blur.
-local function resetNoBlur()
-	local genericBlur = lighting:FindFirstChild("genericBlur")
-	if not genericBlur or not originalBlurSize then
-		return resetOriginalBlurSize()
-	end
-
-	genericBlur.Size = originalBlurSize
-
-	originalBlurSize = nil
+	noBlur:set(genericBlur, "Size", 0.0)
 end
 
 ---Update removal.
@@ -221,74 +125,88 @@ local function updateRemoval()
 	if Configuration.expectToggleValue("NoEchoModifiers") then
 		updateNoEchoModifiers(localPlayer)
 	else
-		resetNoEchoModifiers(localPlayer)
+		echoModifiersMap:restore()
 	end
 
 	if Configuration.expectToggleValue("NoKillBricks") then
 		updateNoKillBricks()
 	else
-		resetNoKillBricks()
+		killBricksMap:restore()
 	end
 
 	if Configuration.expectToggleValue("NoFog") then
 		updateNoFog()
 	else
-		resetNoFog()
+		noFogMap:restore()
 	end
 
 	if Configuration.expectToggleValue("NoBlind") then
 		updateNoBlind(localPlayer)
 	else
-		resetNoBlind(localPlayer)
+		noBlindMap:restore()
 	end
 
 	if Configuration.expectToggleValue("NoBlur") then
 		updateNoBlur()
 	else
-		resetNoBlur()
+		noBlur:restore()
 	end
 
 	if Configuration.expectToggleValue("NoShadows") then
-		lighting.GlobalShadows = false
+		noShadows:set(lighting, "GlobalShadows", false)
 	else
-		lighting.GlobalShadows = true
+		noShadows:restore()
 	end
+end
+
+---Hide effect by unlinking it from being found.
+---@param effect table
+local function hideEffect(effect)
+	local effectReplicator = replicatedStorage:FindFirstChild("EffectReplicator")
+	if not effectReplicator then
+		return
+	end
+
+	local effectReplicatorModule = require(effectReplicator)
+	if not effectReplicatorModule then
+		return
+	end
+
+	if not effect.Id then
+		return
+	end
+
+	effectReplicatorModule.Effects[effect.Id] = nil
 end
 
 ---Update removal effects.
 ---@param effect table
 local function updateRemovalEffects(effect)
-	if not effect then
-		return
-	end
-
 	local stunEffects = { "Stun", "LightAttack", "Action", "MobileAction", "OffhandAttack" }
 
-	---@note: Broken - attempt to remove ServerEffects :(
 	if Configuration.expectToggleValue("NoStun") and table.find(stunEffects, effect.Class) then
-		effect:Remove()
+		return hideEffect(effect)
 	end
 
 	if effect.Class == "BeingWinded" and Configuration.expectToggleValue("AntiWind") then
-		effect:Remove()
+		return hideEffect(effect)
 	end
 
-	---@note: Broken - attempt to remove ServerEffects :(
 	if
 		(effect.Class == "NoJump" or effect.Class == "NoJumpAlt") and Configuration.expectToggleValue("NoJumpCooldown")
 	then
-		effect:Remove()
+		return hideEffect(effect)
 	end
 
 	if effect.Class == "SpeedOverride" and effect.Value < 14 and Configuration.expectToggleValue("NoSpeedDebuff") then
-		effect:Remove()
+		return hideEffect(effect)
 	end
 
 	if effect.Class == "Speed" and effect.Value < 0 and Configuration.expectToggleValue("NoSpeedDebuff") then
 		rawset(effect, "Value", 0)
 	end
 
-	if effect.Class == "Burning" and Configuration.expectToggleValue("AntiFire") then
+	if effect.Class == "Burning" and Configuration.expectToggleValue("AutoExtinguishFire") then
 		local serverSlide = KeyHandling.getRemote("ServerSlide")
 		local serverSlideStop = KeyHandling.getRemote("ServerSlideStop")
 
@@ -298,7 +216,7 @@ local function updateRemovalEffects(effect)
 
 		serverSlide:FireServer(true)
 
-		task.delay(0.3, serverSlideStop.FireServer, serverSlideStop)
+		serverSlideStop:FireServer()
 	end
 end
 
@@ -317,17 +235,13 @@ local function onWorkspaceDescendantAdded(descendant)
 		return
 	end
 
-	killBricksMap[descendant] = descendant.CFrame
+	killBricksMap:mark(descendant, "CFrame")
 end
 
 ---On workspace descendant removing.
 ---@param descendant Instance
 local function onWorkspaceDescendantRemoving(descendant)
-	if not killBricksMap[descendant] then
-		return
-	end
-
-	killBricksMap[descendant] = nil
+	killBricksMap:forget(descendant)
 end
 
 ---Initalize removal.
@@ -357,17 +271,6 @@ end
 ---Detach removal.
 function Removal.detach()
 	removalMaid:clean()
-
-	resetNoKillBricks()
-	resetNoFog()
-
-	local localPlayer = players.LocalPlayer
-	if not localPlayer then
-		return
-	end
-
-	resetNoEchoModifiers(localPlayer)
-	resetNoBlind(localPlayer)
 end
 
 -- Return Removal module.

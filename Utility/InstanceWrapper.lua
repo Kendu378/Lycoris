@@ -35,6 +35,35 @@ end
 ---Cache an instance, clean the instance up through a maid, and automatically uncache on deletion.
 ---@param instanceMaid Maid
 ---@param identifier any
+---@param inst Instance
+---@return Instance
+function InstanceWrapper.mark(instanceMaid, identifier, inst)
+	local maidInstance = instanceMaid[identifier]
+	if maidInstance then
+		return maidInstance
+	end
+
+	local onAncestorChange = Signal.new(inst.AncestryChanged)
+
+	if inst:IsA("BodyVelocity") then
+		collectionService:AddTag(inst, "AllowedBM")
+	end
+
+	instanceMaid[identifier] = inst
+	instanceMaid:add(onAncestorChange:connect("SerenityInstance_OnAncestorChange", function(_)
+		if inst:IsDescendantOf(game) then
+			return
+		end
+
+		instanceMaid:removeTask(identifier)
+	end))
+
+	return inst
+end
+
+---Create & cache an instance, clean the instance up through a maid, and automatically uncache on deletion.
+---@param instanceMaid Maid
+---@param identifier any
 ---@param type string
 ---@param parent Instance
 ---@return Instance

@@ -16,8 +16,8 @@ local Logger = require("Utility/Logger")
 ---@Module Utility.SendInput
 local SendInput = require("Utility/SendInput")
 
----@module GUI.Configuration
-local Configuration = require("GUI/Configuration")
+---@module Utility.Configuration
+local Configuration = require("Utility/Configuration")
 
 -- Services.
 local players = game:GetService("Players")

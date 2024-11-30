@@ -1,41 +1,41 @@
 -- Features related stuff is handled here.
 local Features = {}
 
----@module Features.Automation.AstralFarm
-local AstralFarm = require("Features/Automation/AstralFarm")
-
----@module Features.Automation.MaestroFarm
-local MaestroFarm = require("Features/Automation/MaestroFarm")
-
 ---@module Features.Automation.CharismaFarm
 local CharismaFarm = require("Features/Automation/CharismaFarm")
 
 ---@module Features.Automation.InteligenceFarm
 local IntelligenceFarm = require("Features/Automation/InteligenceFarm")
 
----@module Features.Player.Movement
-local Movement = require("Features/Player/Movement")
+---@module Features.Game.Movement
+local Movement = require("Features/Game/Movement")
 
----@module Features.Player.Removal
-local Removal = require("Features/Player/Removal")
+---@module Features.Exploits.Exploits
+local Exploits = require("Features/Exploits/Exploits")
 
----@module Features.Player.Exploits
-local Exploits = require("Features/Player/Exploits")
+---@module Features.Visuals.Visuals
+local Visuals = require("Features/Visuals/Visuals")
 
----@module Features.Visuals.ESP
-local ESP = require("Features/Visuals/ESP")
+---@module Features.Removal
+local Removal = require("Features/Removal")
+
+---@module Features.Game.Monitoring
+local Monitoring = require("Features/Game/Monitoring")
+
+---@module Features.Game.Spoofing
+local Spoofing = require("Features/Game/Spoofing")
 
 ---@module Utility.Logger
 local Logger = require("Utility/Logger")
 
 ---Initialize features.
 function Features.init()
-	ESP.init()
+	Visuals.init()
 	Movement.init()
+	Monitoring.init()
 	Removal.init()
 	Exploits.init()
-	AstralFarm.init()
-	MaestroFarm.init()
+	Spoofing.init()
 	CharismaFarm.init()
 	IntelligenceFarm.init()
 	Logger.warn("Features initialized.")
@@ -43,14 +43,14 @@ end
 
 ---Detach features.
 function Features.detach()
-	AstralFarm.detach()
-	MaestroFarm.detach()
 	CharismaFarm.detach()
 	IntelligenceFarm.detach()
+	Spoofing.detach()
 	Movement.detach()
 	Removal.detach()
+	Monitoring.detach()
 	Exploits.detach()
-	ESP.detach()
+	Visuals.detach()
 	Logger.warn("Features detached.")
 end
 

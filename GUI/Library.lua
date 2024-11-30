@@ -1043,7 +1043,6 @@ do
 			Type = "KeyPicker",
 			Callback = Info.Callback or function(Value) end,
 			ChangedCallback = Info.ChangedCallback or function(New) end,
-
 			SyncToggleState = Info.SyncToggleState or false,
 		}
 
@@ -1149,6 +1148,11 @@ do
 			function ModeButton:Select()
 				for _, Button in next, ModeButtons do
 					Button:Deselect()
+				end
+
+				if Info.Mode == "Always" and KeyPicker.DoClick then
+					KeyPicker.Toggled = true
+					KeyPicker:DoClick()
 				end
 
 				KeyPicker.Mode = Mode
@@ -1325,7 +1329,11 @@ do
 			end
 		end)
 
-		Library:GiveSignal(InputService.InputBegan:Connect(function(Input)
+		Library:GiveSignal(InputService.InputBegan:Connect(function(Input, ProcessedByGame)
+			if ProcessedByGame then
+				return
+			end
+
 			if not Picking then
 				if KeyPicker.Mode == "Toggle" then
 					local Key = KeyPicker.Value
@@ -1363,11 +1371,20 @@ do
 			end
 		end))
 
-		Library:GiveSignal(InputService.InputEnded:Connect(function(Input)
+		Library:GiveSignal(InputService.InputEnded:Connect(function(Input, ProcessedByGame)
+			if ProcessedByGame then
+				return
+			end
+
 			if not Picking then
 				KeyPicker:Update()
 			end
 		end))
+
+		if Info.Mode == "Always" then
+			KeyPicker.Toggled = true
+			KeyPicker:DoClick()
+		end
 
 		KeyPicker:Update()
 
@@ -2218,6 +2235,7 @@ do
 		local Dropdown = {
 			Values = Info.Values,
 			Value = Info.Multi and {},
+			SaveValues = Info.SaveValues or false,
 			Multi = Info.Multi,
 			Type = "Dropdown",
 			SpecialType = Info.SpecialType, -- can be either 'Player' or 'Team'
@@ -3349,6 +3367,14 @@ function Library:CreateWindow(...)
 			Tab.Groupboxes[Info.Name] = Groupbox
 
 			return Groupbox
+		end
+
+		function Tab:AddDynamicGroupbox(Name)
+			if Tab.GroupboxCount % 2 == 0 then
+				return Tab:AddLeftGroupbox(Name)
+			else
+				return Tab:AddRightGroupbox(Name)
+			end
 		end
 
 		function Tab:AddLeftGroupbox(Name)

@@ -7,7 +7,7 @@ function AutomationTab.initAttributeSection(groupbox)
 	groupbox:AddToggle("AutoCharisma", {
 		Text = "Auto Charisma Farm",
 		Default = false,
-		Tooltip = "Using the 'How To Make Friends' book - automatically train the 'Charisma' attribute.",
+		Tooltip = "Using the 'How To Make Friends' book, the script will automatically train the 'Charisma' attribute.",
 	})
 
 	local charismaDepbox = groupbox:AddDependencyBox()
@@ -22,7 +22,7 @@ function AutomationTab.initAttributeSection(groupbox)
 
 	groupbox:AddToggle("AutoIntelligence", {
 		Text = "Auto Intelligence",
-		Tooltip = "Using the 'Math Textbook' book - automatically train the 'Intelligence' attribute.",
+		Tooltip = "Using the 'Math Textbook' book, the script will automatically train the 'Intelligence' attribute.",
 		Default = false,
 	})
 
@@ -48,10 +48,9 @@ end
 ---Fishing section.
 ---@param groupbox table
 function AutomationTab.initFishingSection(groupbox)
-	---@todo: Port and fix AutoFish.
 	groupbox:AddToggle("AutoFish", {
 		Text = "Auto Fish",
-		Tooltip = "Using the 'Fishing Rod' item - automatically fish for you.",
+		Tooltip = "Using the 'Fishing Rod' item, the script will automatically fish for you.",
 		Default = false,
 	})
 
@@ -74,26 +73,26 @@ function AutomationTab.initFishingSection(groupbox)
 	})
 
 	fishDepBox:AddToggle("AutoFishWebhookSend", {
-		Text = "Send Webhook Data",
-		Tooltip = "Should we send 'Auto Fish' data to the specified webhook?",
+		Text = "Auto Fish Webhook Notification",
+		Tooltip = "Send a notification to a Webhook when the 'AutoFish' looting is finished.",
 		Default = false,
 	})
 
 	local fishWhSubDepBox = fishDepBox:AddDependencyBox()
 
 	fishWhSubDepBox:AddInput("AutoFishWebhook", {
-		Text = "Webhook Link",
-		Tooltip = "The webhook that will receive 'Auto Fish' data.",
+		Text = "Auto Fish Webhook",
+		Tooltip = "The webhook that will receive 'AutoFish' looting data.",
 		Placeholder = "Enter your webhook link here.",
 		Numeric = false,
 	})
 
-	fishDepBox:SetupDependencies({
-		{ Toggles.AutoFish, true },
-	})
-
 	fishWhSubDepBox:SetupDependencies({
 		{ Toggles.AutoFishWebhookSend, true },
+	})
+
+	fishDepBox:SetupDependencies({
+		{ Toggles.AutoFish, true },
 	})
 end
 
@@ -101,7 +100,7 @@ end
 ---@param groupbox table
 function AutomationTab.initMaestroSection(groupbox)
 	groupbox:AddToggle("AutoMaestro", {
-		Text = "Auto Maestro Fight",
+		Text = "Auto Maestro",
 		Tooltip = "Automatically fight 'Maestro' for you. You have to already have fought him once before using this feature.",
 		Default = false,
 	})
@@ -110,7 +109,7 @@ function AutomationTab.initMaestroSection(groupbox)
 
 	maestroDepBox:AddToggle("MaestroUseCritical", {
 		Text = "Use Critical",
-		Tooltip = "In the 'Maestro' fight, the 'Auto Maestro Fight' will use your weapon's critical.",
+		Tooltip = "In the 'Maestro' fight, the 'Auto Maestro' fight will spam your weapon's critical.",
 		Default = false,
 	})
 
@@ -120,11 +119,24 @@ function AutomationTab.initMaestroSection(groupbox)
 		Default = false,
 	})
 
-	maestroDepBox:AddInput("AutoMaestroWebhook", {
-		Text = "Webhook Link",
-		Tooltip = "The webhook that will receive 'Auto Maestro' data.",
-		Placeholder = "https://discord.com/api/webhooks/???????",
+	maestroDepBox:AddToggle("NotifyMaestro", {
+		Text = "Maestro Webhook Notification",
+		Tooltip = "Send a notification to a Webhook when the 'Maestro' looting is finished.",
+		Default = false,
+	})
+
+	local maestroNotifySubDepBox = maestroDepBox:AddDependencyBox()
+
+	maestroNotifySubDepBox:AddInput("MaestroWebhook", {
+		Text = "Maestro Webhook",
+		Tooltip = "The webhook that will receive 'Maestro' looting data.",
 		Numeric = false,
+		Finished = false,
+		Placeholder = "Enter your webhook here.",
+	})
+
+	maestroNotifySubDepBox:SetupDependencies({
+		{ Toggles.NotifyAstral, true },
 	})
 
 	maestroDepBox:SetupDependencies({
@@ -145,7 +157,7 @@ function AutomationTab.initAstralSection(groupbox)
 
 	astralDepBox:AddSlider("AstralSpeed", {
 		Text = "Astral Speed",
-		Tooltip = "How fast should we move (in studs) while farming?",
+		Tooltip = "How fast should we move while farming?",
 		Default = 100,
 		Min = 10,
 		Max = 200,
@@ -204,6 +216,16 @@ function AutomationTab.initAstralSection(groupbox)
 	})
 end
 
+---Initialize Effect Automation section.
+---@param groupbox table
+function AutomationTab.initEffectAutomation(groupbox)
+	groupbox:AddToggle("AutoExtinguishFire", {
+		Text = "Auto Extinguish Fire",
+		Tooltip = "Attempt to remove 'Burning' effects through automatic sliding.",
+		Default = false,
+	})
+end
+
 ---Initialize tab.
 ---@param window table
 function AutomationTab.init(window)
@@ -211,11 +233,13 @@ function AutomationTab.init(window)
 	local tab = window:AddTab("Automation")
 
 	-- Initialize sections.
-	AutomationTab.initAttributeSection(tab:AddLeftGroupbox("Attributes"))
-	AutomationTab.initFishingSection(tab:AddRightGroupbox("Fishing"))
-	AutomationTab.initMaestroSection(tab:AddLeftGroupbox("Maestro"))
-	AutomationTab.initAstralSection(tab:AddRightGroupbox("Astral"))
-	---@note: Don't port the Echo Farm or Wipe Farm - it will be reworked.
+	--AutomationTab.initAstralSection(tab:AddDynamicGroupbox("Astral Farm"))
+	--AutomationTab.initMaestroSection(tab:AddDynamicGroupbox("Maestro Farm"))
+	--AutomationTab.initFishingSection(tab:AddDynamicGroupbox("Fish Farm"))
+	AutomationTab.initAttributeSection(tab:AddDynamicGroupbox("Attribute Farm"))
+	AutomationTab.initEffectAutomation(tab:AddDynamicGroupbox("Effect Automation"))
+
+	---@todo: Make the echo farm and wipe farm later.
 end
 
 -- Return AutomationTab module.
