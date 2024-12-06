@@ -46,7 +46,8 @@ Tabs have a marker to desiginate whether or not the menu elements are finished.
         - Allow Flourish Feints ❌
         - Allow Attacks While Rolling ❌
         - Attack Animation Speed ❌
-            - Animation Speed Slider (0.5x - 1x - 2x) ❌
+            - Animation Speed Slider (0.5x - 1x - 2x) ❌ 
+            # side note: if this was to be made, what u would do is that you would make it force speed 0 at .15s until desired speed slider, making it look more legit and not breaking deepwoken's mechanics
         - Maximum Momentum ❌
         - Perfect Mantra Cast ❌
 
@@ -173,6 +174,8 @@ Tabs have a marker to desiginate whether or not the menu elements are finished.
         - Use Critical ✅
         - Webhook Link ✅
         - Auto Sell after X amount of Maestro kills ❌
+            - Sell to Guildbase Antiquarian ❌
+            # spawn a gb and sell to the antiquarian in it, or as default it would "tween" into the antiquarian near training area (tween below them)
     - Fish Farm ⚠️⚠️⚠️ (rework fish farm)
         - Hold Time ✅
         - Kill Caught Mudskippers ✅
@@ -199,6 +202,7 @@ Tabs have a marker to desiginate whether or not the menu elements are finished.
         - Move While Knocked ✅
 
     Check out "Extended Item Pickup"
+    # mostly with firetouchdetector, we can find these itempickups by tags from collectionservice aswell
 
 - Lycoris ✅
     - Cheat Settings ✅
