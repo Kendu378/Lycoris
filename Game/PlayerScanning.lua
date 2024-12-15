@@ -161,7 +161,7 @@ local function runPlayerScans()
 
 		playerScanningMaid:add(TaskSpawner.spawn("PlayerScanning_FriendCheck", function()
 			-- Perform a friend check that will yield.
-			local success, result = pcall(player.IsFriendsWith, player, players.LocalPlayer.UserId)
+			local success, result = pcall(localPlayer.IsFriendsWith, localPlayer, player.UserId)
 
 			-- Check success.
 			if not success then
