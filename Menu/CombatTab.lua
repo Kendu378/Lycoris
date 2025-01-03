@@ -135,13 +135,15 @@ function CombatTab.init(window)
 	-- Create tab.
 	local tab = window:AddTab("Combat")
 
-	-- Create targeting section tab box.
-	local tabbox = tab:AddDynamicTabbox()
-
 	-- Initialize sections.
 	CombatTab.initAutoDefenseSection(tab:AddDynamicGroupbox("Auto Defense"))
+
+	-- Create targeting section tab box.
+	local tabbox = tab:AddDynamicTabbox()
 	CombatTab.initCombatTargetingSection(tabbox:AddTab("Targeting"))
 	CombatTab.initCombatWhitelistSection(tabbox:AddTab("Whitelisting"))
+
+	-- Initialize other sections.
 	CombatTab.initFeintDetectionSection(tab:AddDynamicGroupbox("Feint Detection"))
 	CombatTab.initAttackAssistanceSection(tab:AddDynamicGroupbox("Attack Assistance"))
 	CombatTab.initInputAssistance(tab:AddDynamicGroupbox("Input Assistance"))

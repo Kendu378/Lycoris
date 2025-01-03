@@ -32,7 +32,7 @@ function AnimatorDefender:process(track)
 		return
 	end
 
-	local timing = SaveManager.as:index(track.Animation.AnimationId)
+	local timing = SaveManager.as:index(tostring(track.Animation.AnimationId))
 	if not timing then
 		return
 	end

@@ -3398,7 +3398,7 @@ function Library:CreateWindow(...)
 		end
 
 		function Tab:AddDynamicGroupbox(Name)
-			if Tab.GroupboxCount % 2 == 0 then
+			if (Tab.GroupboxCount + Tab.TabboxCount) % 2 == 0 then
 				return Tab:AddLeftGroupbox(Name)
 			else
 				return Tab:AddRightGroupbox(Name)
@@ -3616,7 +3616,7 @@ function Library:CreateWindow(...)
 		end
 
 		function Tab:AddDynamicTabbox(Name)
-			if Tab.TabboxCount % 2 == 0 then
+			if (Tab.GroupboxCount + Tab.TabboxCount) % 2 == 0 then
 				return Tab:AddLeftTabbox(Name)
 			else
 				return Tab:AddRightTabbox(Name)
