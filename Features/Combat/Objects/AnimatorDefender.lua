@@ -69,20 +69,23 @@ function AnimatorDefender:valid(action)
 		return Logger.notify("No character found.")
 	end
 
+	local hbStartPosition = target.root.CFrame * CFrame.new(0, 0, -(action.hitbox.Z / 2))
+
 	local overlapParams = OverlapParams.new()
 	overlapParams.FilterDescendantsInstances = { character }
 	overlapParams.FilterType = Enum.RaycastFilterType.Include
 
 	local visualizationPart = InstanceWrapper.create(self.maid, "VisualizationPart", "Part")
 	visualizationPart.Size = action.hitbox
-	visualizationPart.CFrame = target.root.CFrame
+	visualizationPart.CFrame = hbStartPosition
 	visualizationPart.Transparency = 0.85
 	visualizationPart.Color = Color3.fromRGB(255, 0, 0)
 	visualizationPart.Parent = workspace
 	visualizationPart.Anchored = true
 	visualizationPart.CanCollide = false
+	visualizationPart.Material = Enum.Material.SmoothPlastic
 
-	if #workspace:GetPartBoundsInBox(target.root.CFrame, action.hitbox, overlapParams) <= 0 then
+	if #workspace:GetPartBoundsInBox(hbStartPosition, action.hitbox, overlapParams) <= 0 then
 		return Logger.notify("Not inside of the hitbox.")
 	end
 
