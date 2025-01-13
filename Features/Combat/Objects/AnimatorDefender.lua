@@ -261,7 +261,7 @@ function AnimatorDefender:process(track)
 	end
 
 	self:mark(
-		Task.new(string.format("RPUE_%s", timing.name), timing:rsd() - self:ping(), self.rpue, self, track, timing)
+		Task.new(string.format("RPUE_%s", timing.name), timing:rsd() - self:ping(), self.rpue, self, track, timing, 0)
 	)
 
 	self:log(
