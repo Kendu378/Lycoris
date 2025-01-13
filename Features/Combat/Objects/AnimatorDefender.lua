@@ -160,8 +160,8 @@ function AnimatorDefender:rpue(track, timing)
 		return
 	end
 
-	self.tasks:mark(
-		Task.new(string.format("RPUE_%s", timing.name), timing:rsd() - self:ping(), self.rpue, self, track, timing)
+	self:mark(
+		Task.new(string.format("RPUE_%s", timing.name), timing:rpd() - self:ping(), self.rpue, self, track, timing)
 	)
 
 	if not self:initial(timing) then
