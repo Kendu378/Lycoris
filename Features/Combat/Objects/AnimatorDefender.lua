@@ -89,7 +89,7 @@ function AnimatorDefender:valid(timing, action)
 	end
 
 	local targetInstance = self.entity:FindFirstChild("Target")
-	if targetInstance and targetInstance.Value ~= self.entity and Configuration.toggleValue("CheckTargetingValue") then
+	if targetInstance and targetInstance.Value ~= character and Configuration.toggleValue("CheckTargetingValue") then
 		return self:notify(timing, "Not being targeted.")
 	end
 
