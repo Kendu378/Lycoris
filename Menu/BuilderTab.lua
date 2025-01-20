@@ -36,18 +36,22 @@ local BuilderTab = {
 ---Refresh builder lists.
 function BuilderTab.refresh()
 	if BuilderTab.abs then
+		BuilderTab.abs:reset()
 		BuilderTab.abs:refresh()
 	end
 
 	if BuilderTab.ebs then
+		BuilderTab.ebs:reset()
 		BuilderTab.ebs:refresh()
 	end
 
 	if BuilderTab.pbs then
+		BuilderTab.pbs:reset()
 		BuilderTab.pbs:refresh()
 	end
 
 	if BuilderTab.sbs then
+		BuilderTab.sbs:reset()
 		BuilderTab.sbs:refresh()
 	end
 end
