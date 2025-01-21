@@ -88,7 +88,6 @@ end
 
 ---Reset action elements.
 function BuilderSection:raction()
-	---@bug: Action names sometimes may affect the actual action and set it's data to ""
 	self.actionName:SetRawValue("")
 	self.actionDelay:SetRawValue(0)
 	self.actionType:SetRawValue("Parry")
@@ -198,27 +197,11 @@ function BuilderSection:baction(base)
 
 			-- Set action elements.
 			self.actionName:SetRawValue(action.name)
-			self.actionDelay:SetRawValue(action._when)
+			self.actionDelay:SetRawValue(action._when or 0)
 			self.actionType:SetRawValue(action._type)
 			self.hitboxWidth:SetRawValue(action.hitbox.X)
 			self.hitboxHeight:SetRawValue(action.hitbox.Y)
 			self.hitboxLength:SetRawValue(action.hitbox.Z)
-		end),
-	})
-
-	self.actionName = base:AddInput(nil, {
-		Text = "Action Name",
-		Finished = true,
-		Callback = self:anc(function(action, value)
-			action.name = value
-		end),
-	})
-
-	self.actionDelay = base:AddInput(nil, {
-		Text = "Action Delay",
-		Numeric = true,
-		Callback = self:anc(function(action, value)
-			action._when = tonumber(value)
 		end),
 	})
 
@@ -228,6 +211,17 @@ function BuilderSection:baction(base)
 		Default = 1,
 		Callback = self:anc(function(action, value)
 			action._type = value
+		end),
+	})
+
+	-- The user can accidently click this input through the dropdown and override the delay.
+	-- It has been moved and set to "Finished" to prevent this.
+	self.actionDelay = base:AddInput(nil, {
+		Text = "Action Delay",
+		Numeric = true,
+		Finished = true,
+		Callback = self:anc(function(action, value)
+			action._when = tonumber(value)
 		end),
 	})
 
@@ -267,15 +261,21 @@ function BuilderSection:baction(base)
 		end),
 	})
 
+	base:AddDivider()
+
+	self.actionName = base:AddInput(nil, {
+		Text = "Action Name",
+	})
+
 	base:AddButton(
-		"Create Empty Action",
+		"Create New Action",
 		self:tnc(function(timing)
 			-- Fetch actions.
 			local actions = timing.actions
 
 			-- Create new action.
 			local action = Action.new()
-			action.name = string.format("Empty Timing %i", #actions._data + 1)
+			action.name = self.actionName.Value
 
 			-- Record ping for telemetry.
 			local network = stats:FindFirstChild("Network")
@@ -381,7 +381,7 @@ function BuilderSection:timing()
 
 	local configDepBox = tab:AddDependencyBox()
 
-	configDepBox:AddButton("Create Empty Timing", function()
+	configDepBox:AddButton("Create New Timing", function()
 		-- Fetch config.
 		local config = self.pair.config
 

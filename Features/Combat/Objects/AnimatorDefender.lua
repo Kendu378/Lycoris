@@ -84,6 +84,7 @@ function AnimatorDefender:valid(timing, action)
 		visualizationPart.Material = Enum.Material.SmoothPlastic
 	end
 
+	---@note: This check can fail when players suddenly look...
 	if #workspace:GetPartBoundsInBox(hbStartPosition, action.hitbox, overlapParams) <= 0 then
 		return self:notify(timing, "Not inside of the hitbox.")
 	end
