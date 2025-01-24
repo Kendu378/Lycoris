@@ -78,21 +78,6 @@ function Defender:handle(timing, action)
 		return
 	end
 
-	local character = players.LocalPlayer.Character
-	if not character then
-		return
-	end
-
-	local root = character:FindFirstChild("HumanoidRootPart")
-	if not root then
-		return
-	end
-
-	local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-	if not humanoid then
-		return
-	end
-
 	self:notify(timing, "Action type '%s' is being executed.", action._type)
 
 	if action._type == "Start Block" then
@@ -104,13 +89,13 @@ function Defender:handle(timing, action)
 	end
 
 	if action._type == "Dodge" then
-		return InputClient.dodge(root, humanoid)
+		return InputClient.dodge()
 	end
 
 	---@note: Okay, we'll assume that we're in the parry state. There's no other type.
 	if effectReplicatorModule:FindEffect("ParryCool") and Configuration.expectToggleValue("RollOnParryCooldown") then
 		self:notify(timing, "Action type 'Parry' overrided to 'Dodge' type.")
-		return InputClient.dodge(root, humanoid)
+		return InputClient.dodge()
 	end
 
 	InputClient.parry()

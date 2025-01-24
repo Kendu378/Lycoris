@@ -272,7 +272,7 @@ function AnimatorDefender:process(track)
 		self:notify(timing, "Automatically feinting attack.")
 
 		-- Feint.
-		InputClient.feint(humanoidRootPart)
+		InputClient.feint()
 	end
 
 	---@note: Clean up previous tasks that are still waiting or suspended because they're in a different track.
