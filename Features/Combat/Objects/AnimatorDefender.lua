@@ -90,7 +90,7 @@ function AnimatorDefender:valid(timing, action)
 	end
 
 	if
-		timing.ha
+		not timing.ha
 		and #self.heffects >= 1
 		and (players:GetPlayerFromCharacter(self.entity) or self.entity:FindFirstChild("HumanController"))
 	then
