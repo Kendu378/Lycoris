@@ -42,7 +42,7 @@ local Library = {
 	RiskColor = Color3.fromRGB(255, 50, 50),
 
 	Black = Color3.new(0, 0, 0),
-	Font = Enum.Font.Code,
+	Font = Font.fromEnum(Enum.Font.RobotoMono),
 
 	OpenedFrames = {},
 	DependencyBoxes = {},
@@ -142,18 +142,21 @@ end
 function Library:ApplyTextStroke(Inst)
 	Inst.TextStrokeTransparency = 1
 
+	--[[
 	Library:Create("UIStroke", {
 		Color = Color3.new(0, 0, 0),
 		Thickness = 1,
 		LineJoinMode = Enum.LineJoinMode.Miter,
 		Parent = Inst,
 	})
+	]]
+	--
 end
 
 function Library:CreateLabel(Properties, IsHud)
 	local _Instance = Library:Create("TextLabel", {
 		BackgroundTransparency = 1,
-		Font = Library.Font,
+		FontFace = Library.Font,
 		TextColor3 = Library.FontColor,
 		TextSize = 16,
 		TextStrokeTransparency = 0,
@@ -164,6 +167,10 @@ function Library:CreateLabel(Properties, IsHud)
 	Library:AddToRegistry(_Instance, {
 		TextColor3 = "FontColor",
 	}, IsHud)
+
+	if Properties.TextSize then
+		Properties.TextSize = Properties.TextSize + 1
+	end
 
 	return Library:Create(_Instance, Properties)
 end
@@ -318,7 +325,7 @@ function Library:MapValue(Value, MinA, MaxA, MinB, MaxB)
 end
 
 function Library:GetTextBounds(Text, Font, Size, Resolution)
-	local Bounds = TextService:GetTextSize(Text, Size, Font, Resolution or Vector2.new(1920, 1080))
+	local Bounds = TextService:GetTextSize(Text, Size, "RobotoMono", Resolution or Vector2.new(1920, 1080))
 	return Bounds.X, Bounds.Y
 end
 
@@ -601,7 +608,7 @@ do
 			BackgroundTransparency = 1,
 			Position = UDim2.new(0, 5, 0, 0),
 			Size = UDim2.new(1, -5, 1, 0),
-			Font = Library.Font,
+			FontFace = Library.Font,
 			PlaceholderColor3 = Color3.fromRGB(190, 190, 190),
 			PlaceholderText = "Hex color",
 			Text = "#FFFFFF",
@@ -1800,7 +1807,7 @@ do
 			Position = UDim2.fromOffset(0, 0),
 			Size = UDim2.fromScale(5, 1),
 
-			Font = Library.Font,
+			FontFace = Library.Font,
 			PlaceholderColor3 = Color3.fromRGB(190, 190, 190),
 			PlaceholderText = Info.Placeholder or "",
 
