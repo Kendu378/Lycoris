@@ -54,7 +54,7 @@ local function onLiveAdded(character)
         return
     end
 
-    OwnershipWatcher.modelsToScan[character] = true
+    OwnershipWatcher.modelsToScan[character] = Maid.new()
 end
 
 ---Remove live characters from ownership watcher.
@@ -64,9 +64,8 @@ local function onLiveRemoved(character)
         return
     end
 
+    OwnershipWatcher.modelsToScan[character]:clean()
     OwnershipWatcher.modelsToScan[character] = nil
-
-    partMaid:clean()
 end
 
 ---Update ownership.
@@ -76,7 +75,7 @@ local function updateOwnership()
         return partMaid:clean()
     end
 
-    for model, _ in next, OwnershipWatcher.modelsToScan do
+    for model, maid in next, OwnershipWatcher.modelsToScan do
         local humanoidRootPart = model:FindFirstChild("HumanoidRootPart")
         if not humanoidRootPart then
             continue
@@ -86,13 +85,13 @@ local function updateOwnership()
         local isNetworkOwner = hasNetworkOwnership(humanoidRootPart)
 
         -- Visualization.
-        local netVisual = InstanceWrapper.create(partMaid, "NetworkVisual", "Part", model)
-        netVisual.Anchored = true
-        netVisual.CanCollide = false
+        local netVisual = InstanceWrapper.create(maid, "NetworkVisual", "Part", model)
         netVisual.Size = Vector3.new(5, 5, 2)
         netVisual.Transparency = Configuration.expectToggleValue("ShowOwnership") and 0.8 or 1.0
         netVisual.Color = isNetworkOwner and  Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
         netVisual.CFrame = humanoidRootPart.CFrame
+        netVisual.Anchored = true
+        netVisual.CanCollide = false
 
         -- Mark part.
         OwnershipWatcher.parts[humanoidRootPart] = { owned = isNetworkOwner, model = model }
@@ -122,8 +121,13 @@ end
 
 ---Detach OwnershipWatcher module.
 function OwnershipWatcher.detach()
+    -- Clean up ownership maids.
     ownershipMaid:clean()
-    partMaid:clean()
+
+    -- Clean up maids. Every model to scan has a maid linked to it.
+    for _, maid in next, OwnershipWatcher.modelsToScan do
+        maid:clean()
+    end
 end
 
 -- Return OwnershipWatcher module.
