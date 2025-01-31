@@ -49,7 +49,7 @@ function Defender:hitbox(cframe, size, filter)
 	if Configuration.expectToggleValue("EnableVisualizations") then
 		local visualizationPart = InstanceWrapper.create(self.maid, "VisualizationPart", "Part")
 		visualizationPart.Size = size
-		visualizationPart.CFrame = cframe
+		visualizationPart.CFrame = (typeof(cframe) == "CFrame" and cframe or CFrame.new(cframe)) --- this is so that incase YOU forgot to use cframe instead of vec3
 		visualizationPart.Transparency = 0.85
 		visualizationPart.Color = Color3.fromRGB(0, 255, 0)
 		visualizationPart.Parent = workspace

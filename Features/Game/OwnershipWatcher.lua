@@ -2,7 +2,6 @@
 local OwnershipWatcher = { modelsToScan = {}, parts = {} }
 
 -- Services
-local playersService = game:GetService("Players")
 local runService = game:GetService("RunService")
 
 ---@module Utility.Maid
@@ -22,10 +21,6 @@ local renderStepped = Signal.new(runService.RenderStepped)
 
 -- Maids.
 local ownershipMaid = Maid.new()
-local voidMaid = Maid.new()
-
--- Void Mobs
-local YForce = workspace.StreamingEnabled and Vector3.new(0, -8000, 0) or Vector3.new(0, -100, 0)
 
 -- Ownership data.
 local clientPart = Instance.new('Part', workspace)
@@ -79,40 +74,33 @@ local function onLiveRemoved(character)
     OwnershipWatcher.modelsToScan[character] = nil
 end
 
+---Update ownership.
 local function updateOwnership()
-    local ShowOwnership = Configuration.expectToggleValue("ShowOwnership")
-    for _,v in next, ownershipHolder do
-        local HumanoidRootPart = v:FindFirstChild("HumanoidRootPart")
-        if not HumanoidRootPart then
+    ---@optimization: Stop updating when we don't need it.
+    if not Configuration.expectToggleValue("ShowOwnership") and not Configuration.expectToggleValue("VoidMobs") then
+        return cleanParts()
+    end
+
+    for model, maid in next, OwnershipWatcher.modelsToScan do
+        local humanoidRootPart = model:FindFirstChild("HumanoidRootPart")
+        if not humanoidRootPart then
             continue
         end
 
-        local NetVisual = HumanoidRootPart:FindFirstChild("NetworkVisual")
-        
-        if not NetVisual and ShowOwnership then
-            NetVisual = NetworkVisual:Clone()
-            NetVisual.Weld.Part0 = HumanoidRootPart
-            NetVisual.Parent = HumanoidRootPart
-        end
+        -- Check if owner.
+        local isNetworkOwner = hasNetworkOwnership(humanoidRootPart)
 
-        if not ShowOwnership and NetVisual then
-            NetVisual:Destroy()
-            continue
-        end
-        
-        local isNetworkOwner = hasNetworkOwnership(HumanoidRootPart)
-        if not isNetworkOwner then
-            if NetVisual then
-                NetVisual.Color = Color3.fromRGB(0, 0, 255)
-            end
-            v:RemoveTag('NetworkOwner')
-            continue
-        end
+        -- Visualization.
+        local netVisual = InstanceWrapper.create(maid, "NetworkVisual", "Part", model)
+        netVisual.Size = Vector3.new(5, 5, 2)
+        netVisual.Transparency = Configuration.expectToggleValue("ShowOwnership") and 0.8 or 1.0
+        netVisual.Color = isNetworkOwner and  Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+        netVisual.CFrame = humanoidRootPart.CFrame
+        netVisual.Anchored = true
+        netVisual.CanCollide = false
 
-        if NetVisual then
-            NetVisual.Color = Color3.fromRGB(0, 255, 0)
-        end
-        v:AddTag('NetworkOwner')
+        -- Mark part.
+        OwnershipWatcher.parts[humanoidRootPart] = { owned = isNetworkOwner, model = model }
     end
 end
 

@@ -794,7 +794,7 @@ function Bestiary.init()
 
 	-- Fetch instances.
 	local live = workspace:WaitForChild("Live")
-	local playerGui = players.LocalPlayer:WaitForChild("PlayerGui")
+	local playerGui = gethui() or game:GetService('CoreGui')
 
 	-- Add a default selected tab.
 	selectedTab = mobScroll
