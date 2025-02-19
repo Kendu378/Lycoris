@@ -4,18 +4,12 @@ local KeyHandling = {}
 -- Services.
 local replicatedStorage = game:GetService("ReplicatedStorage")
 
--- Instances.
-local modules = replicatedStorage:WaitForChild("Modules")
-local clientModuleManager = modules:WaitForChild("ClientManager")
-local persistence = modules:WaitForChild("Persistence")
-
--- Modules.
-local integrity = persistence:WaitForChild("Integrity")
-local keyHandler = clientModuleManager:WaitForChild("KeyHandler")
-
 ---Get the stack of the KeyHandler module.
 ---@return table
 function KeyHandling.getStack()
+	local modules = replicatedStorage:WaitForChild("Modules")
+	local clientModuleManager = modules:WaitForChild("ClientManager")
+	local keyHandler = clientModuleManager:WaitForChild("KeyHandler")
 	local keyHandlerModule = require(keyHandler)
 	return debug.getupvalue(getrawmetatable(debug.getupvalue(keyHandlerModule, 8)).__index, 1)[1][1]
 end
@@ -30,6 +24,9 @@ end
 ---Get the 'khGetRemote' funciton.
 ---@return function
 function KeyHandling.getRemoteRaw()
+	local modules = replicatedStorage:WaitForChild("Modules")
+	local clientModuleManager = modules:WaitForChild("ClientManager")
+	local keyHandler = clientModuleManager:WaitForChild("KeyHandler")
 	local keyHandlerModule = require(keyHandler)
 	if not keyHandlerModule then
 		return
@@ -47,6 +44,9 @@ end
 ---@param remoteName string
 ---@return Instance|nil
 function KeyHandling.getRemote(remoteName)
+	local modules = replicatedStorage:WaitForChild("Modules")
+	local persistence = modules:WaitForChild("Persistence")
+	local integrity = persistence:WaitForChild("Integrity")
 	local integrityModule = require(integrity)
 	if not integrityModule then
 		return

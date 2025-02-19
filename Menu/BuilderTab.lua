@@ -151,7 +151,7 @@ function BuilderTab.initLoggerSection(groupbox)
 	groupbox:AddSlider("MaximumLoggerDistance", {
 		Text = "Maximum Logger Distance",
 		Min = 0,
-		Max = 10000,
+		Max = 1000,
 		Rounding = 0,
 		Suffix = "m",
 		Default = 100,
