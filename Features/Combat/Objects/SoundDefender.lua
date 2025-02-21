@@ -58,7 +58,7 @@ function SoundDefender:process()
 	self:clean()
 
 	-- Add actions.
-	return self:actions(timing)
+	return self:actions(timing, 1.0)
 end
 
 ---Create new SoundDefender object.

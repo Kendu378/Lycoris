@@ -103,7 +103,7 @@ function PartDefender:update()
 	self:clean()
 
 	-- Add actions.
-	return self:actions(self.timing)
+	return self:actions(self.timing, 1.0)
 end
 
 ---Create new PartDefender object.

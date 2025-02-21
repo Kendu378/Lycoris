@@ -4,14 +4,6 @@ local Logger = require("Utility/Logger")
 -- KeyHandler related stuff is handled here.
 local KeyHandling = {}
 
--- Services.
-local replicatedStorage = game:GetService("ReplicatedStorage")
-
--- Instances.
-local modules = replicatedStorage and replicatedStorage:WaitForChild("Modules", 3)
-local clientModuleManager = modules and modules:WaitForChild("ClientManager", 3)
-local keyHandler = clientModuleManager and clientModuleManager:WaitForChild("KeyHandler", 3)
-
 -- Key-handler tables.
 local remoteTable = nil
 local randomTable = nil
@@ -209,28 +201,6 @@ function KeyHandling.init()
 
 		remoteTable = value
 	end
-end
-
----Get the stack of the KeyHandler module.
----@return table?
-function KeyHandling.getStack()
-	if not keyHandler then
-		return
-	end
-
-	local keyHandlerModule = require(keyHandler)
-	return debug.getupvalue(getrawmetatable(debug.getupvalue(keyHandlerModule, 8)).__index, 1)[1][1]
-end
-
----Get the Heaven and Hell remotes.
----@return Instance?, Instance?
-function KeyHandling.getAntiCheatRemotes()
-	local stack = KeyHandling.getStack()
-	if not stack then
-		return
-	end
-
-	return stack[86], stack[85]
 end
 
 ---Get remote from a specific remote name.

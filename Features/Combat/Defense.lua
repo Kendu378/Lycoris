@@ -28,6 +28,9 @@ local Table = require("Utility/Table")
 ---@module Utility.Configuration
 local Configuration = require("Utility/Configuration")
 
+---@module Utility.Logger
+local Logger = require("Utility/Logger")
+
 -- Handle all defense related functions.
 local Defense = {}
 
@@ -44,6 +47,7 @@ local defenseMaid = Maid.new()
 
 -- Defender objects.
 local defenderObjects = {}
+local defenderPartObjects = {}
 
 -- Mob animations.
 local mobAnimations = {}
@@ -116,7 +120,12 @@ local function addPartDefender(part)
 		return
 	end
 
-	defenderObjects[part] = PartDefender.new(part, timing)
+	-- Get part defender.
+	local partDefender = PartDefender.new(part, timing)
+
+	-- Link to list.
+	defenderObjects[part] = partDefender
+	defenderPartObjects[part] = partDefender
 end
 
 ---On game descendant added.
@@ -141,6 +150,10 @@ local function onGameDescendantRemoved(descendant)
 	local object = defenderObjects[descendant]
 	if not object then
 		return
+	end
+
+	if defenderPartObjects[descendant] then
+		defenderPartObjects[descendant] = nil
 	end
 
 	object:detach()
@@ -169,11 +182,7 @@ local function updatePartDefenders()
 		return
 	end
 
-	for idx, object in next, defenderObjects do
-		if object.__type ~= "Part" then
-			continue
-		end
-
+	for idx, object in next, defenderPartObjects do
 		if not object.update then
 			continue
 		end
@@ -185,6 +194,9 @@ local function updatePartDefenders()
 
 			-- Remove from list.
 			defenderObjects[idx] = nil
+
+			-- Log.
+			Logger.warn("Detached part defender '%s' due to timeout.", object.part.Name)
 
 			-- Continue.
 			continue

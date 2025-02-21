@@ -3439,11 +3439,19 @@ function Library:Notify(Text, Time)
 	end
 
 	local Connection = nil
+	local Connection2 = nil
 
 	Connection = InnerFrame.InputBegan:Connect(function(Input)
 		if Input.UserInputType == Enum.UserInputType.MouseButton1 then
 			TweenOut()
 			Connection:Disconnect()
+		end
+	end)
+
+	Connection2 = InnerFrame.MouseEnter:Connect(function()
+		if game:GetService("UserInputService"):IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+			TweenOut()
+			Connection2:Disconnect()
 		end
 	end)
 

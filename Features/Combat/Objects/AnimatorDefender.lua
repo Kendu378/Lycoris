@@ -40,6 +40,19 @@ AnimatorDefender.__type = "Animation"
 local players = game:GetService("Players")
 local replicatedStorage = game:GetService("ReplicatedStorage")
 
+---Find the Heavy Hands Ring instance in a character.
+---@param character Model
+---@return Instance
+local function hasHeavyHandsRing(character)
+	for _, instance in pairs(character:GetChildren()) do
+		if instance:GetAttribute("EquipmentRef") ~= "Heavy Hands Ring" then
+			continue
+		end
+
+		return instance
+	end
+end
+
 ---Check if we're in a valid state to proceed with the action.
 ---@param timing AnimationTiming
 ---@param action Action
@@ -120,14 +133,7 @@ function AnimatorDefender:rpue(track, timing, index)
 		)
 	)
 
-	if
-		not self:initial(
-			self.animator:FindFirstAncestorWhichIsA("Model"),
-			SaveManager.as,
-			self.entity.Name,
-			tostring(track.Animation.AnimationId)
-		)
-	then
+	if not self:initial(self.entity, SaveManager.as, self.entity.Name, tostring(track.Animation.AnimationId)) then
 		return
 	end
 
@@ -172,13 +178,7 @@ function AnimatorDefender:process(track)
 	end
 
 	---@type AnimationTiming?
-	local timing = self:initial(
-		self.animator:FindFirstAncestorWhichIsA("Model"),
-		SaveManager.as,
-		self.entity.Name,
-		tostring(track.Animation.AnimationId)
-	)
-
+	local timing = self:initial(self.entity, SaveManager.as, self.entity.Name, tostring(track.Animation.AnimationId))
 	if not timing then
 		return
 	end
@@ -226,7 +226,7 @@ function AnimatorDefender:process(track)
 
 	---@note: Start processing the timing. Add the actions if we're not RPUE.
 	if not timing.rpue then
-		return self:actions(timing)
+		return self:actions(timing, timing.tag == "M1" and hasHeavyHandsRing(self.entity) and 0.85 or 1)
 	end
 
 	self:mark(
