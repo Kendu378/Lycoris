@@ -8,6 +8,9 @@ local KeyHandling = {}
 local remoteTable = nil
 local randomTable = nil
 
+-- Hash cache.
+local hashCache = {}
+
 ---Number to string.
 ---@param num number
 ---@param iter number
@@ -211,7 +214,13 @@ function KeyHandling.getRemote(remoteName)
 		return Logger.warn("No remote table for '%s' remote.", remoteName)
 	end
 
-	return remoteTable[hash(remoteName)]
+	local hashedRemoteName = hashCache[remoteName] or hash(remoteName)
+
+	if not hashCache[remoteName] then
+		hashCache[remoteName] = hashedRemoteName
+	end
+
+	return remoteTable[hashedRemoteName]
 end
 
 -- Return KeyHandling module.
