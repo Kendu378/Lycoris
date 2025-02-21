@@ -19,6 +19,9 @@ local InputClient = require("Game/InputClient")
 ---@module Features.Combat.Defense
 local Defense = require("Features/Combat/Defense")
 
+-- Is something.
+local isA = game.IsA
+
 -- Services.
 local playersService = game:GetService("Players")
 local replicatedStorage = game:GetService("ReplicatedStorage")
@@ -173,17 +176,15 @@ local function onNameCall(...)
 	local args = { ... }
 	local self = args[1]
 
-	if typeof(self) == "Instance" and self:IsA("BaseRemoteEvent") then
-		local heavenRemote = KeyHandling.getRemote("Heaven")
-		local hellRemote = KeyHandling.getRemote("Hell")
+	local heavenRemote = KeyHandling.getRemote("Heaven")
+	local hellRemote = KeyHandling.getRemote("Hell")
 
-		if heavenRemote and self == heavenRemote then
-			return
-		end
+	if heavenRemote and self == heavenRemote then
+		return
+	end
 
-		if hellRemote and self == hellRemote then
-			return
-		end
+	if hellRemote and self == hellRemote then
+		return
 	end
 
 	if
@@ -231,17 +232,15 @@ local function onUnreliableFireServer(...)
 	local args = { ... }
 	local self = args[1]
 
-	if typeof(self) == "Instance" and self:IsA("BaseRemoteEvent") then
-		local heavenRemote = KeyHandling.getRemote("Heaven")
-		local hellRemote = KeyHandling.getRemote("Hell")
+	local heavenRemote = KeyHandling.getRemote("Heaven")
+	local hellRemote = KeyHandling.getRemote("Hell")
 
-		if heavenRemote and self == heavenRemote then
-			return
-		end
+	if heavenRemote and self == heavenRemote then
+		return
+	end
 
-		if hellRemote and self == hellRemote then
-			return
-		end
+	if hellRemote and self == hellRemote then
+		return
 	end
 
 	local leftClickRemote = KeyHandling.getRemote("LeftClick")
