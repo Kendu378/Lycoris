@@ -392,13 +392,33 @@ end
 function Hooking.detach()
 	local localPlayer = playersService.LocalPlayer
 
-	hookfunction(tick, oldTick)
-	hookfunction(task.spawn, oldTaskSpawn)
-	hookfunction(coroutine.wrap, oldCoroutineWrap)
-	hookfunction(getrawmetatable(game).__namecall, oldNameCall)
-	hookfunction(getrawmetatable(game).__newindex, oldNewIndex)
-	hookfunction(Instance.new("RemoteEvent").FireServer, oldFireServer)
-	hookfunction(Instance.new("UnreliableRemoteEvent").FireServer, oldUnreliableFireServer)
+	if oldTick then
+		hookfunction(tick, oldTick)
+	end
+
+	if oldTaskSpawn then
+		hookfunction(task.spawn, oldTaskSpawn)
+	end
+
+	if oldCoroutineWrap then
+		hookfunction(coroutine.wrap, oldCoroutineWrap)
+	end
+
+	if oldNameCall then
+		hookfunction(getrawmetatable(game).__namecall, oldNameCall)
+	end
+
+	if oldNewIndex then
+		hookfunction(getrawmetatable(game).__newindex, oldNewIndex)
+	end
+
+	if oldFireServer then
+		hookfunction(Instance.new("RemoteEvent").FireServer, oldFireServer)
+	end
+
+	if oldUnreliableFireServer then
+		hookfunction(Instance.new("UnreliableRemoteEvent").FireServer, oldUnreliableFireServer)
+	end
 
 	local playerScripts = localPlayer:FindFirstChild("PlayerScripts")
 	local clientActor = playerScripts and playerScripts:FindFirstChild("ClientActor")

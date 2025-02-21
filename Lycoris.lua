@@ -141,9 +141,11 @@ function Lycoris.init()
 
 	local serverHopSlot = memStorageService:HasItem("ServerHop") and memStorageService:GetItem("ServerHop")
 	local serverHopJobId = memStorageService:HasItem("ServerHopJobId") and memStorageService:GetItem("ServerHopJobId")
+	local inLobbyPlace = game.PlaceId == LOBBY_PLACE_ID
 
-	if game.PlaceId == LOBBY_PLACE_ID and serverHopSlot and serverHopJobId then
-		return handleMainMenuServerHop(serverHopSlot, serverHopJobId)
+	if inLobbyPlace then
+		return (serverHopSlot and serverHopJobId) and handleMainMenuServerHop(serverHopSlot, serverHopJobId)
+			or Logger.warn("Script exit initialization early because we are in the lobby.")
 	end
 
 	KeyHandling.init()

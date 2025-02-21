@@ -16,9 +16,6 @@ local Logger = require("Utility/Logger")
 ---@module Utility.Configuration
 local Configuration = require("Utility/Configuration")
 
----@module Utility.InstanceWrapper
-local InstanceWrapper = require("Utility/InstanceWrapper")
-
 ---@module Game.InputClient
 local InputClient = require("Game/InputClient")
 
