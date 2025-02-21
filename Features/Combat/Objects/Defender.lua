@@ -312,7 +312,8 @@ end
 
 ---Add actions from timing to defender object.
 ---@param timing Timing
-function Defender:actions(timing)
+---@param multiplier number
+function Defender:actions(timing, multiplier)
 	for _, action in next, timing.actions:get() do
 		-- Get ping.
 		local ping = self:ping()
@@ -321,7 +322,7 @@ function Defender:actions(timing)
 		self:mark(
 			Task.new(
 				string.format("Action_%s", action._type),
-				action:when() - ping,
+				(action:when() - ping) * (multiplier or 1),
 				timing.punishable,
 				timing.after,
 				self.handle,
