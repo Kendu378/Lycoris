@@ -173,7 +173,8 @@ local function onNameCall(...)
 	local args = { ... }
 	local self = args[1]
 
-	local heavenRemote, hellRemote = KeyHandling.getAntiCheatRemotes()
+	local heavenRemote = KeyHandling.getRemote("Heaven")
+	local hellRemote = KeyHandling.getRemote("Hell")
 
 	if heavenRemote and self == heavenRemote then
 		return
@@ -265,7 +266,8 @@ local function onFireServer(...)
 	local args = { ... }
 	local self = args[1]
 
-	local heavenRemote, hellRemote = KeyHandling.getAntiCheatRemotes()
+	local heavenRemote = KeyHandling.getRemote("Heaven")
+	local hellRemote = KeyHandling.getRemote("Hell")
 
 	if heavenRemote and self == heavenRemote then
 		return
