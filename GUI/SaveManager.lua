@@ -131,9 +131,9 @@ do
 			keybindFramePosition = uDIm2Export(self.Library.KeybindFrame.Position),
 			watermarkFramePosition = uDIm2Export(self.Library.Watermark.Position),
 			infoLoggerFramePosition = uDIm2Export(self.Library.InfoLoggerFrame.Position),
-			infoLoggerBlacklistHistory = self.Library.KeyBlacklistHistory,
-			infoLoggerBlacklist = self.Library.KeyBlacklistList,
-			infoLoggerCycle = self.Library.InfoLoggerCycle,
+			infoLoggerBlacklistHistory = self.Library.InfoLoggerData.KeyBlacklistHistory,
+			infoLoggerBlacklist = self.Library.InfoLoggerData.KeyBlacklistList,
+			infoLoggerCycle = self.Library.InfoLoggerData.InfoLoggerCycle,
 		}
 
 		for idx, toggle in next, Toggles do
@@ -192,7 +192,7 @@ do
 		end
 
 		if decoded.infoLoggerBlacklistHistory then
-			self.Library.KeyBlacklistHistory = decoded.infoLoggerBlacklistHistory
+			self.Library.InfoLoggerData.KeyBlacklistHistory = decoded.infoLoggerBlacklistHistory
 		end
 
 		for _, option in next, decoded.objects do
@@ -204,12 +204,12 @@ do
 		end
 
 		if decoded.infoLoggerBlacklist then
-			self.Library.KeyBlacklistList = decoded.infoLoggerBlacklist
+			self.Library.InfoLoggerData.KeyBlacklistList = decoded.infoLoggerBlacklist
 			self.Library:RefreshInfoLogger()
 		end
 
 		if decoded.infoLoggerCycle then
-			self.Library.InfoLoggerCycle = decoded.infoLoggerCycle
+			self.Library.InfoLoggerData.InfoLoggerCycle = decoded.infoLoggerCycle
 			self.Library:RefreshInfoLogger()
 		end
 
