@@ -261,17 +261,17 @@ end)
 InputClient.parry = LPH_NO_VIRTUALIZE(function()
 	local effectReplicator = replicatedStorage:FindFirstChild("EffectReplicator")
 	if not effectReplicator then
-		return
+		return Logger.warn("Cannot parry without effect replicator.")
 	end
 
 	local effectReplicatorModule = require(effectReplicator)
 	if not effectReplicatorModule then
-		return
+		return Logger.warn("Cannot parry without effect replicator module.")
 	end
 
 	local blockRemote = KeyHandling.getRemote("Block")
 	if not blockRemote then
-		return
+		return Logger.warn("Cannot parry without block remote.")
 	end
 
 	InputClient.bstart()

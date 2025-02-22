@@ -37,6 +37,11 @@ local function initializeScript()
 		shared.Lycoris.detach()
 	end
 
+	-- Check if it's already queued - we'll share that state.
+	if shared.Lycoris and shared.Lycoris.queued then
+		Lycoris.queued = true
+	end
+
 	-- Re-initialize under the new state.
 	shared.Lycoris = Lycoris
 	shared.Lycoris.init()

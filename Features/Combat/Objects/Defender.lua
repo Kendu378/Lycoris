@@ -294,7 +294,7 @@ end)
 
 ---Check if we have input blocking tasks.
 ---@return boolean
-function Defender:blocking()
+Defender.blocking = LPH_NO_VIRTUALIZE(function(self)
 	for _, task in next, self.tasks do
 		if not task:blocking() then
 			continue
@@ -302,7 +302,7 @@ function Defender:blocking()
 
 		return true
 	end
-end
+end)
 
 ---Mark task.
 ---@param task Task
@@ -311,7 +311,7 @@ function Defender:mark(task)
 end
 
 ---Clean up all tasks.
-function Defender:clean()
+Defender.clean = LPH_NO_VIRTUALIZE(function(self)
 	for idx, task in next, self.tasks do
 		-- Cancel task.
 		task:cancel()
@@ -319,7 +319,7 @@ function Defender:clean()
 		-- Clear in table.
 		self.tasks[idx] = nil
 	end
-end
+end)
 
 ---Add actions from timing to defender object.
 ---@param timing Timing

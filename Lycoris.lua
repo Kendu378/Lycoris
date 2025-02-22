@@ -1,5 +1,5 @@
 -- Detach and initialize a Lycoris instance.
-local Lycoris = {}
+local Lycoris = { queued = false }
 
 ---@module Utility.Logger
 local Logger = require("Utility/Logger")
@@ -129,9 +129,12 @@ function Lycoris.init()
 	local loadStringQueueString =
 		'loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/5ac35cc8c071938af640f639b49c629b.lua"))()'
 
-	if lycoris_init.key ~= "N/A" and queue_on_teleport then
+	if lycoris_init.key ~= "N/A" and queue_on_teleport and not Lycoris.queued then
 		-- Queue.
 		queue_on_teleport(scriptKeyQueueString .. "\n" .. loadStringQueueString)
+
+		-- Mark.
+		Lycoris.queued = true
 
 		-- Warn.
 		Logger.warn("Script has been queued for next teleport.")
@@ -154,8 +157,6 @@ function Lycoris.init()
 	KeyHandling.init()
 
 	Hooking.init()
-
-	setthreadidentity(7)
 
 	InputClient.cache()
 
