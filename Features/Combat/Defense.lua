@@ -222,7 +222,7 @@ end)
 
 ---Check if objects have blocking tasks.
 ---@return boolean
-function Defense.blocking()
+Defense.blocking = LPH_NO_VIRTUALIZE(function()
 	for _, object in next, defenderObjects do
 		if not object:blocking() then
 			continue
@@ -230,7 +230,7 @@ function Defense.blocking()
 
 		return true
 	end
-end
+end)
 
 ---Initialize defense.
 function Defense.init()
