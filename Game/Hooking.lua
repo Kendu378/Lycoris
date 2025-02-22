@@ -37,7 +37,7 @@ local oldCoroutineWrap = nil
 local oldTaskSpawn = nil
 
 ---Find function level of InputClient.
----@return number?, table?
+---@return number?, table?, table?
 local findInputClientLevel = LPH_NO_VIRTUALIZE(function()
 	for level = 1, math.huge do
 		-- Get info.
@@ -51,8 +51,14 @@ local findInputClientLevel = LPH_NO_VIRTUALIZE(function()
 			continue
 		end
 
-		-- Return level & information.
-		return level, info
+		-- Fetch stack.
+		local stack = debug.getstack(level)
+		if not stack then
+			break
+		end
+
+		-- Return level, debug information, and stack.
+		return level, info, stack
 	end
 end)
 
@@ -155,8 +161,8 @@ local onTick = LPH_NO_VIRTUALIZE(function(...)
 		return oldTick(...)
 	end
 
-	local level, info = findInputClientLevel()
-	if not level or not info then
+	local level, info, stack = findInputClientLevel()
+	if not level or not info or not stack then
 		return oldTick(...)
 	end
 
@@ -169,10 +175,8 @@ local onTick = LPH_NO_VIRTUALIZE(function(...)
 		return oldTick(...)
 	end
 
-	local tickStack = debug.getstack(level)
-	local tickStackValue = tickStack[6]
-
 	---@note: Filter for any other spots that might be using tick() through the stack.
+	local tickStackValue = stack[6]
 	if tickStackValue ~= "W" and tickStackValue ~= "A" and tickStackValue ~= "S" and tickStackValue ~= "D" then
 		return oldTick(...)
 	end
@@ -349,8 +353,8 @@ local onCoroutineWrap = LPH_NO_VIRTUALIZE(function(...)
 		return oldCoroutineWrap(...)
 	end
 
-	local level, info = findInputClientLevel()
-	if not level or not info then
+	local level, info, _ = findInputClientLevel()
+	if not level or not info or not _ then
 		return oldCoroutineWrap(...)
 	end
 
@@ -371,8 +375,8 @@ local onTaskSpawn = LPH_NO_VIRTUALIZE(function(...)
 		return oldTaskSpawn(...)
 	end
 
-	local level, info = findInputClientLevel()
-	if not level or not info then
+	local level, info, stack = findInputClientLevel()
+	if not level or not info or not stack then
 		return oldTaskSpawn(...)
 	end
 
@@ -380,9 +384,8 @@ local onTaskSpawn = LPH_NO_VIRTUALIZE(function(...)
 	local args = { ... }
 	local func = args[1]
 
-	-- Data.
+	-- Constants.
 	local consts = debug.getconstants(func)
-	local stack = debug.getstack(level)
 
 	-- Check for anticheat task.
 	local isAnticheatTask = (#consts == 0 or consts[2] == "Parent") and not table.find(consts, "LightAttack")
