@@ -28,6 +28,9 @@ local SoundTiming = require("Game/Timings/SoundTiming")
 ---@module Game.Timings.ModuleManager
 local ModuleManager = require("Game/Timings/ModuleManager")
 
+---@module Features.Game.AnimationVisualizer
+local AnimationVisualizer = require("Features/Game/AnimationVisualizer")
+
 ---@module GUI.Library
 local Library = require("GUI/Library")
 
@@ -158,6 +161,12 @@ end
 ---Initialize logger section.
 ---@param groupbox table
 function BuilderTab.initLoggerSection(groupbox)
+	groupbox:AddToggle("ShowAnimationVisualizer", {
+		Text = "Show Animation Visualizer",
+		Default = false,
+		Callback = AnimationVisualizer.visible,
+	})
+
 	groupbox:AddToggle("ShowLoggerWindow", {
 		Text = "Show Logger Window",
 		Default = false,

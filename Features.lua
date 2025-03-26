@@ -37,6 +37,9 @@ local Logger = require("Utility/Logger")
 ---@module Features.Combat.Defense
 local Defense = require("Features/Combat/Defense")
 
+---@module Features.Game.AnimationVisualizer
+local AnimationVisualizer = require("Features/Game/AnimationVisualizer")
+
 ---Initialize features.
 ---@note: Careful with features that have entire return LPH_NO_VIRTUALIZE(function() blocks. We assume that we don't care about what's placed in there.
 function Features.init()
@@ -51,6 +54,7 @@ function Features.init()
 	OwnershipWatcher.init()
 	CharismaFarm.init()
 	IntelligenceFarm.init()
+	AnimationVisualizer.init()
 	Logger.warn("Features initialized.")
 end
 
@@ -65,6 +69,7 @@ function Features.detach()
 	Movement.detach()
 	Removal.detach()
 	Monitoring.detach()
+	AnimationVisualizer.detach()
 	Exploits.detach()
 	Visuals.detach()
 	Logger.warn("Features detached.")

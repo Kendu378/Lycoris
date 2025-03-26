@@ -23,6 +23,9 @@ return LPH_NO_VIRTUALIZE(function()
 	---@module Utility.Entitites
 	local Entitites = require("Utility/Entitites")
 
+	---@module Game.LeaderboardClient
+	local LeaderboardClient = require("Game/LeaderboardClient")
+
 	-- Monitoring module.
 	local Monitoring = { subject = nil, seen = {} }
 
@@ -37,54 +40,14 @@ return LPH_NO_VIRTUALIZE(function()
 	local monitoringMaid = Maid.new()
 	local spectateMaid = Maid.new()
 
+	-- Update limiting.
+	local lastUpdateTime = os.clock()
+
 	-- Original stores.
 	local cameraSubject = spectateMaid:mark(OriginalStore.new())
 
 	-- Original store managers.
 	local showHiddenMap = spectateMaid:mark(OriginalStoreManager.new())
-
-	-- Caching.
-	local cachedUpvaluesTable = nil
-	local cachedUpvaluesFunction = nil
-	local lastCacheTime = os.clock()
-	local lastUpdateTime = os.clock()
-
-	---Get leaderboard data.
-	---@return table?, function?
-	local function getLeaderboardData()
-		if cachedUpvaluesFunction and cachedUpvaluesTable and os.clock() - lastCacheTime <= 2.0 then
-			return cachedUpvaluesTable, cachedUpvaluesFunction
-		end
-
-		for _, con in next, getconnections(players.PlayerRemoving) do
-			local func = con.Function
-			if not func or not islclosure(func) then
-				continue
-			end
-
-			local info = debug.getinfo(func)
-			if info.name ~= nil and info.name ~= "" then
-				continue
-			end
-
-			local constants = debug.getconstants(func)
-			if #constants ~= 1 or constants[1] ~= "Destroy" then
-				continue
-			end
-
-			local upvalues = debug.getupvalues(func)
-			if not upvalues then
-				continue
-			end
-
-			cachedUpvaluesFunction = upvalues[2]
-			cachedUpvaluesTable = upvalues[1]
-
-			return upvalues[1], upvalues[2]
-		end
-
-		return nil
-	end
 
 	---On spectate input began.
 	---@param player Player
@@ -139,9 +102,8 @@ return LPH_NO_VIRTUALIZE(function()
 	end
 
 	---Update spectating.
-	---@todo: Start streaming around the player when spectating.
 	local function updateSpectating()
-		local leaderboardMap, refreshLeaderboard = getLeaderboardData()
+		local leaderboardMap, refreshLeaderboard = LeaderboardClient.gld(), LeaderboardClient.glrf()
 		if not leaderboardMap or not refreshLeaderboard then
 			return cameraSubject:restore()
 		end
@@ -279,7 +241,7 @@ return LPH_NO_VIRTUALIZE(function()
 		showHiddenMap:restore()
 
 		-- Get leaderboard data.
-		local _, refreshLeaderboard = getLeaderboardData()
+		local refreshLeaderboard = LeaderboardClient.glrf()
 
 		-- Refresh leaderboard.
 		if refreshLeaderboard then

@@ -240,7 +240,7 @@ InputClient.left = LPH_NO_VIRTUALIZE(function()
 
 	local inputData = InputClient.getInputData()
 	if not inputData then
-		return
+		return Logger.warn("Cannot left click without input data.")
 	end
 
 	local leftClickRemote = KeyHandling.getRemote("LeftClick")

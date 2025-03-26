@@ -39,6 +39,7 @@ local PlaybackData = require("Game/Timings/PlaybackData")
 ---@field pbdata table<string, PlaybackData>
 ---@field manimations table<number, Animation>
 ---@field track AnimationTrack? Don't be confused. This is the **valid && last** animation track played.
+---@field utrack AnimationTrack? This is the **last** animation track played.
 ---@field maid Maid This maid is cleaned up after every new animation track. Safe to use for on-animation-track setup.
 local AnimatorDefender = setmetatable({}, { __index = Defender })
 AnimatorDefender.__index = AnimatorDefender
@@ -204,27 +205,50 @@ function AnimatorDefender:tp()
 	return self.track.TimePosition + self.offset
 end
 
----Update the defender.
+---Update playback data tracking.
 ---@param self AnimatorDefender
-AnimatorDefender.update = LPH_NO_VIRTUALIZE(function(self)
-	if not self.track or not self.timing then
+AnimatorDefender.updt = LPH_NO_VIRTUALIZE(function(self)
+	-- Check if unvalidated track exists.
+	local utrack = self.utrack
+	if not utrack then
 		return
 	end
 
 	---@note: We should never encounter this scenario? We expect all data to be there, so it's safe to return...
-	local pbdata = self.pbdata[tostring(self.track.Animation.AnimationId)]
+	local pbdata = self.pbdata[tostring(utrack.Animation.AnimationId)]
 	if not pbdata then
 		return
 	end
 
+	-- Why update if we're done recording?
+	if pbdata.recorded then
+		return
+	end
+
 	-- Check if track is playing. Why update if it's not?
-	if not self.track.IsPlaying then
+	if not utrack.IsPlaying then
 		return pbdata:astop()
 	end
 
 	-- Start tracking the animation's speed.
 	-- Use the raw time position because we don't have to shift our position up any.
-	pbdata:astrack(self.track.TimePosition, self.track.Speed)
+	pbdata:astrack(utrack.TimePosition, utrack.Speed)
+end)
+
+---Update the defender.
+---@param self AnimatorDefender
+AnimatorDefender.update = LPH_NO_VIRTUALIZE(function(self)
+	-- Update playback data tracking.
+	self:updt()
+
+	-- Run on validated track & timing.
+	if not self.track or not self.timing then
+		return
+	end
+
+	if not self.track.IsPlaying then
+		return
+	end
 
 	-- Find the latest keyframe that we have exceeded.
 	local latest = self:latest()
@@ -263,6 +287,7 @@ AnimatorDefender.aeactions = LPH_NO_VIRTUALIZE(function(self, timing)
 end)
 
 ---Unisync animation track.
+---@note: This doesn't work as I intended it to when I wrote it. But, it works and if I try to change it - it breaks. Fix me later.
 ---@param track AnimationTrack
 function AnimatorDefender:unisync(track)
 	if track.TimePosition == self.lunisynctp then
@@ -383,6 +408,10 @@ AnimatorDefender.process = LPH_NO_VIRTUALIZE(function(self, track)
 	-- Animation ID.
 	local aid = tostring(track.Animation.AnimationId)
 
+	-- Track latest unvalidated track.
+	self.utrack = track
+	self.pbdata[aid] = PlaybackData.new(self.entity)
+
 	---@type AnimationTiming?
 	local timing = self:initial(self.entity, SaveManager.as, self.entity.Name, aid)
 	if not timing then
@@ -432,7 +461,6 @@ AnimatorDefender.process = LPH_NO_VIRTUALIZE(function(self, track)
 	self:clean()
 
 	-- Set current data.
-	self.pbdata[aid] = PlaybackData.new(self.entity)
 	self.timing = timing
 	self.offset = self:ping()
 	self.track = track
@@ -500,6 +528,7 @@ function AnimatorDefender.new(animator, manimations)
 
 	self.offset = nil
 	self.track = nil
+	self.utrack = nil
 	self.timing = nil
 	self.lunisynctp = nil
 

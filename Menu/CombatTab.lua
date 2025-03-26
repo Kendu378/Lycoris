@@ -307,7 +307,7 @@ function CombatTab.initCombatAssistance(groupbox)
 	unisyncDepBox:AddSlider("AnimationUnisyncFrequency", {
 		Text = "Animation Unisync Frequency",
 		Tooltip = "How frequently should we unisync your character's animations?",
-		Min = 0,
+		Min = 75,
 		Max = 1000,
 		Default = 50,
 		Rounding = 1,

@@ -39,17 +39,21 @@ function GameTab.initLocalCharacterSection(groupbox)
 
 	local flyDepBox = groupbox:AddDependencyBox()
 
+	---@see updateAAGunBypass function in Movement.lua
+	--[[
 	flyDepBox:AddToggle("AAGunBypass", {
 		Text = "Anti Air Gun Bypass",
 		Tooltip = "This feature does not work with the 'Brick Wall' talent. It abuses the fact that being knocked disables AA-Gun.",
 		Default = false,
 	})
+	]]
+	--
 
 	flyDepBox:AddSlider("FlySpeed", {
 		Text = "Fly Speed",
 		Default = 200,
 		Min = 0,
-		Max = 450, -- 450 for aa gun bypass
+		Max = 450,
 		Suffix = "/s",
 		Rounding = 0,
 	})
@@ -177,7 +181,9 @@ function GameTab.initLocalCharacterSection(groupbox)
 		Default = false,
 	})
 
-	asDepBox:AddSlider("AutoSprintDelayTime", {
+	local asdDepBox = asDepBox:AddDependencyBox()
+
+	asdDepBox:AddSlider("AutoSprintDelayTime", {
 		Text = "Auto Sprint Delay Time",
 		Default = 0.2,
 		Min = 0,
@@ -224,6 +230,10 @@ function GameTab.initLocalCharacterSection(groupbox)
 
 	agilitySpoofDepBox:SetupDependencies({
 		{ Toggles.AgilitySpoof, true },
+	})
+
+	asdDepBox:SetupDependencies({
+		{ Toggles.AutoSprintDelay, true },
 	})
 
 	asDepBox:SetupDependencies({

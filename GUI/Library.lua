@@ -3199,7 +3199,6 @@ return LPH_NO_VIRTUALIZE(function()
 		Library:MakeDraggable(Library.Watermark)
 
 		local InfoLoggerOuter = Library:Create("Frame", {
-			AnchorPoint = Vector2.new(0, 0.5),
 			BorderColor3 = Color3.new(0, 0, 0),
 			Position = UDim2.new(0, 15, 0.5, 0),
 			Size = UDim2.new(0, 210, 0, 20),
@@ -3323,7 +3322,6 @@ return LPH_NO_VIRTUALIZE(function()
 			"Part",
 			"Sound",
 			"Effect",
-			"Visualizer",
 		}
 		Library.InfoLoggerData = {
 			MissingDataEntries = {},

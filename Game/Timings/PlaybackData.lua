@@ -28,7 +28,7 @@ function PlaybackData.new(entity)
 	local self = setmetatable({}, PlaybackData)
 	self.asdh = {}
 	self.recorded = false
-	self.entity = entity:Clone()
+	self.entity = entity
 	return self
 end
 

@@ -46,15 +46,6 @@ end
 ---Action delay. Override me.
 ---@param base table
 function AnimationBuilderSection:daction(base)
-	self.useTimePosition = base:AddToggle(nil, {
-		Text = "Use Time Position",
-		Tooltip = "Should the action use time position instead of delay?",
-		Default = false,
-		Callback = self:anc(function(action, value)
-			action.utp = value
-		end),
-	})
-
 	local depBoxOn = base:AddDependencyBox()
 	local depBoxOff = base:AddDependencyBox()
 
@@ -166,6 +157,15 @@ end
 ---Initialize action tab.
 function AnimationBuilderSection:action()
 	local tab = self.tabbox:AddTab("Action")
+
+	self.useTimePosition = tab:AddToggle(nil, {
+		Text = "Use Time Position",
+		Tooltip = "Should the action use time position instead of delay?",
+		Default = false,
+		Callback = self:tnc(function(action, value)
+			action.utp = value
+		end),
+	})
 
 	self.repeatUntilParryEnd = tab:AddToggle(nil, {
 		Text = "Repeat Parry Until End",

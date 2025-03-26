@@ -135,6 +135,7 @@ return LPH_NO_VIRTUALIZE(function()
 				infoLoggerBlacklistHistory = self.Library.InfoLoggerData.KeyBlacklistHistory,
 				infoLoggerBlacklist = self.Library.InfoLoggerData.KeyBlacklistList,
 				infoLoggerCycle = self.Library.InfoLoggerData.InfoLoggerCycle,
+				animationVisualizerFramePosition = uDIm2Export(self.Library.AnimationVisualizerFrame.Position),
 			}
 
 			for idx, toggle in next, Toggles do
@@ -194,6 +195,10 @@ return LPH_NO_VIRTUALIZE(function()
 
 			if decoded.infoLoggerBlacklistHistory then
 				self.Library.InfoLoggerData.KeyBlacklistHistory = decoded.infoLoggerBlacklistHistory
+			end
+
+			if decoded.animationVisualizerFramePosition then
+				self.Library.AnimationVisualizerFrame.Position = uDim2Import(decoded.animationVisualizerFramePosition)
 			end
 
 			for _, option in next, decoded.objects do

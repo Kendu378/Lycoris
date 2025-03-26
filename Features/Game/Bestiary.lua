@@ -1,5 +1,6 @@
 return LPH_NO_VIRTUALIZE(function()
 	-- Bestiary module.
+	---@todo: In the future, rewrite me.
 	local Bestiary = {}
 
 	-- Services.

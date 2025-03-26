@@ -23,10 +23,8 @@ local aaGunMap = OriginalStoreManager.new()
 ---Update anti air bypass.
 ---@param rootPart BasePart
 local function updateAABypass(rootPart)
-	if not Configuration.expectToggleValue("Fly") then
-		return
-	end
-
+	---@note: This method was patched on 3/25/2025.
+	--[[
 	local modOffice = workspace:FindFirstChild("ModOffice")
 	if not modOffice then
 		return
@@ -52,32 +50,13 @@ local function updateAABypass(rootPart)
 		return
 	end
 
-	---@note: Main issue I see is that obviously, when you're knocked, you can't do anything.
-	-- It's also extremely obvious when you unragdoll yourself. We need to add handling for it and automatically unragdoll.
-
-	--[[
-	local effectReplicatorModule = require(effectReplicator)
-	local knockedEffect = effectReplicatorModule:FindEffect("Knocked", true)
-
-	if knockedEffect then
-		aaGunMap:add(knockedEffect, "Disabled", true)
-	end
-
-	for _, child in next, rootPart.Parent.Torso:GetChildren() do
-		if not child:IsA("Motor6D") then
-			continue
-		end
-
-		aaGunMap:add(child, "Enabled", true)
-	end
-	]]
-	--
-
 	officeCreature.CollisionGroup = "Default"
 	officeCreature.CanCollide = true
 
 	firetouchinterest(officeCreature, rootPart, 0)
 	firetouchinterest(officeCreature, rootPart, 1)
+	]]
+	--
 end
 
 return LPH_NO_VIRTUALIZE(function()
