@@ -39,6 +39,14 @@ function AnimationTiming:load(values)
 		self._id = values._id
 	end
 
+	if typeof(values.rsd) == "string" then
+		self._rsd = tonumber(values.rsd) or 0.0
+	end
+
+	if typeof(values.rpd) == "string" then
+		self._rpd = tonumber(values.rpd) or 0.0
+	end
+
 	if typeof(values.rsd) == "number" then
 		self._rsd = values.rsd
 	end
