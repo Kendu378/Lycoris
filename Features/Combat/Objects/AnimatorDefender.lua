@@ -70,6 +70,7 @@ AnimatorDefender.valid = LPH_NO_VIRTUALIZE(function(self, timing, action)
 
 	while
 		timing.duih
+		and self.track.IsPlaying
 		and not self:hitbox(
 			target.root.CFrame,
 			timing.fhb and action.hitbox.Z / 2 or 0,
