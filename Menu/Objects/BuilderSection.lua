@@ -76,9 +76,9 @@ function BuilderSection:reset()
 	self.afterWindow:SetRawValue(0)
 	self.initialMinimumDistance:SetRawValue(0)
 	self.delayUntilInHitbox:SetRawValue(false)
-	self.hitboxHeight:SetRawValue(0)
-	self.hitboxLength:SetRawValue(0)
-	self.hitboxWidth:SetRawValue(0)
+	self.timingHitboxHeight:SetRawValue(0)
+	self.timingHitboxLength:SetRawValue(0)
+	self.timingHitboxWidth:SetRawValue(0)
 	self.useModuleOverActions:SetRawValue(false)
 	self.selectedModule:SetRawValue("")
 
@@ -310,7 +310,7 @@ function BuilderSection:baction(base)
 
 	self:daction(base)
 
-	self.hitboxLength = base:AddSlider(nil, {
+	self.timingHitboxLength = base:AddSlider(nil, {
 		Text = "Hitbox Length",
 		Min = 0,
 		Max = 300,
@@ -322,7 +322,7 @@ function BuilderSection:baction(base)
 		end),
 	})
 
-	self.hitboxWidth = base:AddSlider(nil, {
+	self.timingHitboxWidth = base:AddSlider(nil, {
 		Text = "Hitbox Width",
 		Min = 0,
 		Max = 300,
@@ -334,7 +334,7 @@ function BuilderSection:baction(base)
 		end),
 	})
 
-	self.hitboxHeight = base:AddSlider(nil, {
+	self.timingHitboxHeight = base:AddSlider(nil, {
 		Text = "Hitbox Height",
 		Min = 0,
 		Max = 300,
@@ -494,9 +494,9 @@ function BuilderSection:timing()
 			self.initialMaximumDistance:SetRawValue(found.imxd)
 			self.initialMinimumDistance:SetRawValue(found.imdd)
 			self.delayUntilInHitbox:SetRawValue(found.duih)
-			self.hitboxHeight:SetRawValue(found.hitbox.Z)
-			self.hitboxWidth:SetRawValue(found.hitbox.X)
-			self.hitboxLength:SetRawValue(found.hitbox.Y)
+			self.timingHitboxLength:SetRawValue(found.hitbox.Z)
+			self.timingHitboxWidth:SetRawValue(found.hitbox.X)
+			self.timingHitboxLength:SetRawValue(found.hitbox.Y)
 			self.punishableWindow:SetRawValue(found.punishable)
 			self.afterWindow:SetRawValue(found.after)
 			self.useModuleOverActions:SetRawValue(found.umoa)
