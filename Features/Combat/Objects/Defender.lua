@@ -157,6 +157,10 @@ Defender.valid = LPH_NO_VIRTUALIZE(function(self, timing, action)
 		return self:notify(timing, "User is in a state where they are attacking.")
 	end
 
+	if effectReplicatorModule:FindEffect("Knocked") then
+		return self:notify(timing, "User is knocked.")
+	end
+
 	return true
 end)
 
