@@ -28,6 +28,7 @@ return LPH_NO_VIRTUALIZE(function()
 	local players = game:GetService("Players")
 	local replicatedStorage = game:GetService("ReplicatedStorage")
 	local lighting = game:GetService("Lighting")
+	local debris = game:GetService("Debris")
 
 	-- Maids.
 	local removalMaid = Maid.new()
@@ -52,6 +53,7 @@ return LPH_NO_VIRTUALIZE(function()
 
 	-- Last update.
 	local lastUpdate = os.clock()
+	local lastWindEffectTimestamp = os.clock()
 
 	---Update no echo modifiers.
 	---@param localPlayer Player
@@ -271,7 +273,20 @@ return LPH_NO_VIRTUALIZE(function()
 			(effect.Class == "BeingWinded" or effect.Class == "StrongWind")
 			and Configuration.expectToggleValue("NoWind")
 		then
+			lastWindEffectTimestamp = os.clock()
 			return hideEffect(effect)
+		end
+
+		if Configuration.expectToggleValue("NoWind") and os.clock() - lastWindEffectTimestamp <= 30.0 then
+			if
+				effect.Class == "Speed"
+				or effect.Class == "NoJump"
+				or effect.Class == "NoStun"
+				or effect.Class == "NoSprint"
+				or effect.Class == "NoRoll"
+			then
+				return hideEffect(effect)
+			end
 		end
 
 		if
@@ -312,6 +327,10 @@ return LPH_NO_VIRTUALIZE(function()
 	local function onWorkspaceDescendantAdded(descendant)
 		if descendant:IsA("Model") and descendant.Name == "ResonanceDoor" then
 			yunShulResonanceDoorMap:mark(descendant, "Parent")
+		end
+
+		if descendant.Name == "WindPusher" and Configuration.expectToggleValue("NoWind") then
+			debris:AddItem(descendant, 0.01)
 		end
 
 		if not descendant:IsA("BasePart") then
