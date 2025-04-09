@@ -376,6 +376,20 @@ Defender.dahandle = LPH_NO_VIRTUALIZE(function(self, timing, action)
 		return InputClient.dodge(true)
 	end
 
+	if action._type == "Jump" then
+		local character = players.LocalPlayer.Character
+		if not character then
+			return
+		end
+
+		local humanoid = character:FindFirstChild("Humanoid")
+		if not humanoid then
+			return
+		end
+
+		return humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+	end
+
 	---@note: Okay, we'll assume that we're in the parry state. There's no other type.
 	if
 		(not effectReplicatorModule:FindEffect("Equipped") or effectReplicatorModule:FindEffect("ParryCool"))
