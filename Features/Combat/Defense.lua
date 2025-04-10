@@ -48,9 +48,10 @@ local deletedPlaybackData = {}
 -- Mob animations.
 local mobAnimations = {}
 
--- Current wisp string & position.
+-- Current wisp string & position & timestamp.
 local cws = nil
 local cwp = nil
+local cwt = nil
 
 -- Update.
 local lastVisualizationUpdate = os.clock()
@@ -265,12 +266,12 @@ end)
 ---@param str string
 local hssp = LPH_NO_VIRTUALIZE(function(position, str)
 	if position <= 0 or position > #str then
-		return
+		return Logger.warn("Invalid position (%i vs. %i) for Auto Wisp.", position, #str)
 	end
 
 	local character = str:sub(position, position)
 	if character ~= "Z" and character ~= "X" and character ~= "C" and character ~= "V" then
-		return
+		return Logger.warn("Invalid character (%s) for Auto Wisp.", tostring(character))
 	end
 
 	local localPlayer = players.LocalPlayer
@@ -278,12 +279,31 @@ local hssp = LPH_NO_VIRTUALIZE(function(position, str)
 
 	local requests = replicatedStorage:FindFirstChild("Requests")
 	if not requests then
-		return
+		return Logger.warn("No requests found for Auto Wisp.")
 	end
 
 	local spellCheck = requests:FindFirstChild("SpellCheck")
 	if not spellCheck then
-		return
+		return Logger.warn("No spell check found for Auto Wisp.")
+	end
+
+	local effectReplicator = replicatedStorage:FindFirstChild("EffectReplicator")
+	if not effectReplicator then
+		return Logger.warn("No effect replicator found for Auto Wisp.")
+	end
+
+	local effectReplicatorModule = require(effectReplicator)
+	if not effectReplicatorModule then
+		return Logger.warn("No effect replicator module found for Auto Wisp.")
+	end
+
+	---@note: Allow some buffer at the start for the effect to process.
+	if os.clock() - cwt >= 0.25 and not effectReplicatorModule:HasEffect("RitualCastingSpell") then
+		return Logger.warn("No ritual casting spell found for Auto Wisp.")
+	end
+
+	if effectReplicatorModule:HasEffect("Knocked") then
+		return Logger.warn("Knocked state found for Auto Wisp.")
 	end
 
 	spellCheck:FireServer(character, mouse.Hit)
@@ -297,34 +317,11 @@ local onSpellEvent = LPH_NO_VIRTUALIZE(function(name, data)
 		return
 	end
 
-	local effectReplicator = replicatedStorage:FindFirstChild("EffectReplicator")
-	if not effectReplicator then
-		return
-	end
-
-	local effectReplicatorModule = require(effectReplicator)
-	if not effectReplicatorModule then
-		return
-	end
-
-	if not effectReplicatorModule:HasEffect("RitualCastingSpell") then
-		return
-	end
-
-	if effectReplicatorModule:HasEffect("Knocked") then
-		return
-	end
-
-	local requests = replicatedStorage:FindFirstChild("Requests")
-	local spellCheck = requests and requests:FindFirstChild("SpellCheck")
-	if not spellCheck then
-		return
-	end
-
 	-- Close.
 	if name == "close" then
 		cws = nil
 		cwp = nil
+		cwt = nil
 	end
 
 	---@note: We don't want to handle the current position if it isn't set or shift.
@@ -336,10 +333,11 @@ local onSpellEvent = LPH_NO_VIRTUALIZE(function(name, data)
 	if name == "set" then
 		cws = data
 		cwp = 0
+		cwt = os.clock()
 	end
 
-	-- If there's no 'cws' and no 'cwp', don't continue.
-	if not cws or not cwp then
+	-- If there's no 'cws' and no 'cwp' and no 'cwt', don't continue.
+	if not cws or not cwp or not cwt then
 		return
 	end
 
