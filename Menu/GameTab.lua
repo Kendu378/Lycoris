@@ -516,6 +516,11 @@ function GameTab.initInfoSpoofingSection(groupbox)
 		Default = false,
 	})
 
+	isDepBox:AddToggle("HideGameYear", {
+		Text = "Hide Game Year",
+		Default = false,
+	})
+
 	isDepBox:AddToggle("HideDeathInformation", {
 		Text = "Hide Death Information",
 		Default = false,
@@ -529,6 +534,13 @@ function GameTab.initInfoSpoofingSection(groupbox)
 	isDepBox:AddInput("SpoofedCharacterName", {
 		Text = "Spoofed Character Name",
 		Default = "Linoria V2 On Top",
+		Finished = true,
+		Callback = Spoofing.rics,
+	})
+
+	isDepBox:AddInput("SpoofedGuildName", {
+		Text = "Spoofed Guild Name",
+		Default = "discord.gg/lyc",
 		Finished = true,
 		Callback = Spoofing.rics,
 	})
