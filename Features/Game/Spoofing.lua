@@ -196,8 +196,14 @@ return LPH_NO_VIRTUALIZE(function()
 				continue
 			end
 
-			Spoofing.facs(character, "CharacterName")
 			Spoofing.facs(character, "GuildRich")
+
+			local humanoid = character:FindFirstChild("Humanoid")
+			if not humanoid then
+				continue
+			end
+
+			Spoofing.facs(humanoid, "CharacterName")
 		end
 
 		local serverRegion = replicatedStorage:FindFirstChild("SERVER_REGION")
