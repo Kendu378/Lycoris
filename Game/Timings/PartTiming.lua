@@ -4,6 +4,7 @@ local Timing = require("Game/Timings/Timing")
 ---@class PartTiming: Timing
 ---@field pname string Part name.
 ---@field linked string[] Linked animation IDs to filter with.
+---@field uhc boolean Use hitbox CFrame.
 local PartTiming = setmetatable({}, { __index = Timing })
 PartTiming.__index = PartTiming
 
@@ -25,6 +26,10 @@ function PartTiming:load(values)
 	if typeof(values.linked) == "table" then
 		self.linked = values.linked
 	end
+
+	if typeof(values.uhc) == "boolean" then
+		self.uhc = values.uhc
+	end
 end
 
 ---Clone timing.
@@ -34,6 +39,7 @@ function PartTiming:clone()
 
 	clone.pname = self.pname
 	clone.linked = self.linked
+	clone.uhc = self.uhc
 
 	return clone
 end
@@ -45,6 +51,7 @@ function PartTiming:serialize()
 
 	serializable.pname = self.pname
 	serializable.linked = self.linked
+	serializable.uhc = self.uhc
 
 	return serializable
 end
@@ -57,6 +64,7 @@ function PartTiming.new(values)
 
 	self.pname = ""
 	self.linked = {}
+	self.uhc = false
 
 	if values then
 		self:load(values)

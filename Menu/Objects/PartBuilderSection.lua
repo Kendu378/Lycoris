@@ -39,6 +39,7 @@ end
 ---Load the extra elements. Override me.
 ---@param timing Timing
 function PartBuilderSection:exload(timing)
+	self.useHitboxCFrame:SetRawValue(timing.uhc)
 	self.partName:SetRawValue(timing.pname)
 	self.linkedAnimationIds:SetRawValue({})
 	self.linkedAnimationIds:SetValues(timing.linked)
@@ -74,6 +75,19 @@ end
 function PartBuilderSection:tide(tab)
 	self.partName = tab:AddInput(nil, {
 		Text = "Part Name",
+	})
+end
+
+---Initialize extra tab.
+---@param tab table
+function PartBuilderSection:extra(tab)
+	self.useHitboxCFrame = tab:AddToggle(nil, {
+		Text = "Use Hitbox CFrame",
+		Tooltip = "Should the hitbox face where it was originally supposed to?",
+		Default = true,
+		Callback = self:tnc(function(timing, value)
+			timing.uhc = value
+		end),
 	})
 end
 
