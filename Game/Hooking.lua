@@ -304,14 +304,26 @@ local onNameCall = LPH_NO_VIRTUALIZE(function(...)
 	then
 		local character = playersService.LocalPlayer.Character
 		local humanoid = character:FindFirstChild("Humanoid")
-		local other = false
+		local other = Configuration.expectToggleValue("SpoofOtherPlayers")
 
-		if character and humanoid and (self.Parent ~= character and self.Parent ~= humanoid) then
-			other = Configuration.expectToggleValue("SpoofOtherPlayers")
+		if character and humanoid and (self.Parent == character and self.Parent == humanoid) then
+			other = false
+		end
+
+		if args[2] == "FirstName" then
+			return other and "Linoria V2 On Top" or Configuration.expectOptionValue("SpoofedFirstName")
+		end
+
+		if args[2] == "LastName" then
+			return other and "On Top" or Configuration.expectOptionValue("SpoofedLastName")
 		end
 
 		if args[2] == "CharacterName" then
-			return other and "Linoria V2 On Top" or Configuration.expectOptionValue("SpoofedCharacterName")
+			local characterName = Configuration.expectOptionValue("SpoofedFirstName")
+				.. " "
+				.. Configuration.expectOptionValue("SpoofedLastName")
+
+			return other and "Linoria V2 On Top" or characterName
 		end
 
 		if args[2] == "Guild" then

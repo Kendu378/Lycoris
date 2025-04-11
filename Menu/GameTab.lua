@@ -531,9 +531,16 @@ function GameTab.initInfoSpoofingSection(groupbox)
 		Default = false,
 	})
 
-	isDepBox:AddInput("SpoofedCharacterName", {
-		Text = "Spoofed Character Name",
-		Default = "Linoria V2 On Top",
+	isDepBox:AddInput("SpoofedFirstName", {
+		Text = "Spoofed First Name",
+		Default = "Linoria V2",
+		Finished = true,
+		Callback = Spoofing.rics,
+	})
+
+	isDepBox:AddInput("SpoofedLastName", {
+		Text = "Spoofed Last Name",
+		Default = "On Top",
 		Finished = true,
 		Callback = Spoofing.rics,
 	})
