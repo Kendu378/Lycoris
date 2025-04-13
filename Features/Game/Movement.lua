@@ -373,7 +373,7 @@ return LPH_NO_VIRTUALIZE(function()
 			agilitySpoofer:restore()
 		end
 
-		if Configuration.expectToggleValue("TweenToObjective") then
+		if Configuration.expectToggleValue("TweenToObjectives") then
 			updateTweenToObjectives(rootPart)
 		else
 			movementMaid["altarTween"] = nil
