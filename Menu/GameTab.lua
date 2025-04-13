@@ -7,6 +7,9 @@ local Bestiary = require("Features/Game/Bestiary")
 ---@module Features.Game.Spoofing
 local Spoofing = require("Features/Game/Spoofing")
 
+---@module Features.Game.Configuration
+local Configuration = require("Features/Game/Configuration")
+
 -- Services.
 local players = game:GetService("Players")
 
@@ -507,9 +510,9 @@ function GameTab.initInfoSpoofingSection(groupbox)
 		Default = false,
 		Callback = function()
 			Spoofing.rics()
-			Spoofing.sss()
-			Spoofing.sds()
-			Spoofing.sgv()
+			Spoofing.sss(Configuration.expectOptionValue("SpoofedSlotString"))
+			Spoofing.sds(Configuration.expectOptionValue("SpoofedDateString"))
+			Spoofing.sgv(Configuration.expectOptionValue("SpoofedGameVersion"))
 		end,
 	})
 
