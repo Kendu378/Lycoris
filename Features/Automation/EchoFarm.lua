@@ -166,7 +166,7 @@ local function getNearestIngredient(name)
 	end
 
 	local distance = (nearestIngredient.Position - humanoidRootPart.Position).Magnitude
-	local tween = InstanceWrapper.tween(stateMaid, "EchoFarmTween", tweenService, TweenInfo.new(distance / 80), {
+	local tween = InstanceWrapper.tween(stateMaid, "EchoFarmTween", humanoidRootPart, TweenInfo.new(distance / 80), {
 		CFrame = CFrame.new(nearestIngredient.Position),
 	})
 
@@ -320,9 +320,10 @@ function Callbacks:onentercampfire(fsm, name)
 
 		local campfireCFrame = nearestCampfire:GetPivot()
 		local distance = (campfireCFrame.Position - humanoidRootPart.Position).Magnitude
-		local tween = InstanceWrapper.tween(stateMaid, "EchoFarmTween", tweenService, TweenInfo.new(distance / 80), {
-			CFrame = CFrame.new(campfireCFrame.Position),
-		})
+		local tween =
+			InstanceWrapper.tween(stateMaid, "EchoFarmTween", humanoidRootPart, TweenInfo.new(distance / 80), {
+				CFrame = CFrame.new(campfireCFrame.Position),
+			})
 
 		EchoFarm.tweening = true
 
