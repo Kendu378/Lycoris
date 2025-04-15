@@ -48,6 +48,9 @@ local echoFarmMaid = Maid.new()
 ---@note: Cleaned after every state exit.
 local stateMaid = Maid.new()
 
+-- Forward declarations.
+local runNearbyPlayerCheck = nil
+
 ---Find an ingredient in our inventory.
 ---@param name string
 ---@return BasePart|nil
@@ -168,6 +171,8 @@ local function getNearestIngredient(name)
 		return
 	end
 
+	runNearbyPlayerCheck()
+
 	local distance = (nearestIngredient.Position - humanoidRootPart.Position).Magnitude
 	local tween = InstanceWrapper.tween(stateMaid, "EchoFarmTween", humanoidRootPart, TweenInfo.new(distance / 80), {
 		CFrame = CFrame.new(nearestIngredient.Position),
@@ -229,6 +234,8 @@ function Callbacks.onentertwself(fsm)
 
 		local npcs = workspace:WaitForChild("NPCs")
 		local selfNpc = npcs:WaitForChild("Self")
+
+		runNearbyPlayerCheck()
 
 		-- Attempt to repeatedly teleport until we're within 10 studs of the NPC.
 		local selfCFrame = selfNpc:GetPivot()
@@ -328,6 +335,8 @@ function Callbacks.onentercampfire(fsm, name)
 		if not effectReplicatorModule then
 			return
 		end
+
+		runNearbyPlayerCheck()
 
 		local campfireCFrame = nearestCampfire:GetPivot()
 		local distance = (campfireCFrame.Position - humanoidRootPart.Position).Magnitude
@@ -471,7 +480,7 @@ local machine = StateMachine.create({
 	initial = StateMachine.NONE,
 	events = {
 		-- Server hop.
-		{ name = "serverhop", from = { "campfire", "ingredients", "twself", StateMachine.None }, to = "serverhop" },
+		{ name = "serverhop", from = { "campfire", "ingredients", "twself" }, to = "serverhop" },
 
 		-- Fragments states.
 		{ name = "twself", from = StateMachine.NONE, to = "twself" },
@@ -497,7 +506,7 @@ local machine = StateMachine.create({
 })
 
 ---Nearby player check.
-local function runNearbyPlayerCheck()
+runNearbyPlayerCheck = function()
 	if machine:is("serverhop") then
 		return
 	end
@@ -521,6 +530,7 @@ local function runNearbyPlayerCheck()
 		return
 	end
 
+	machine:cancelTransition(machine.currentTransitioningEvent)
 	machine:serverhop()
 end
 
@@ -614,6 +624,7 @@ function EchoFarm.start()
 	local areaMarkerParent = areaMarker and areaMarker.Parent
 
 	-- Go to start of fragment states.
+	---@todo: Bug where the ingredients state can be entered first?
 	if areaMarkerParent.Name == "Fragments of Self" then
 		return machine:twself()
 	end
