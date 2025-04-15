@@ -187,7 +187,7 @@ end
 function Lycoris.detach()
 	lycorisMaid:clean()
 
-	EchoFarm.stop()
+	EchoFarm.stop(true)
 
 	SaveManager.autosave()
 

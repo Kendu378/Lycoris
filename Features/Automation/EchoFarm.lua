@@ -627,10 +627,13 @@ function EchoFarm.start()
 end
 
 ---Stop EchoFarm module.
-function EchoFarm.stop()
+---@param detach boolean
+function EchoFarm.stop(detach)
 	echoFarmMaid:clean()
 
-	PersistentData.set("aei", false)
+	if not detach then
+		PersistentData.set("aei", false)
+	end
 
 	if machine:is("none") then
 		return Logger.notify("Echo farm is already no longer running.")
