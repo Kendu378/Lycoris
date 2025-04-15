@@ -446,12 +446,16 @@ function Callbacks.onenterqjoin(fsm)
 
 		while task.wait() do
 			-- Pick a slot.
-			local pickSlot = startMenu:WaitForChild("PickSlot")
-			pickSlot:FireServer(lastUsedSlot, { PrivateTest = false })
+			local pickSlotOrStart = startMenu:FindFirstChild("Start") or startMenu:FindFirstChild("PickSlot")
+			if pickSlotOrStart then
+				pickSlotOrStart:FireServer(lastUsedSlot, { PrivateTest = false })
+			end
 
 			-- Pick a server.
-			local pickServer = startMenu:WaitForChild("PickServer")
-			pickServer:FireServer("none")
+			local pickServer = startMenu:FindFirstChild("PickServer")
+			if pickServer then
+				pickServer:FireServer("none")
+			end
 		end
 	end))
 
