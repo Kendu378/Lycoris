@@ -129,11 +129,13 @@ local function findNearestCampfire(position)
 			continue
 		end
 
-		if Entitites.isNear(instance:GetPivot().Position) then
+		local instanceCFrame = instance:GetPivot()
+
+		if Entitites.isNear(instanceCFrame.Position) then
 			continue
 		end
 
-		local distance = (position - instance.Position).Magnitude
+		local distance = (position - instanceCFrame.Position).Magnitude
 
 		if bestDistance and distance >= bestDistance then
 			continue
