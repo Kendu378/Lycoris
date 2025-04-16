@@ -666,7 +666,7 @@ function EchoFarm.start()
 			return
 		end
 
-		EchoFarm.stop(true)
+		EchoFarm.stop(false)
 	end))
 
 	---@note: If the player check failed, let it server-hop and disregard initializing the state machine.
