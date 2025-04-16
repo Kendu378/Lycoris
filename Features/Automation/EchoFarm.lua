@@ -33,6 +33,7 @@ local replicatedStorage = game:GetService("ReplicatedStorage")
 local players = game:GetService("Players")
 local runService = game:GetService("RunService")
 local tweenService = game:GetService("TweenService")
+local userInputService = game:GetService("UserInputService")
 
 -- EchoFarm module.
 local EchoFarm = { tweening = false }
@@ -635,8 +636,6 @@ function EchoFarm.start()
 		return Logger.notify("Echo farm is already running.")
 	end
 
-	Logger.notify("Echo farm is starting.")
-
 	-- Enable that we need to re-initialize on next execute.
 	PersistentData.set("aei", true)
 
@@ -655,7 +654,20 @@ function EchoFarm.start()
 	local humanoidRootPart = character and character:WaitForChild("HumanoidRootPart")
 
 	local renderStepped = Signal.new(runService.RenderStepped)
+	local inputBegan = Signal.new(userInputService.InputBegan)
+
 	echoFarmMaid:add(renderStepped:connect("EchoFarm_NearbyPlayerCheck", runNearbyPlayerCheck))
+	echoFarmMaid:add(inputBegan:connect("EchoFarm_EmergencyKeybind", function(input, _)
+		if not input then
+			return
+		end
+
+		if input.KeyCode ~= Enum.KeyCode.Zero then
+			return
+		end
+
+		EchoFarm.stop(true)
+	end))
 
 	---@note: If the player check failed, let it server-hop and disregard initializing the state machine.
 	if not runNearbyPlayerCheck() then

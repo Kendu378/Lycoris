@@ -1698,6 +1698,7 @@ return LPH_NO_VIRTUALIZE(function()
 					Obj.Text = Props.Text
 					Obj.Func = Props.Func
 					Obj.DoubleClick = Props.DoubleClick
+					Obj.DoubleClickText = Props.DoubleClickText
 					Obj.Tooltip = Props.Tooltip
 				else
 					Obj.Text = select(1, ...)
@@ -1802,7 +1803,7 @@ return LPH_NO_VIRTUALIZE(function()
 						Library:AddToRegistry(Button.Label, { TextColor3 = "AccentColor" })
 
 						Button.Label.TextColor3 = Library.AccentColor
-						Button.Label.Text = "Are you sure?"
+						Button.Label.Text = Button.DoubleClickText or "Are you sure?"
 						Button.Locked = true
 
 						local clicked = WaitForEvent(Button.Outer.InputBegan, 2, ValidateClick)

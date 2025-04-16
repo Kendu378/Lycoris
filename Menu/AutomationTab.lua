@@ -222,7 +222,13 @@ end
 ---Initialize Echo Farm section.
 ---@param groupbox table
 function AutomationTab.initEchoFarmSection(groupbox)
-	groupbox:AddButton("Start Echo Farm", EchoFarm.start)
+	groupbox:AddButton("Start Echo Farm", {
+		Name = "Quickly stop at any time with the '0' key on your keyboard.",
+		DoubleClick = true,
+		DoubleClickText = "Click to confirm that you want to wipe the current slot.",
+		Callback = EchoFarm.start,
+	})
+
 	groupbox:AddButton("Stop Echo Farm", EchoFarm.stop)
 end
 
