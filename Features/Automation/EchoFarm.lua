@@ -433,7 +433,11 @@ end
 ---@return string?
 function Callbacks.onenterwslot(fsm, name)
 	if PersistentData.get("shw") == true then
-		return PersistentData.set("shw", false)
+		-- Set the flag to false.
+		PersistentData.set("shw", false)
+
+		-- Return and manually transition.
+		return fsm:qjoin()
 	end
 
 	stateMaid:add(TaskSpawner.spawn("EchoFarmCallbacks_OnEnterWSlot", function()
@@ -627,13 +631,21 @@ function EchoFarm.start()
 		return Logger.notify("Echo farm is already running.")
 	end
 
+	Logger.notify("Echo farm is starting.")
+
+	-- Enable that we need to re-initialize on next execute.
+	PersistentData.set("aei", true)
+
 	-- Go to the start of lobby states.
 	if game.PlaceId == LOBBY_PLACE_ID then
+		-- Warn.
+		Logger.warn("We're in the lobby - initial state is 'wslot' in the state machine.")
+
+		-- Set initial state and return.
 		return machine:wslot()
 	end
 
 	PersistentData.set("shw", false)
-	PersistentData.set("aei", true)
 
 	local character = handleStartMenu()
 	local humanoidRootPart = character and character:WaitForChild("HumanoidRootPart")
@@ -641,8 +653,9 @@ function EchoFarm.start()
 	local renderStepped = Signal.new(runService.RenderStepped)
 	echoFarmMaid:add(renderStepped:connect("EchoFarm_NearbyPlayerCheck", runNearbyPlayerCheck))
 
+	---@note: If the player check failed, let it server-hop and disregard initializing the state machine.
 	if not runNearbyPlayerCheck() then
-		return
+		return nil
 	end
 
 	-- We're in the Depths.
@@ -659,6 +672,9 @@ function EchoFarm.start()
 			areaMarker = getNearestAreaMarker(humanoidRootPart.Position)
 		until areaMarker and areaMarker.Parent == "Fragments of Self"
 
+		-- Log.
+		Logger.notify("We're in the fragments area - initial state is 'twself' in the state machine.")
+
 		-- Put us in the fragments state.
 		return machine:twself()
 	end
@@ -668,8 +684,15 @@ function EchoFarm.start()
 
 	-- Go to the start of character states.
 	if playerGui:WaitForChild("CharacterCreator", 1.0) then
+		-- Log.
+		Logger.notify("We're in the character creator - initial state is 'csetup' in the state machine.")
+
+		-- Put us in the character setup state.
 		return machine:csetup()
 	end
+
+	-- Log.
+	Logger.notify("We're in the overworld - initial state is 'ingredients' in the state machine.")
 
 	-- Go to start of overworld states.
 	return machine:ingredients()
@@ -687,6 +710,8 @@ function EchoFarm.stop(detach)
 	if machine:is("none") then
 		return Logger.notify("Echo farm is already no longer running.")
 	end
+
+	Logger.warn("Echo farm is stopping.")
 
 	machine.current = machine.NONE
 	machine:cancelTransition(machine.currentTransitioningEvent)
