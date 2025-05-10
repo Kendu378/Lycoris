@@ -241,6 +241,7 @@ function Callbacks.onstatechange(fsm)
 end
 
 ---Server hop state.
+---@todo: Make persistent that we filter the server we hop to.
 ---@param fsm StateMachine
 ---@return string?
 function Callbacks.onenterserverhop(fsm)

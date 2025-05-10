@@ -106,7 +106,7 @@ end)
 ---@param part BasePart
 local addPartDefender = LPH_NO_VIRTUALIZE(function(part)
 	-- Get part defender.
-	local partDefender = PartDefender.new(part, defenderAnimationObjects)
+	local partDefender = PartDefender.new(part)
 	if not partDefender then
 		return
 	end

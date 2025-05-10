@@ -2,19 +2,6 @@ return LPH_NO_VIRTUALIZE(function()
 	-- Table utility functions.
 	local Table = {}
 
-	---Call a function on each element of a table.
-	---@param first table
-	---@param callback function
-	function Table.elements(first, callback)
-		for _, element in next, first do
-			if not callback(element) then
-				continue
-			end
-
-			return true
-		end
-	end
-
 	---Take a chunk out of an array into a new array.
 	---@param input any[]
 	---@param start number

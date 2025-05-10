@@ -36,7 +36,6 @@ local PlaybackData = require("Game/Timings/PlaybackData")
 ---@field manimations table<number, Animation>
 ---@field track AnimationTrack? Don't be confused. This is the **valid && last** animation track played.
 ---@field maid Maid This maid is cleaned up after every new animation track. Safe to use for on-animation-track setup.
----@field thistory AnimationTrack[] The history of animation tracks played. This is limited to 3 tracks before looping around.
 local AnimatorDefender = setmetatable({}, { __index = Defender })
 AnimatorDefender.__index = AnimatorDefender
 AnimatorDefender.__type = "Animation"
@@ -338,14 +337,6 @@ AnimatorDefender.process = LPH_NO_VIRTUALIZE(function(self, track)
 	if not self:pvalidate(track) then
 		return
 	end
-
-	-- If we have history over the max track limit, remove the oldest one until we're allowed to add a new one.
-	repeat
-		table.remove(self.thistory, #self.thistory)
-	until #self.thistory < MAX_TRACK_HISTORY
-
-	-- Add track to history.
-	table.insert(self.thistory, 1, track)
 
 	-- Add to playback data list.
 	if Configuration.expectToggleValue("ShowAnimationVisualizer") then
