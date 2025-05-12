@@ -269,24 +269,6 @@ end
 ---Initialize combat assistance section.
 ---@param groupbox table
 function CombatTab.initCombatAssistance(groupbox)
-	groupbox:AddLabel("Auto Uppercut"):AddKeyPicker("AutoUppercutKeybind", {
-		Default = "N/A",
-		Text = "Auto Uppercut",
-		Callback = function() end,
-	})
-
-	groupbox:AddLabel("Auto M1 & Roll"):AddKeyPicker("AutoM1RollKeybind", {
-		Default = "N/A",
-		Text = "Auto M1 & Roll",
-		Callback = function() end,
-	})
-
-	groupbox:AddToggle("AutoFlowState", {
-		Text = "Auto Flow State",
-		Default = false,
-		Tooltip = "Automatically cast your Flow State for you without pressing the buttons.",
-	})
-
 	groupbox:AddToggle("AutoWisp", {
 		Text = "Auto Wisp",
 		Default = false,
