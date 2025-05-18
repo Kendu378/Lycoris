@@ -85,14 +85,6 @@ AnimatorDefender.rc = LPH_NO_VIRTUALIZE(function(self, timing, start, track)
 	return true
 end)
 
----Find target - hookable function.
----@param self AnimatorDefender
----@param entity Model
----@return Target?
-AnimatorDefender.target = LPH_NO_VIRTUALIZE(function(self, entity)
-	return Targeting.find(entity)
-end)
-
 ---Check if we're in a valid state to proceed with the action.
 ---@todo: Add extra effect checks because we don't want our input to be buffered when we can't even parry.
 ---@param timing AnimationTiming

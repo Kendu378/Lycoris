@@ -34,7 +34,7 @@ SoundDefender.valid = LPH_NO_VIRTUALIZE(function(self, timing, action)
 		return false
 	end
 
-	if self.owner and not Targeting.find(self.owner) then
+	if self.owner and not self:target(self.owner) then
 		return self:notify(timing, "Not a viable target.")
 	end
 

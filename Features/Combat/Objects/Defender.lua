@@ -147,6 +147,14 @@ Defender.crpue = LPH_NO_VIRTUALIZE(function(self, entity, track, timing, index, 
 	)
 end)
 
+---Find target - hookable function.
+---@param self Defender
+---@param entity Model
+---@return Target?
+Defender.target = LPH_NO_VIRTUALIZE(function(self, entity)
+	return Targeting.find(entity)
+end)
+
 ---Repeat until parry end.
 ---@param entity Model
 ---@param track AnimationTrack?
@@ -169,7 +177,7 @@ Defender.rpue = LPH_NO_VIRTUALIZE(function(self, entity, track, timing, index, s
 
 	self:crpue(entity, track, timing, index + 1, start)
 
-	local target = Targeting.find(entity)
+	local target = self:target(entity)
 	if not target then
 		return Logger.warn("Skipping RPUE '%s' because the target is not valid.", timing.name)
 	end
