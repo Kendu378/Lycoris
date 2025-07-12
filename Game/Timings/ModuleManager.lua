@@ -23,9 +23,6 @@ local TaskSpawner = require("Utility/TaskSpawner")
 ---@module Utility.Entitites
 local Entitites = require("Utility/Entitites")
 
----@module Features.Combat.Defense
-local Defense = require("Features/Combat/Defense")
-
 ---@module Features.Combat.Targeting
 local Targeting = require("Features/Combat/Targeting")
 
@@ -61,6 +58,10 @@ function ModuleManager.load(tfs, global)
 			Logger.warn("Module file '%s' failed to load due to error '%s' while loading.", file, lr)
 			continue
 		end
+
+		---@module Features.Combat.Defense
+		---@note: For some reason, it broke lol. Returned nil.
+		local Defense = require("Features/Combat/Defense")
 
 		-- Set function environment to allow for internal modules.
 		getfenv(lf).PartTiming = PartTiming

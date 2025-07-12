@@ -290,9 +290,10 @@ end)
 
 ---Create a defender part object.
 ---@param part BasePart
+---@param timing PartTiming
 ---@return PartDefender?
-Defense.cdpo = LPH_NO_VIRTUALIZE(function(part)
-	local partDefender = PartDefender.new(part, nil)
+Defense.cdpo = LPH_NO_VIRTUALIZE(function(part, timing)
+	local partDefender = PartDefender.new(part, timing)
 	if not partDefender then
 		return nil
 	end
