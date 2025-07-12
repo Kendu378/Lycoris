@@ -48,7 +48,18 @@ function PersistentData.set(field, value)
 	PersistentData._data[field] = value
 
 	-- Save the persistent data.
-	memStorageService:SetItem("LYCORIS_PERSISTENT_DATA", Serializer.marshal(PersistentData._data))
+	local saveSuccess, saveResult = pcall(
+		memStorageService.SetItem,
+		memStorageService,
+		"LYCORIS_PERSISTENT_DATA",
+		Serializer.marshal(PersistentData._data)
+	)
+
+	if not saveSuccess then
+		return Logger.warn("(%s) Failed to set PersistentData snapshot.", tostring(saveResult))
+	end
+
+	Logger.warn("(%s) Successfully set PersistentData snapshot.", tostring(saveResult))
 end
 
 ---Initialize PersistentData module.
