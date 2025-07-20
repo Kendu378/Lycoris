@@ -11,7 +11,7 @@ return function(self, timing)
 	end
 
 	local base = 400
-	local name = data.hw:GetAttribute("WeaponName")
+	local name = data.hw and data.hw:GetAttribute("WeaponName") or ""
 
 	-- Bloodfouler uppercut
 	if name:match("Bloodfouler") then
