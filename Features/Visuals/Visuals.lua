@@ -57,7 +57,6 @@ local renderStepped = Signal.new(runService.RenderStepped)
 
 -- Maids.
 local visualsMaid = Maid.new()
-local showRobloxChatMaid = Maid.new()
 
 -- Groups.
 local groups = {}
@@ -358,7 +357,6 @@ local updateVisuals = LPH_NO_VIRTUALIZE(function()
 		updateShowRobloxChat()
 	else
 		showRobloxChatMap:restore()
-		showRobloxChatMaid:clean()
 	end
 end)
 
@@ -608,7 +606,6 @@ function Visuals.detach()
 	end
 
 	visualsMaid:clean()
-	showRobloxChatMaid:clean()
 
 	Logger.warn("Visuals detached.")
 end

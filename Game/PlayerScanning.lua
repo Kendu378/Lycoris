@@ -46,7 +46,8 @@ local function fetchName(player)
 	local spoofName = Configuration.expectToggleValue("InfoSpoofing")
 		and Configuration.expectToggleValue("SpoofOtherPlayers")
 
-	return spoofName and "[REDACTED]" or string.format("(%s) %s", player:GetAttribute("CharacterName"), player.Name)
+	return spoofName and "[REDACTED]"
+		or string.format("(%s) %s", player:GetAttribute("CharacterName") or "Unknown Character Name", player.Name)
 end
 
 ---Partial look for string in list. Returns the string that got matched.
