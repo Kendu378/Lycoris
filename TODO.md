@@ -69,10 +69,12 @@
 - Talent Highlighter -> Build Assistance
     - For traits: red if exceeded or none, green if keep going
     - For mantras: red if not in build, green if in
-    - Clean up talents
+    - For attributes: red if exceeded or none, green if keep going + shrine of order detection
+    - Clean up talent visual
     - Have it work across all types of places that use talent cards
 - Finish "Auto Fish"
-    - Auto Eat + Get Food At Guildbase
+    - Auto Eat
+    - Get Food At Guildbase
     - Server Hop If Players Nearby
     - Webhook Notification
     - Incorporate Auto Loot
