@@ -4,6 +4,7 @@ local PlayerScanning = {
 	scanDataCache = {},
 	friendCache = {},
 	waitingForLoad = {},
+	readyList = {},
 	scanning = false,
 }
 
@@ -36,6 +37,9 @@ local playerScanningMaid = Maid.new()
 
 -- Timestamp.
 local lastRateLimit = nil
+
+-- Seen tools.
+local seenTools = {}
 
 ---Fetch name.
 local function fetchName(player)
@@ -146,6 +150,39 @@ local runPlayerScans = LPH_NO_VIRTUALIZE(function()
 		PlayerScanning.friendCache[player] = localPlayer:GetFriendStatus(player) == Enum.FriendStatus.Friend
 
 		Logger.warn("Player scanning finished scanning %s in queue.", fetchName(player))
+	end
+
+	for _, player in next, players:GetPlayers() do
+		if not Configuration.expectToggleValue("NotifyItems") then
+			continue
+		end
+
+		local backpack = player:FindFirstChild("Backpack")
+		if not backpack then
+			continue
+		end
+
+		for _, tool in next, backpack:GetChildren() do
+			if seenTools[tool] then
+				continue
+			end
+
+			local itemName = tool:GetAttribute("ItemName")
+
+			if typeof(itemName) ~= "string" or itemName == "" then
+				continue
+			end
+
+			local notifyItemsList = Configuration.expectOptionValue("NotifyItemsList") or {}
+
+			if not partialStringFind(notifyItemsList, itemName) then
+				continue
+			end
+
+			seenTools[tool] = true
+
+			Logger.longNotify("%s has item '%s' in their inventory.", fetchName(player), itemName)
+		end
 	end
 end)
 
