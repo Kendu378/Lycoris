@@ -248,42 +248,26 @@ local updateShowRobloxChat = LPH_NO_VIRTUALIZE(function()
 	end
 
 	showRobloxChatMap:add(chatWindowConfiguration, "Enabled", true)
-	print("but this diddd!!!!")
-	local chatGui = playerGui:FindFirstChild("Chat")
-	local chatFrame = chatGui and chatGui:FindFirstChild("Frame")
-
-	local chatBarFrame = chatFrame and chatFrame:FindFirstChild("ChatBarParentFrame")
-	local chatChannelFrame = chatFrame and chatFrame:FindFirstChild("ChatChannelParentFrame")
-
-	if not chatBarFrame or not chatChannelFrame then
-		return print("it returns here so this never ran")
-	end
-	print("setup")
-	showRobloxChatMap:add(chatBarFrame, "Position", UDim2.new(0, 0, 0, 195))
-	showRobloxChatMap:add(chatChannelFrame, "Visible", true)
 
 	---@note: Probably set a proper restore for this?
 	--- But, in Deepwoken, users cannot realisitically access the Roblox chat anyway.
-	print("lolololo")
 	textChatService.OnIncomingMessage = function(message)
 		local source = message.TextSource
 		if not source then
-			return print("no")
+			return
 		end
-		print(source.UserId, message)
+
 		local player = players:GetPlayerByUserId(source.UserId)
 		if not player then
-			return print("why")
+			return
 		end
-		print("yeyeyeyeyeyye")
+
 		message.PrefixText = string.gsub(message.PrefixText, player.DisplayName, player.Name)
-		print("hahahahaa")
 		message.PrefixText = string.format(
 			"(%s) %s",
 			player:GetAttribute("CharacterName") or "Unknown Character Name",
 			message.PrefixText
 		)
-		print("hehehehehehehehe")
 	end
 end)
 
