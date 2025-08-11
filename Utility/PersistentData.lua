@@ -24,9 +24,6 @@ local PersistentData = {
 
 		-- Echo farm persistence - do we need to activate on initialization?
 		aei = false,
-
-		-- Bestiary data.
-		best = nil,
 	},
 }
 

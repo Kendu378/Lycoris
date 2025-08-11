@@ -42,6 +42,8 @@ local HitboxOptions = require("Features/Combat/Objects/HitboxOptions")
 ---@field maid Maid
 ---@field vpart Part?
 ---@field ppart Part?
+---@field pvpart Part?
+---@field pppart Part?
 local Defender = {}
 Defender.__index = Defender
 Defender.__type = "Defender"
@@ -56,6 +58,7 @@ local textChatService = game:GetService("TextChatService")
 -- Constants.
 local MAX_VISUALIZATION_TIME = 5.0
 local MAX_REPEAT_WAIT = 10.0
+local PREDICTION_LENIENCY_MULTI = 5.0
 
 ---Log a miss to the UI library with distance check.
 ---@param type string
@@ -150,19 +153,9 @@ Defender.rpue = LPH_NO_VIRTUALIZE(function(self, entity, timing, info)
 
 	info.index = info.index + 1
 
-	self:mark(
-		Task.new(
-			string.format("RPUE_%s_%i", timing.name, info.index),
-			timing:rpd() - self.rtt(),
-			timing.punishable,
-			timing.after,
-			self.rpue,
-			self,
-			self.entity,
-			timing,
-			info
-		)
-	)
+	self:mark(Task.new(string.format("RPUE_%s_%i", timing.name, info.index), function()
+		return timing:rsd() - info.irdelay - self.sdelay()
+	end, timing.punishable, timing.after, self.rpue, self, self.entity, timing, info))
 
 	if not target then
 		return Logger.warn("Skipping RPUE '%s' because the target is not valid.", timing.name)
@@ -270,16 +263,23 @@ Defender.vupdate = LPH_NO_VIRTUALIZE(function(self)
 
 	-- Set transparency.
 	if self.vpart then
-		self.vpart.Transparency = showVisualizations and 0.85 or 1.0
+		self.vpart.Transparency = showVisualizations and 0.2 or 1.0
 	end
 
 	if self.ppart then
-		self.ppart.Transparency = showVisualizations and 0.85 or 1.0
+		self.ppart.Transparency = showVisualizations and 0.2 or 1.0
+	end
+
+	if self.pvpart then
+		self.pvpart.Transparency = showVisualizations and 0.2 or 1.0
+	end
+
+	if self.pppart then
+		self.pppart.Transparency = showVisualizations and 0.2 or 1.0
 	end
 end)
 
 ---Run hitbox check. Returns wheter if the hitbox is being touched.
----@todo: Add extrapolation for the other player to compensate for their next position in the future.
 ---@todo: An issue is that the player's current look vector will not be the same as when they attack due to a parry timing being seperate from the attack causing this check to fail.
 ---@param self Defender
 ---@param cframe CFrame
@@ -287,8 +287,9 @@ end)
 ---@param size Vector3
 ---@param filter Instance[]
 ---@param identifier string
+---@param predicted boolean
 ---@return boolean
-Defender.hitbox = LPH_NO_VIRTUALIZE(function(self, cframe, fd, size, filter, identifier)
+Defender.hitbox = LPH_NO_VIRTUALIZE(function(self, cframe, fd, size, filter, identifier, predicted)
 	local overlapParams = OverlapParams.new()
 	overlapParams.FilterDescendantsInstances = filter
 	overlapParams.FilterType = Enum.RaycastFilterType.Include
@@ -316,43 +317,51 @@ Defender.hitbox = LPH_NO_VIRTUALIZE(function(self, cframe, fd, size, filter, ide
 	-- Visualize color.
 	local visColor = hit and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
 
+	if predicted then
+		visColor = hit and Color3.fromRGB(255, 0, 255) or Color3.fromRGB(0, 0, 0)
+	end
+
+	-- Indexes.
+	local vpartIndex = predicted and "pvpart" or "vpart"
+	local ppartIndex = predicted and "pppart" or "ppart"
+
 	-- Create visualization part if it doesn't exist.
-	if not self.vpart then
+	if not self[vpartIndex] then
 		-- Create part.
 		local vpart = Instance.new("Part")
 		vpart.Parent = workspace
 		vpart.Anchored = true
 		vpart.CanCollide = false
-		vpart.Material = Enum.Material.SmoothPlastic
+		vpart.Material = Enum.Material.ForceField
 
 		-- Set part.
-		self.vpart = vpart
+		self[vpartIndex] = vpart
 	end
 
 	-- Create player part if it doesn't exist.
-	if not self.ppart then
+	if not self[ppartIndex] then
 		-- Create part.
 		local ppart = Instance.new("Part")
 		ppart.Parent = workspace
 		ppart.Anchored = true
 		ppart.CanCollide = false
-		ppart.Material = Enum.Material.Plastic
+		ppart.Material = Enum.Material.ForceField
 
 		-- Set part.
-		self.ppart = ppart
+		self[ppartIndex] = ppart
 	end
 
 	-- Visual part.
-	self.vpart.Size = size
-	self.vpart.CFrame = usedCFrame
-	self.vpart.Color = visColor
-	self.vpart.Name = string.format("VP_%s", identifier)
+	self[vpartIndex].Size = size
+	self[vpartIndex].CFrame = usedCFrame
+	self[vpartIndex].Color = visColor
+	self[vpartIndex].Name = string.format("VP_%s", identifier)
 
 	-- Player part.
-	self.ppart.Size = root.Size
-	self.ppart.CFrame = root.CFrame
-	self.ppart.Color = visColor
-	self.ppart.Name = string.format("PP_%s", identifier)
+	self[ppartIndex].Size = root.Size
+	self[ppartIndex].CFrame = root.CFrame
+	self[ppartIndex].Color = visColor
+	self[ppartIndex].Name = string.format("PP_%s", identifier)
 
 	-- Set timestamp.
 	self.lvisualization = os.clock()
@@ -406,17 +415,20 @@ Defender.notify = LPH_NO_VIRTUALIZE(function(self, timing, str, ...)
 	Logger.notify("[%s] (%s) %s", timing.name, self.__type, string.format(str, ...))
 end)
 
+---@note: Perhaps one day, we can get better approximations for these.
+--- These used to rely on GetNetworkPing which we assumed would be sending or atleast receiving delay.
+--- That is incorrect, it is RakNet ping thereby being RTT.
+
 ---Get receiving delay.
----@todo: Replace this average with the real RakNet receiving delay when we can do more reversing.
 ---@return number
 function Defender.rdelay()
-	return players.LocalPlayer:GetNetworkPing()
+	return math.max(Defender.rtt() / 2, 0.0)
 end
 
 ---Get sending delay.
 ---@return number
 function Defender.sdelay()
-	return math.max(Defender.rtt() - Defender.rdelay(), 0.0)
+	return math.max(Defender.rtt() / 2, 0.0)
 end
 
 ---Get data ping.
@@ -498,7 +510,7 @@ Defender.hc = LPH_NO_VIRTUALIZE(function(self, options, info)
 		hitbox = timing.hitbox
 	end
 
-	local result = self:hitbox(options:pos(), timing.fhb, hitbox, options.filter, timing.name)
+	local result = self:hitbox(options:pos(), timing.fhb, hitbox, options.filter, timing.name, false)
 
 	if result then
 		return result
@@ -518,7 +530,8 @@ Defender.hc = LPH_NO_VIRTUALIZE(function(self, options, info)
 		return false
 	end
 
-	local closest = PositionHistory.closest(tick() - self.sdelay())
+	---@note: Multiply for some leniency since it is better to be over than miss
+	local closest = PositionHistory.closest(tick() - (self.sdelay() * PREDICTION_LENIENCY_MULTI))
 	if not closest then
 		return false
 	end
@@ -527,16 +540,20 @@ Defender.hc = LPH_NO_VIRTUALIZE(function(self, options, info)
 
 	root.CFrame = closest
 
-	result = self:hitbox(options:extrapolate(), timing.fhb, hitbox, options.filter, timing.name)
+	result = self:hitbox(
+		options:extrapolate(PREDICTION_LENIENCY_MULTI),
+		timing.fhb,
+		hitbox,
+		options.filter,
+		timing.name,
+		true
+	)
 
 	root.CFrame = oldCFrame
 
 	if not result then
 		return false
 	end
-
-	self.vpart.Color = Color3.fromRGB(255, 0, 255)
-	self.ppart.Color = Color3.fromRGB(255, 0, 255)
 
 	return true
 end)
@@ -591,7 +608,7 @@ Defender.handle = LPH_NO_VIRTUALIZE(function(self, timing, action)
 		return self:bend()
 	end
 
-	if action._type == "Dodge" and action._type == "Forced Full Dodge" then
+	if action._type == "Dodge" or action._type == "Forced Full Dodge" then
 		if effectReplicatorModule:FindEffect("DodgeCool") then
 			return self:notify(timing, "Action group 'Dodge' blocked because of 'DodgeCool' effect.")
 		end
@@ -730,6 +747,14 @@ Defender.clean = LPH_NO_VIRTUALIZE(function(self)
 		self.ppart.CFrame = CFrame.new(math.huge, math.huge, math.huge)
 	end
 
+	if self.pvpart then
+		self.pvpart.CFrame = CFrame.new(math.huge, math.huge, math.huge)
+	end
+
+	if self.pppart then
+		self.pppart.CFrame = CFrame.new(math.huge, math.huge, math.huge)
+	end
+
 	-- Was there a start block, end block, or parry?
 	local blocking = false
 
@@ -779,16 +804,22 @@ end)
 ---@param timing Timing
 ---@param action Action
 Defender.action = LPH_NO_VIRTUALIZE(function(self, timing, action)
-	-- Get ping.
-	local ping = self.rtt()
+	-- Get initial receive delay.
+	local rdelay = self.rdelay()
 
 	-- Add action.
-	self:mark(
-		Task.new(action._type, action:when() - ping, timing.punishable, timing.after, self.handle, self, timing, action)
-	)
+	self:mark(Task.new(action._type, function()
+		return action:when() - rdelay - self.sdelay()
+	end, timing.punishable, timing.after, self.handle, self, timing, action))
 
 	-- Log.
-	self:notify(timing, "Added action '%s' (%.2fs) with ping '%.2f' subtracted.", action.name, action:when(), ping)
+	self:notify(
+		timing,
+		"Added action '%s' (%.2fs) with ping '%.2f' (changing) subtracted.",
+		action.name,
+		action:when(),
+		self.rtt()
+	)
 end)
 
 ---Add actions from timing to defender object.
@@ -845,6 +876,14 @@ function Defender:detach()
 
 	if self.ppart then
 		self.ppart:Destroy()
+	end
+
+	if self.pvpart then
+		self.pvpart:Destroy()
+	end
+
+	if self.pppart then
+		self.pppart:Destroy()
 	end
 
 	-- Set object nil.

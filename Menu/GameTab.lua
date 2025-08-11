@@ -1,9 +1,6 @@
 -- GameTab module.
 local GameTab = {}
 
----@module Features.Game.Bestiary
-local Bestiary = require("Features/Game/Bestiary")
-
 ---@module Features.Game.Spoofing
 local Spoofing = require("Features/Game/Spoofing")
 
@@ -399,14 +396,6 @@ function GameTab.initPlayerMonitoringSection(groupbox)
 		Text = "Show Network Ownership",
 		Default = false,
 	})
-
-	local bestiaryToggle = groupbox:AddToggle("ShowBestiary", {
-		Text = "Show Bestiary UI",
-		Default = false,
-		Callback = Bestiary.visible,
-	})
-
-	bestiaryToggle:AddKeyPicker("BestiaryKeybind", { Default = "N/A", SyncToggleState = true, Text = "Bestiary UI" })
 
 	groupbox:AddToggle("PlayerProximity", {
 		Text = "Player Proximity Notifications",

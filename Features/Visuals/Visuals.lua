@@ -37,11 +37,14 @@ local OriginalStoreManager = require("Utility/OriginalStoreManager")
 ---@module Utility.InstanceWrapper
 local InstanceWrapper = require("Utility/InstanceWrapper")
 
+---@module Utility.Table
+local Table = require("Utility/Table")
+
 ---@module Utility.Logger
 local Logger = require("Utility/Logger")
 
 -- Visuals module.
-local Visuals = { currentBuilderData = nil }
+local Visuals = { bdata = nil, drinfo = nil }
 
 -- Last visuals update.
 local lastVisualsUpdate = os.clock()
@@ -57,6 +60,10 @@ local renderStepped = Signal.new(runService.RenderStepped)
 
 -- Maids.
 local visualsMaid = Maid.new()
+local builderAssistanceMaid = Maid.new()
+
+-- Card frames.
+local cardFrames = {}
 
 -- Groups.
 local groups = {}
@@ -68,7 +75,7 @@ local fieldOfView = visualsMaid:mark(OriginalStore.new())
 local showRobloxChatMap = visualsMaid:mark(OriginalStoreManager.new())
 local noAnimatedSeaMap = visualsMaid:mark(OriginalStoreManager.new())
 local noPersistentMap = visualsMaid:mark(OriginalStoreManager.new())
-local talentHighlighterMap = visualsMaid:mark(OriginalStoreManager.new())
+local buildAssistanceMap = visualsMaid:mark(OriginalStoreManager.new())
 
 ---Update sanity tracker.
 local updateSanityTracker = LPH_NO_VIRTUALIZE(function()
@@ -165,53 +172,405 @@ local updateSanityTracker = LPH_NO_VIRTUALIZE(function()
 	)
 end)
 
----Update builder assistance.
-local updateBuilderAssistance = LPH_NO_VIRTUALIZE(function()
-	local talentData = Visuals.currentBuilderData and Visuals.currentBuilderData.talents
-	if not talentData then
+---On Player GUI descendant added.
+---@param descendant Instance
+local onPlayerGuiDescendantAdded = LPH_NO_VIRTUALIZE(function(descendant)
+	if descendant.Name ~= "CardFrame" then
 		return
 	end
 
-	local localPlayer = players.LocalPlayer
-	if not localPlayer then
+	cardFrames[descendant] = true
+end)
+
+---On Player GUI descendant removed.
+---@param descendant Instance
+local onPlayerGuiDescendantRemoving = LPH_NO_VIRTUALIZE(function(descendant)
+	if not cardFrames[descendant] then
 		return
 	end
 
-	local playerGui = localPlayer.PlayerGui
-	if not playerGui then
-		return
-	end
+	cardFrames[descendant] = nil
+end)
 
-	local talentGui = playerGui:FindFirstChild("TalentGui")
-	if not talentGui then
-		return
-	end
-
-	local choiceFrame = talentGui:FindFirstChild("ChoiceFrame")
-	if not choiceFrame then
-		return
-	end
-
-	for _, instance in pairs(choiceFrame:GetChildren()) do
-		if not instance:IsA("TextButton") then
+---Update card frames.
+local updateCardFrames = LPH_NO_VIRTUALIZE(function()
+	for frame in next, cardFrames do
+		local title = frame:FindFirstChild("Title")
+		if not title then
 			continue
 		end
 
-		local cardFrame = instance:FindFirstChild("CardFrame")
-		if not cardFrame then
+		local border = frame:FindFirstChild("Border")
+		if not border then
 			continue
 		end
 
-		local talentInData = table.find(talentData, string.gsub(instance.Name, "^%s*(.-)%s*$", "%1"))
+		local data = Visuals.currentBuilderData
+		if not data then
+			continue
+		end
 
-		talentHighlighterMap:add(
-			cardFrame,
+		local trimmedName = string.gsub(title.Text, "^%s*(.-)%s*$", "%1")
+		local cardInData = table.find(data.talents, trimmedName) or table.find(data.mantras, trimmedName)
+
+		buildAssistanceMap:add(border, "ImageColor3", cardInData and Color3.new(0, 255, 0) or Color3.new(255, 0, 0))
+	end
+end)
+
+---Update power background.
+---@param rframe Frame
+local updatePowerBackground = LPH_NO_VIRTUALIZE(function(rframe)
+	local journalFrame = rframe and rframe:FindFirstChild("JournalFrame")
+	local sheets = journalFrame and journalFrame:FindFirstChild("Sheets")
+	local power = sheets and sheets:FindFirstChild("Power")
+	local background = power and power:FindFirstChild("Background")
+	if not background then
+		return
+	end
+
+	local drinfo = Visuals.drinfo
+	if not drinfo then
+		return
+	end
+
+	---@type BuilderData
+	local bdata = Visuals.bdata
+	if not bdata then
+		return
+	end
+
+	---@note: We do not care if there is no pre-shrine state at all.
+	if not bdata:dshrine() then
+		return
+	end
+
+	buildAssistanceMap:add(
+		background,
+		"BackgroundColor3",
+		bdata:ipre(drinfo) and Color3.fromRGB(97, 4, 113) or Color3.fromRGB(255, 0, 0)
+	)
+end)
+
+---Update attribute frame.
+---@param rframe Frame
+local updateAttributeFrame = LPH_NO_VIRTUALIZE(function(rframe)
+	local panels = rframe:FindFirstChild("Panels")
+	local attributeFrame = panels and panels:FindFirstChild("AttributeFrame")
+	local sheets = attributeFrame and attributeFrame:FindFirstChild("Sheets")
+	if not sheets then
+		return
+	end
+
+	local drinfo = Visuals.drinfo
+	if not drinfo then
+		return
+	end
+
+	---@type BuilderData
+	local bdata = Visuals.bdata
+	if not bdata then
+		return
+	end
+
+	local attributes = bdata:attributes(drinfo)
+	local mapping = {
+		["Agility"] = attributes.base["Agility"],
+		["Strength"] = attributes.base["Strength"],
+		["Fortitude"] = attributes.base["Fortitude"],
+		["Intelligence"] = attributes.base["Intelligence"],
+		["Willpower"] = attributes.base["Willpower"],
+		["Charisma"] = attributes.base["Charisma"],
+		["ElementBlood"] = attributes.attunement["Bloodrend"],
+		["ElementFire"] = attributes.attunement["Flamecharm"],
+		["ElementIce"] = attributes.attunement["Frostdraw"],
+		["ElementLightning"] = attributes.attunement["Thundercall"],
+		["ElementWind"] = attributes.attunement["Galebreathe"],
+		["ElementShadow"] = attributes.attunement["Shadowcast"],
+		["ElementMetal"] = attributes.base["Ironsing"],
+		["WeaponHeavy"] = attributes.weapon["Heavy Wep."],
+		["WeaponMedium"] = attributes.weapon["Medium Wep."],
+		["WeaponLight"] = attributes.weapon["Light Wep."],
+	}
+
+	for _, instance in next, sheets:GetDescendants() do
+		if not instance:IsA("Frame") then
+			continue
+		end
+
+		local expectedValue = mapping[instance.Name]
+		if not expectedValue then
+			continue
+		end
+
+		local background = instance:FindFirstChild("Background")
+		if not background then
+			continue
+		end
+
+		local valueLabel = instance:FindFirstChild("Value")
+		if not valueLabel then
+			continue
+		end
+
+		local value = tonumber(valueLabel.Text)
+		if not value then
+			continue
+		end
+
+		local abbrevLabel = instance:FindFirstChild("Abbrev")
+		if not abbrevLabel then
+			continue
+		end
+
+		buildAssistanceMap:add(
+			background,
 			"BackgroundColor3",
-			talentInData and Color3.new(0, 255, 0) or Color3.new(255, 0, 0)
+			expectedValue == value and Color3.fromRGB(9, 136, 0) or Color3.fromRGB(127, 0, 2)
 		)
 
-		talentHighlighterMap:add(cardFrame, "BorderSizePixel", talentInData and 10 or 0)
+		buildAssistanceMap:add(abbrevLabel, "Text", string.format("GET (%i)", expectedValue))
 	end
+end)
+
+---Update traits.
+---@param rframe Frame
+local updateTraits = LPH_NO_VIRTUALIZE(function(rframe)
+	local panels = rframe:FindFirstChild("Panels")
+	local journalFrame = panels and panels:FindFirstChild("JournalFrame")
+	local sheets = journalFrame and journalFrame:FindFirstChild("Sheets")
+	local traitSheets = journalFrame and journalFrame:FindFirstChild("TraitSheets")
+	local container = traitSheets and traitSheets:FindFirstChild("Container")
+	if not container then
+		return
+	end
+
+	local drinfo = Visuals.drinfo
+	if not drinfo then
+		return
+	end
+
+	---@type BuilderData
+	local bdata = Visuals.bdata
+	if not bdata then
+		return
+	end
+
+	local mapping = {
+		["Ether"] = bdata.traits["Erudition"],
+		["Health"] = bdata.traits["Vitality"],
+		["WeaponDamage"] = bdata.traits["Proficiency"],
+		["MantraDamage"] = bdata.traits["Songchant"],
+	}
+
+	for _, instance in next, sheets:GetDescendants() do
+		if not instance:IsA("Frame") then
+			continue
+		end
+
+		local expectedValue = mapping[instance.Name]
+		if not expectedValue then
+			continue
+		end
+
+		local background = instance:FindFirstChild("Background")
+		if not background then
+			continue
+		end
+
+		local valueLabel = instance:FindFirstChild("Value")
+		if not valueLabel then
+			continue
+		end
+
+		local value = tonumber(valueLabel.Text)
+		if not value then
+			continue
+		end
+
+		buildAssistanceMap:add(
+			background,
+			"BackgroundColor3",
+			expectedValue == value and Color3.fromRGB(9, 136, 0) or Color3.fromRGB(127, 0, 2)
+		)
+	end
+end)
+
+---Update talent sheet.
+---@param rframe Frame
+local updateTalentSheet = LPH_NO_VIRTUALIZE(function(rframe)
+	local panels = rframe:FindFirstChild("TalentSheet")
+	local container = panels and panels:FindFirstChild("Container")
+	local talentScroll = container and container:FindFirstChild("TalentScroll")
+	if not talentScroll then
+		return
+	end
+
+	local drinfo = Visuals.drinfo
+	if not drinfo then
+		return
+	end
+
+	---@type BuilderData
+	local bdata = Visuals.bdata
+	if not bdata then
+		return
+	end
+
+	local divider = talentScroll:FindFirstChild("8ZQuestDivider")
+	if not divider then
+		return
+	end
+
+	local label = talentScroll:FindFirstChildWhichIsA("TextLabel")
+	if not label then
+		return
+	end
+
+	-- first step: color everything inside and remove everything that is in the builder list already
+	local filteredTalents = table.clone(bdata.talents)
+
+	for _, instance in next, talentScroll:GetDescendants() do
+		if not instance:IsA("TextLabel") then
+			continue
+		end
+
+		local idx = Table.find(filteredTalents, function(value, _)
+			return instance.Text:match(value)
+		end)
+
+		if not idx then
+			continue
+		end
+
+		buildAssistanceMap:add(instance, "TextColor3", Color3.fromRGB(9, 136, 0))
+
+		filteredTalents[idx] = nil
+	end
+
+	-- second step: add every filtered talent as red (or purple if pre-shrine)
+	for _, talent in next, filteredTalents do
+		local nlabel = InstanceWrapper.mark(builderAssistanceMaid, talent, label:Clone())
+		local pshlocked = (bdata.ddata:possible(talent, bdata.pre) and not bdata.ddata:possible(talent, bdata.post))
+		nlabel.Text = "9" .. talent
+		nlabel.TextColor3 = pshlocked and Color3.fromRGB(97, 4, 113) or Color3.fromRGB(127, 0, 2)
+	end
+
+	-- pre third step: create a nice looking separator
+	local separator = InstanceWrapper.mark(builderAssistanceMaid, "divider", divider:Clone())
+	separator.Name = "XMantraDivider"
+
+	-- third step: add every mantra as red (or purple if pre-shrine)
+	for _, mantra in next, bdata.mantras do
+		local nlabel = InstanceWrapper.mark(builderAssistanceMaid, mantra, label:Clone())
+		local pshlocked = (bdata.ddata:possible(mantra, bdata.pre) and not bdata.ddata:possible(mantra, bdata.post))
+		nlabel.Text = "Z" .. mantra
+		nlabel.TextColor3 = pshlocked and Color3.fromRGB(97, 4, 113) or Color3.fromRGB(127, 0, 2)
+	end
+end)
+
+---Update rest gui.
+---@param rframe Frame
+local updateRestGui = LPH_NO_VIRTUALIZE(function(rframe)
+	local attrFrame = rframe:FindFirstChild("AttrFrame")
+	local attrSheet = attrFrame and attrFrame:FindFirstChild("AttrSheet")
+	local container = attrSheet and attrSheet:FindFirstChild("Container")
+	if not container then
+		return
+	end
+
+	local drinfo = Visuals.drinfo
+	if not drinfo then
+		return
+	end
+
+	---@type BuilderData
+	local bdata = Visuals.bdata
+	if not bdata then
+		return
+	end
+
+	local attributes = bdata:attributes(drinfo)
+	local mapping = {
+		["Agility"] = attributes.base["Agility"],
+		["Strength"] = attributes.base["Strength"],
+		["Fortitude"] = attributes.base["Fortitude"],
+		["Intelligence"] = attributes.base["Intelligence"],
+		["Willpower"] = attributes.base["Willpower"],
+		["Charisma"] = attributes.base["Charisma"],
+		["ElementBlood"] = attributes.attunement["Bloodrend"],
+		["ElementFire"] = attributes.attunement["Flamecharm"],
+		["ElementIce"] = attributes.attunement["Frostdraw"],
+		["ElementLightning"] = attributes.attunement["Thundercall"],
+		["ElementWind"] = attributes.attunement["Galebreathe"],
+		["ElementShadow"] = attributes.attunement["Shadowcast"],
+		["ElementMetal"] = attributes.base["Ironsing"],
+		["WeaponHeavy"] = attributes.weapon["Heavy Wep."],
+		["WeaponMedium"] = attributes.weapon["Medium Wep."],
+		["WeaponLight"] = attributes.weapon["Light Wep."],
+	}
+
+	for _, instance in next, container:GetDescendants() do
+		if not instance:IsA("TextLabel") then
+			continue
+		end
+
+		local expectedValue = mapping[instance.Name]
+		if not expectedValue then
+			continue
+		end
+
+		local increase = instance:FindFirstChild("Increase")
+		if not increase then
+			continue
+		end
+
+		local valueLabel = instance:FindFirstChild("Value")
+		if not valueLabel then
+			continue
+		end
+
+		local value = tonumber(valueLabel.Text)
+		if not value then
+			continue
+		end
+
+		local color = expectedValue == value and Color3.fromRGB(9, 136, 0) or Color3.fromRGB(127, 0, 2)
+		buildAssistanceMap:add(increase, "BackgroundColor3", color)
+		buildAssistanceMap:add(instance, "TextColor3", color)
+		buildAssistanceMap:add(valueLabel, "TextColor3", color)
+	end
+end)
+
+---Update build assistance.
+local updateBuildAssistance = LPH_NO_VIRTUALIZE(function()
+	updateCardFrames()
+
+	local localPlayer = players.LocalPlayer
+	local backpackGui = localPlayer and localPlayer:FindFirstChild("BackpackGui")
+	if not backpackGui then
+		return
+	end
+
+	local restGui = localPlayer and localPlayer:FindFirstChild("RestGui")
+	if not restGui then
+		return
+	end
+
+	local bpRightFrame = backpackGui and backpackGui:FindFirstChild("RightFrame")
+	if not bpRightFrame then
+		return
+	end
+
+	local restRightFrame = restGui and restGui:FindFirstChild("RightFrame")
+	if not restRightFrame then
+		return
+	end
+
+	updateAttributeFrame(bpRightFrame)
+	updateTraits(bpRightFrame)
+	updatePowerBackground(bpRightFrame)
+	updateTalentSheet(bpRightFrame)
+	updateRestGui(restRightFrame)
 end)
 
 ---Update no persistence.
@@ -317,10 +676,11 @@ local updateVisuals = LPH_NO_VIRTUALIZE(function()
 		visualsMaid["SanityTextLabel"] = nil
 	end
 
-	if Configuration.expectToggleValue("TalentHighlighter") then
-		updateBuilderAssistance()
+	if Configuration.expectToggleValue("BuildAssistance") then
+		updateBuildAssistance()
 	else
-		talentHighlighterMap:restore()
+		buildAssistanceMap:restore()
+		builderAssistanceMaid:clean()
 	end
 
 	if Configuration.expectToggleValue("NoPersisentESP") then
@@ -605,7 +965,22 @@ function Visuals.init()
 		emplaceObject(descendant, FilteredESP.new(PartESP.new("AreaMarker", descendant, areaMarkerName)))
 	end
 
+	local localPlayer = players.LocalPlayer
+	local playerGui = localPlayer:WaitForChild("PlayerGui")
+	local playerGuiDescendantAdded = Signal.new(playerGui.DescendantAdded)
+	local playerGuiDescendantRemoving = Signal.new(playerGui.DescendantRemoving)
+
+	visualsMaid:add(playerGuiDescendantAdded:connect("Visuals_OnPlayerGuiDescendantAdded", onPlayerGuiDescendantAdded))
+	visualsMaid:add(
+		playerGuiDescendantRemoving:connect("Visuals_OnPlayerGuiDescendantRemoving", onPlayerGuiDescendantRemoving)
+	)
 	visualsMaid:add(renderStepped:connect("Visuals_RenderStepped", updateVisuals))
+
+	local info = replicatedStorage:WaitForChild("Info")
+	local dataReplication = info:WaitForChild("DataReplication")
+	local dataReplicationModule = require(dataReplication)
+
+	Visuals.drinfo = dataReplicationModule.GetData()
 
 	Logger.warn("Visuals initialized.")
 end
@@ -617,6 +992,7 @@ function Visuals.detach()
 	end
 
 	visualsMaid:clean()
+	builderAssistanceMaid:clean()
 
 	Logger.warn("Visuals detached.")
 end

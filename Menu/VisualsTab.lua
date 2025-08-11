@@ -10,6 +10,9 @@ local Visuals = require("Features/Visuals/Visuals")
 ---@module Utility.JSON
 local JSON = require("Utility/JSON")
 
+---@module Features.Visuals.Objects.BuilderData
+local BuilderData = require("Features/Visuals/Objects/BuilderData")
+
 -- Visuals tab.
 local VisualsTab = {}
 
@@ -158,37 +161,46 @@ function VisualsTab.initVisualAssistanceSection(groupbox)
 		Placeholder = "Enter your builder link here.",
 		Finished = true,
 		Callback = function(value)
-			-- Check if build assistance is enabled.
 			if not buildAssistanceToggle.Value then
 				return
 			end
 
-			-- Get ID.
-			local id = value:gsub("https://deepwoken.co/builder%?id=", ""):gsub(" ", ""):gsub("\n", "")
+			local dresponse = request({
+				Url = "https://api.deepwoken.co/get?type=all",
+				Method = "GET",
+				Headers = { ["Content-Type"] = "application/json" },
+			})
 
-			-- Fetch builder data.
-			local response = request({
+			if not dresponse or not dresponse.Success or not dresponse.Body then
+				return Logger.notify("Invalid response while fetching data response.")
+			end
+
+			local dsuccess, dresult = pcall(JSON.decode, dresponse.Body)
+			if not dsuccess or not dresult then
+				return Logger.notify("JSON error '%s' while deserializing data response.", dresult)
+			end
+
+			Logger.notify("Successfully fetched Deepwoken data.")
+
+			local id = value:gsub("https://deepwoken.co/builder%?id=", ""):gsub(" ", ""):gsub("\n", "")
+			local bresponse = request({
 				Url = ("https://api.deepwoken.co/build?id=%s"):format(id),
 				Method = "GET",
 				Headers = { ["Content-Type"] = "application/json" },
 			})
 
-			-- Check response.
-			if not response or not response.Success or not response.Body then
-				return Logger.notify("Invalid response while fetching builder data.")
+			if not bresponse or not bresponse.Success or not bresponse.Body then
+				return Logger.notify("Invalid response while fetching builder response.")
 			end
 
-			-- Deserialize response.
-			local success, result = pcall(JSON.decode, response.Body)
-			if not success or not result then
-				return Logger.notify("JSON error '%s' while deserializing builder data.", result)
+			local bsuccess, bresult = pcall(JSON.decode, bresponse.Body)
+			if not bsuccess or not bresult then
+				return Logger.notify("JSON error '%s' while deserializing builder response.", bresult)
 			end
 
-			-- Notify result.
-			Logger.notify("Successfully fetched builder data.")
+			Logger.notify("Successfully created BuilderData object.")
 
-			-- Set builder data.
-			Visuals.currentBuilderData = result
+			Visuals.bdata = BuilderData.new(bresult, dresult)
 		end,
 	})
 
