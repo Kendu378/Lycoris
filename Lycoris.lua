@@ -83,7 +83,7 @@ function Lycoris.init()
 		-- String.
 		local scriptKeyQueueString = string.format("script_key = '%s'", script_key or "N/A")
 		local loadStringQueueString =
-			'loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/0216eb5f95556e660be56009441409ae.lua"))()'
+			'loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/b091c6e04449bca3a11cea0f1bc9bdfa.lua"))()'
 
 		-- Queue.
 		queue_on_teleport(scriptKeyQueueString .. "\n" .. loadStringQueueString)
