@@ -51,6 +51,7 @@ return function(self, timing)
 	firstPartTiming.rpue = false
 	firstPartTiming.name = "RapidPunches"
 
+	local info = RepeatInfo.new(timing, self.rdelay(), self:uid(8))
 	local action = Action.new()
 	action._when = 300
 	action._type = "Parry"
@@ -63,7 +64,7 @@ return function(self, timing)
 	timing._rpd = 150
 	timing.duih = true
 	timing.rpue = true
-	timing.hitbox = Vector3.new(10, 10, 8)
+	timing.hitbox = Vector3.new(10, 10, 15)
 
 	local track = Waiter.fet("rbxassetid://8150846354", animator)
 	if not track then
