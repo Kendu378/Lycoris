@@ -1,6 +1,6 @@
 # Deepwoken Rewrite
 **Module diff vs. previous snapshot: +8/-0/~26 (added/removed/changed)**
-```
+```diff
 + (added) BloodCross
 + (added) GlacialArc
 + (added) GremorianLongSpear
