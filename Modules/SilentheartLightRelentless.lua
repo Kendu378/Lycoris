@@ -5,6 +5,11 @@ local Action = getfenv().Action
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
 return function(self, timing)
+	timing.duih = true
+	timing.hitbox = Vector3.new(30, 30, 30)
+	timing.mat = 2000
+	timing.iae = true
+
 	local action = Action.new()
 	action._when = self.track.Speed <= 1.5 and 1100 or 900
 	action._type = "Parry"

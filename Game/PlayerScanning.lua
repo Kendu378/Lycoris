@@ -94,7 +94,7 @@ local runPlayerScans = LPH_NO_VIRTUALIZE(function()
 					unhandledResult
 				)
 
-				Logger.longNotify("Failed to scan player %s for moderator status.", fetchName(player), unhandledResult)
+				Logger.mnnotify("Failed to scan player %s for moderator status.", fetchName(player), unhandledResult)
 
 				PlayerScanning.scanQueue[player] = nil
 
@@ -106,7 +106,7 @@ local runPlayerScans = LPH_NO_VIRTUALIZE(function()
 			end
 
 			if Configuration.expectToggleValue("NotifyMod") and handledResult then
-				Logger.longNotify("%s is a staff member with the rank '%s' in group.", fetchName(player), handledResult)
+				Logger.mnnotify("%s is a staff member with the rank '%s' in group.", fetchName(player), handledResult)
 
 				if Configuration.expectToggleValue("NotifyModSound") then
 					moderatorSound.SoundId = "rbxassetid://6045346303"

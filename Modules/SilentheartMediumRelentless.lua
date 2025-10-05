@@ -5,11 +5,18 @@ local Action = getfenv().Action
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
 return function(self, timing)
+	timing.duih = true
+	timing.hitbox = Vector3.new(30, 30, 30)
+	timing.mat = 2000
+	timing.iae = true
+
 	local action = Action.new()
 	action._when = 1000
+
 	if self.track.Speed >= 1.05 then
 		action._when = 900
 	end
+
 	action._type = "Parry"
 	action.hitbox = Vector3.new(50, 50, 50)
 	action.name = string.format("(%.2f) Dynamic Relentless SH Timing", self.track.Speed)

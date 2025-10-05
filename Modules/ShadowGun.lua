@@ -13,7 +13,7 @@ return function(self, timing)
 	local size = data.stratus * 2 + data.cloud * 1
 
 	local action = Action.new()
-	action._when = 300
+	action._when = 750
 	action._type = "Parry"
 	action.hitbox = Vector3.new(5 + size, 5 + size, 20 + range)
 	action.name = "Dynamic Shadow Gun Timing"
@@ -22,8 +22,11 @@ return function(self, timing)
 		action.hitbox = Vector3.new(action.hitbox.X * 2.0, action.hitbox.Y * 2.0, action.hitbox.Z)
 	end
 
-	timing.duih = true
-	timing.hitbox = action.hitbox
+	timing.iae = true
+	timing.ieae = true
+	timing.duih = false
+	timing.mat = 1000
+	timing.ffh = true
 
 	self:action(timing, action)
 end

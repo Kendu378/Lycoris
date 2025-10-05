@@ -28,7 +28,7 @@ return function(self, timing)
 	timing.rpue = true
 	timing.imxd = 100
 	timing._rsd = 750
-	timing._rpd = 150
+	timing._rpd = 300
 	timing.hitbox = Vector3.new(20, 20, 20)
 	self:srpue(self.entity, timing, info)
 end

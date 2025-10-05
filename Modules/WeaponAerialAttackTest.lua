@@ -39,7 +39,7 @@ return function(self, timing)
 	-- Windup + 0-speed duration.
 
 	if data.type == "Dagger" then
-		windup = (0.169 / self.track.Speed) + 0.120
+		windup = (0.165 / self.track.Speed) + 0.100
 	elseif data.type == "Greataxe" then
 		windup = (0.168 / self.track.Speed) + 0.125
 	elseif data.type == "Twinblade" then
@@ -82,7 +82,7 @@ return function(self, timing)
 	local action = Action.new()
 	action._when = windup * 1000
 	action._type = "Parry"
-	action.hitbox = Vector3.new(data.length * 2, data.length * 4, data.length * 2.5)
+	action.hitbox = Vector3.new(data.length * 2, data.length * 4, data.length * 4.2)
 	action.name = string.format(
 		"(%.2f, %.2f, %.2f) (%.2f) Dynamic Weapon Swing",
 		data.oss,

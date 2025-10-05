@@ -21,7 +21,7 @@ return function(self, timing)
 		action._when = 670
 	end
 	action._type = "Parry"
-	action.hitbox = Vector3.new(25, 15, 30)
+	action.hitbox = Vector3.new(40, 15, 40)
 	action.name = string.format("(%.2f) Dynamic Twister Kicks Timing", distance)
 	return self:action(timing, action)
 end

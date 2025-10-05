@@ -4,12 +4,20 @@ local Action = getfenv().Action
 ---@module Modules.Globals.Weapon
 local Weapon = getfenv().Weapon
 
+---@module Utility.Signal
+local Signal = getfenv().Signal
+
 ---Module function.
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
 return function(self, timing)
 	local data = Weapon.data(self.entity)
 	if not data then
+		return
+	end
+
+	local humanoidRootPart = self.entity:FindFirstChild("HumanoidRootPart")
+	if not humanoidRootPart then
 		return
 	end
 
@@ -70,7 +78,7 @@ return function(self, timing)
 	elseif data.type == "Dagger" then
 		windup = (0.195 / self.track.Speed) + 0.100
 	elseif data.type == "Sword" then
-		windup = (0.150 / self.track.Speed) + 0.150
+		windup = (0.150 / self.track.Speed) + 0.100
 	end
 
 	if not windup then
@@ -81,7 +89,7 @@ return function(self, timing)
 	local action = Action.new()
 	action._when = windup * 1000
 	action._type = "Parry"
-	action.hitbox = Vector3.new(data.length * 3, data.length * 3, data.length * 2.2)
+	action.hitbox = Vector3.new(data.length * 3.5, data.length * 3, data.length * 3)
 	action.name = string.format(
 		"(%.2f, %.2f, %.2f) (%.2f) Dynamic Weapon Swing",
 		data.oss,
@@ -89,6 +97,21 @@ return function(self, timing)
 		self.track.Speed,
 		data.length
 	)
+
+	local onDescendantAdded = Signal.new(self.entity.DescendantAdded)
+
+	self.tmaid:add(onDescendantAdded:connect("WeaponTest_DetectFakeSwing", function(child)
+		local current = self.tasks[#self.tasks]
+		if not current then
+			return
+		end
+
+		if child.Name ~= "REP_SOUND_5115545256" then
+			return
+		end
+
+		current:cancel()
+	end))
 
 	return self:action(timing, action)
 end

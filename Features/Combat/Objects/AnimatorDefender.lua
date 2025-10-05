@@ -119,11 +119,6 @@ end)
 ---@param options HitboxOptions
 ---@return boolean
 AnimatorDefender.pfh = LPH_NO_VIRTUALIZE(function(self, options)
-	local yrate = PositionHistory.yrate(self.entity)
-	if not yrate then
-		return false
-	end
-
 	local root = self.entity:FindFirstChild("HumanoidRootPart")
 	if not root then
 		return false
@@ -134,8 +129,15 @@ AnimatorDefender.pfh = LPH_NO_VIRTUALIZE(function(self, options)
 		return false
 	end
 
-	if math.abs(yrate) < PREDICT_FACING_DELTA then
-		return
+	if not options.timing.ffh then
+		local yrate = PositionHistory.yrate(self.entity)
+		if not yrate then
+			return false
+		end
+
+		if math.abs(yrate) < PREDICT_FACING_DELTA then
+			return
+		end
 	end
 
 	local clone = options:clone()
@@ -179,7 +181,7 @@ AnimatorDefender.fpc = LPH_NO_VIRTUALIZE(function(self, timing, options)
 		return false
 	end
 
-	if timing.pfh and self:pfh(options) then
+	if (timing.ffh or timing.pfh) and self:pfh(options) then
 		return true
 	end
 

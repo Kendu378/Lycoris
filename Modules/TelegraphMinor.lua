@@ -30,15 +30,19 @@ return function(self, timing)
 			return
 		end
 
+		timing.fhb = true
+
 		local action = Action.new()
 		action._when = 350
 		action._type = "Dodge"
-		action.hitbox = Vector3.new(20, 20, 100)
+		action.hitbox = Vector3.new(20, 20, 50)
 		action.name = "Krysiger Timing"
 		return self:action(timing, action)
 	end
 
 	if self.owner.Name:match("gigamed") then
+		timing.fhb = false
+
 		local action = Action.new()
 		action._when = 0
 		action._type = "Dodge"
