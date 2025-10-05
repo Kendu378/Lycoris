@@ -15,7 +15,8 @@
 
 - Game ❌
     - Local Character ❌
-        - Always Sprint ❌
+        - Remove Relic Cap ❌
+        - Remove "Dialogue" CD ❌
         - Remove "Loot All" CD ❌
     - Player Monitoring ❌
         - Show All Players in Map ❌
@@ -48,7 +49,6 @@
     - Local Character Exploits ❌
         - Extended Item Pickup ❌
         - Extended Job Board Interact ❌
-        - Remove Relic Cap ❌
   
 - Chaser tween to objective + tween to nearest jar instead
   
