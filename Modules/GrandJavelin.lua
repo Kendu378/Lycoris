@@ -47,6 +47,7 @@ return function(self, timing)
 	pt.name = "GrandJavelinProjectile"
 	pt.hitbox = Vector3.new(20, 20, 70)
 	pt.actions:push(action)
+	pt.cbm = true
 
 	Defense.cdpo(tracker:wait(), pt)
 end

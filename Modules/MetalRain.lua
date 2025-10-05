@@ -37,6 +37,7 @@ return function(self, timing)
 		pt.imdd = 0
 		pt.imxd = 100
 		pt.actions:push(action)
+		pt.cbm = true
 
 		Defense.cdpo(child, pt)
 	end)

@@ -34,6 +34,7 @@ return function(self, timing)
 		pt.name = "BulletProjectile"
 		pt.hitbox = Vector3.new(100, 50, 100)
 		pt.actions:push(action)
+		pt.cbm = true
 
 		Defense.cdpo(child, pt)
 	end)

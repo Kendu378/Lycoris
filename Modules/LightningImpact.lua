@@ -43,6 +43,7 @@ return function(self, timing)
 		pt.name = "StaticBallProjectile"
 		pt.hitbox = Vector3.new(7, 7, 7)
 		pt.actions:push(action)
+		pt.cbm = true
 
 		Defense.cdpo(child, pt)
 	end)

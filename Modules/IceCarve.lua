@@ -34,6 +34,7 @@ return function(self, timing)
 	firstPartTiming.duih = false
 	firstPartTiming.rpue = false
 	firstPartTiming.name = "IceCarve"
+	firstPartTiming.cbm = true
 
 	local action = Action.new()
 	action._when = 400

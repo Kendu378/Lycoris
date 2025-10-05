@@ -47,6 +47,7 @@ return function(self, timing)
 	pt.name = "WindSlashProjectile"
 	pt.hitbox = Vector3.new(10, 10, 10)
 	pt.actions:push(action)
+	pt.cbm = true
 
 	Defense.cdpo(tracker:wait(), pt)
 end

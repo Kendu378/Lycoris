@@ -46,6 +46,7 @@ return function(self, timing)
 	pt.name = "BoneThrowProjectile"
 	pt.hitbox = Vector3.new(50, 50, 50)
 	pt.actions:push(action)
+	pt.cbm = true
 
 	Defense.cdpo(tracker:wait(), pt)
 end

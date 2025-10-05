@@ -36,6 +36,7 @@ return function(self, timing)
 		pt.imxd = 100
 		pt.name = "IceCircleProjectile"
 		pt.actions:push(action)
+		pt.cbm = true
 
 		Defense.cdpo(child, pt)
 	end)

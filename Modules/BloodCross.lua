@@ -31,6 +31,7 @@ return function(self, timing)
 	pt.name = "BloodCrossProjectile"
 	pt.hitbox = Vector3.new(10, 20, 20)
 	pt.actions:push(action)
+	pt.cbm = true
 
 	Defense.cdpo(tracker:wait(), pt)
 end
