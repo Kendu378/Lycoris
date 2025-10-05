@@ -6,14 +6,6 @@
         - Fallback To Counter Mantras ❌
         - Fallback To Blocking ✅
         - Blatant Roll ❌
-    - Feint Detection ❌
-        - Detect M1 Feints ❌
-        - Detect Mantra Feints ❌
-        - React To Feints ❌
-            - Feint Reaction Type ❌
-                - Dodge ❌
-                - Parry ❌
-            - Feint Reaction Chance ❌
     - Combat Assistance ❌
         - Silent Aim ❌
         - Allow Flourish Feints ❌
@@ -58,15 +50,9 @@
         - Extended Item Pickup ❌
         - Extended Job Board Interact ❌
 
-- How should we load internal timings?
-- What are the bugs related to the internal builder?
-- Work on all the ---@todo comments.
-- Figure out lag-compensation for other defender types and projectiles.
-- Chaser tween to objective + tween to nearest instead
+- Chaser tween to objective + tween to nearest jar instead
+  
 - Ethiron tween to objective
-- Figure out later how to match projectiles to users.
-- Config data shuffling + encoding
-- Create a scale utility which will calculate how far along a hitbox you are with a percentage. Each percentage will have markers which will determine what time we need to parry at.
 
 - Finish "Auto Fish"
     - Auto Eat
@@ -74,19 +60,19 @@
     - Server Hop If Players Nearby
     - Webhook Notification
     - Incorporate Auto Loot
+  
 - Finish "Auto Loot"
     - Easy to use filters
     - Loot all option
     - Easy to be built into other modules
+  
 - Finish "Extra Keybinds"
     - Keybind builder to partial item search find
+  
 - Finish "Echo Farm"
+
 - Auto Ragdoll Recover
-- Hitbox Visualizer
+
 - Chaser Multi Player Support
 - Hide Obelisks That Are Already Turned On
 - PVP Safety
-- Fix FOV
-
-# What moves do we need to add?
-https://docs.google.com/spreadsheets/d/1jcZFsSF5iSfbYryL9edl5B_r34tlMo0HPwoFqKiPps4/edit?gid=1386834576#gid=1386834576
