@@ -57,6 +57,9 @@ Tweening.update = LPH_NO_VIRTUALIZE(function(dt)
 
 	local _, _, _, m00, m01, m02, m10, m11, m12, m20, m21, m22 = rotation:GetComponents()
 
+	-- We are never limited on the Y axis for tween studs.
+	newPosition = Vector3.new(newPosition.X, targetPosition.Y, newPosition.Z)
+
 	if
 		m00 == m00
 		or m01 == m01
