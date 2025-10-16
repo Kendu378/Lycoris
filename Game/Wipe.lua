@@ -24,6 +24,7 @@ local Logger = require("Utility/Logger")
 local DEBUGGING_MODE = true
 
 -- Services.
+local players = game:GetService("Players")
 local replicatedStorage = game:GetService("ReplicatedStorage")
 
 ---Telemetry log.
@@ -116,9 +117,15 @@ function Wipe.depths()
 
 	telemetryLog("(Depths) Teleporting and interacting with Self NPC.")
 
-	Interactions.interact(selfNpc, {
-		{ choice = "[The End]" },
-	}, true)
+	repeat
+		-- Interact.
+		Interactions.interact(selfNpc, {
+			{ choice = "[The End]" },
+		}, true)
+
+		-- Wait.
+		task.wait()
+	until not players.LocalPlayer.Character
 
 	telemetryLog("(Depths) Wiped slot. Removing marker.")
 

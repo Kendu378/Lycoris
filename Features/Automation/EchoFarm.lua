@@ -177,7 +177,7 @@ function EchoFarm.wfc(tdata)
 		return error("No EchoFarm data found in PersistentData.")
 	end
 
-	local character = players.LocalPlayer.Character
+	local character = players.LocalPlayer.Character or players.LocalPlayer.CharacterAdded:Wait()
 	local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
 	local startTimestamp = os.clock()
 	local voidingTicks = 0
@@ -276,9 +276,19 @@ function EchoFarm.ktitus(tdata)
 	-- Wait until we're finished.
 	telemetryLog("(EchoFarm) Waiting until auto loot is finished.")
 
+	local backpack = players.LocalPlayer.Backpack
+	local items = #backpack:GetChildren()
+
 	repeat
 		task.wait()
 	until not AutoLoot.active()
+
+	-- Wait until we have more items in our backpack.
+	telemetryLog("(EchoFarm) Waiting until we have more items in our backpack.")
+
+	repeat
+		task.wait()
+	until #backpack:GetChildren() > items
 
 	-- Check if we have an enchant stone.
 	telemetryLog("(EchoFarm) Checking for enchant stone.")
