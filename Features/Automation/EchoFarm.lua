@@ -307,16 +307,24 @@ function EchoFarm.ktitus(tdata)
 		task.wait()
 	until #backpack:GetChildren() > items
 
-	-- Give it two seconds.
-	task.wait(2)
-
 	-- Check if we have an enchant stone.
 	telemetryLog("(EchoFarm) Checking for enchant stone.")
 
-	local stone = Finder.tool("Enchant Stone", false)
-	if not stone then
-		return ServerHop.hop(data.slot, false)
-	end
+	local stone = nil
+	local timestamp = os.clock()
+
+	repeat
+		-- Look for stone.
+		stone = Finder.tool("Enchant Stone", false)
+
+		-- Has it been over a second?
+		if os.clock() - timestamp >= 1.0 then
+			return ServerHop.hop(data.slot, false)
+		end
+
+		-- Wait.
+		task.wait()
+	until stone
 
 	-- Mark a kill.
 	telemetryLog("(EchoFarm) Marking Titus kill.")
