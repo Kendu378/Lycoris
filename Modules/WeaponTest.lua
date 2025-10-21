@@ -94,10 +94,10 @@ return function(self, timing)
 	local action = Action.new()
 	action._when = windup * 1000
 	action._type = "Parry"
-	action.hitbox = Vector3.new(data.length * 2.7, data.length * 3, data.length * 2.5)
+	action.hitbox = Vector3.new(data.length * 2.7, data.length * 3, data.length * 1.8)
 
 	if data.type == "Pistol" or data.type == "Rapier" or data.type == "Spear" then
-		action.hitbox = Vector3.new(data.length * 1.7, data.length * 3, data.length * 2.5)
+		action.hitbox = Vector3.new(data.length * 1.7, data.length * 3, data.length * 1.8)
 	end
 
 	action.name = string.format(

@@ -1,19 +1,58 @@
+---@type PartTiming
+local PartTiming = getfenv().PartTiming
+
 ---@type Action
 local Action = getfenv().Action
+
+---@type ProjectileTracker
+---@diagnostic disable-next-line: unused-local
+local ProjectileTracker = getfenv().ProjectileTracker
+
+---@module Features.Combat.Defense
+local Defense = getfenv().Defense
 
 ---Module function.
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
 return function(self, timing)
-	local distance = self:distance(self.entity)
-	local action = Action.new()
-	action._when = 600
-	if distance >= 16 then
-		action._when = 700
+	local thrown = workspace:FindFirstChild("Thrown")
+	if not thrown then
+		return
 	end
 
-	action._type = "Parry"
-	action.hitbox = Vector3.new(32, 32, 32)
-	action.name = string.format("(%.2f) Dynamic Ice Dagers Timing", distance)
-	return self:action(timing, action)
+	local tracker = ProjectileTracker.new(function(candidate)
+		return candidate.Name == "IceDagger"
+	end)
+
+	task.wait(0.5 - self.rtt())
+
+	if self:distance(self.entity) <= 15 then
+		local action = Action.new()
+		action._type = "Parry"
+		action._when = 0
+		action.name = "Ice Daggers Close Timing"
+		action.ihbc = true
+		return self:action(timing, action)
+	end
+
+	local action = Action.new()
+	action._when = 0
+	action._type = "Start Block"
+	action.name = "Ice Dagger Part"
+
+	local actionTwo = Action.new()
+	actionTwo._when = 500
+	actionTwo._type = "End Block"
+	actionTwo.ihbc = true
+
+	local pt = PartTiming.new()
+	pt.uhc = true
+	pt.duih = true
+	pt.fhb = true
+	pt.name = "IceDaggersProjectile"
+	pt.hitbox = Vector3.new(20, 20, 32.5)
+	pt.actions:push(action)
+	pt.cbm = true
+
+	Defense.cdpo(tracker:wait(), pt)
 end

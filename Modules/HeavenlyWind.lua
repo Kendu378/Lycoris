@@ -28,6 +28,9 @@ return function(self, timing)
 	action.name = string.format("(%.2f) Heavenly Wind Timing", slamDelta)
 
 	if self.entity.Name:match(".evengarde") then
+		timing.ieae = true
+		timing.iae = true
+		action._when = 200
 		action.hitbox = Vector3.new(55, 55, 55)
 		action.name = string.format("(%.2f) Maestro Heavenly Wind Timing", slamDelta)
 	end
