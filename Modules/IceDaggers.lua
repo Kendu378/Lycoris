@@ -84,10 +84,6 @@ return function(self, timing)
 				-- only update if size changed meaningfully
 				if (pt.hitbox - newHitbox).Magnitude > 0.05 then
 					pt.hitbox = newHitbox
-
-					if Defense.updateHitbox then
-						Defense.updateHitbox(projectile, pt)
-					end
 				end
 
 				task.wait(0.05) -- small step for smoother transitions and lower CPU usage
