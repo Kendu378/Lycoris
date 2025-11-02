@@ -26,8 +26,9 @@ local replicatedStorage = game:GetService("ReplicatedStorage")
 ---Is an effect within a specific time?
 ---@param effect table
 ---@param time number? If the number is unspecified, it will use the Debris time.
+---@param offset boolean If the number is specified, should we use it as an offset from the Debris time?
 ---@return boolean
-local function withinTime(effect, time)
+local function withinTime(effect, time, offset)
 	if not effect.index then
 		return false
 	end
@@ -37,12 +38,16 @@ local function withinTime(effect, time)
 		return false
 	end
 
-	local dtime = time or effect.index.DebrisTime
+	local dtime = effect.index.DebrisTime
 	if not dtime then
 		return false
 	end
 
-	return os.clock() - timestamp <= dtime
+	if offset and time then
+		return os.clock() - timestamp <= (dtime + time)
+	end
+
+	return os.clock() - timestamp <= (time or dtime)
 end
 
 ---Are we currently casting Sightless Beam?
@@ -99,11 +104,11 @@ function EffectListener.astun()
 	local usingCriticalEffect = effectReplicatorModule:FindEffect("UsingCritical")
 	local usingSpellEffect = effectReplicatorModule:FindEffect("UsingSpell")
 
-	if lightAttackEffect and withinTime(lightAttackEffect, 0.5) then
+	if lightAttackEffect and withinTime(lightAttackEffect, 0.5, false) then
 		return true
 	end
 
-	if usingCriticalEffect then
+	if usingCriticalEffect and withinTime(usingCriticalEffect, -0.1, true) then
 		return true
 	end
 
@@ -166,7 +171,7 @@ function EffectListener.cdodge()
 		return false
 	end
 
-	if stunCooldownEffect and withinTime(stunCooldownEffect, nil) then
+	if stunCooldownEffect and withinTime(stunCooldownEffect, nil, false) then
 		return false
 	end
 
