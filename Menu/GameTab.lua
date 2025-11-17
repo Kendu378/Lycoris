@@ -51,16 +51,6 @@ function GameTab.initLocalCharacterSection(groupbox)
 
 	local flyDepBox = groupbox:AddDependencyBox()
 
-	---@see updateAAGunBypass function in Movement.lua
-	--[[
-	flyDepBox:AddToggle("AAGunBypass", {
-		Text = "Anti Air Gun Bypass",
-		Tooltip = "This feature does not work with the 'Brick Wall' talent. It abuses the fact that being knocked disables AA-Gun.",
-		Default = false,
-	})
-	]]
-	--
-
 	flyDepBox:AddSlider("FlySpeed", {
 		Text = "Fly Speed",
 		Default = 200,
@@ -194,6 +184,12 @@ function GameTab.initLocalCharacterSection(groupbox)
 	})
 
 	local asDepBox = groupbox:AddDependencyBox()
+
+	asDepBox:AddToggle("AutoSprintOnCrouch", {
+		Text = "Auto Sprint On Crouch",
+		Tooltip = "Allow 'Auto Sprint' to run even while crouching.",
+		Default = false,
+	})
 
 	asDepBox:AddToggle("AutoSprintDelay", {
 		Text = "Auto Sprint Delay",

@@ -84,8 +84,10 @@ function BuilderSection:reset()
 	self.selectedModule:SetRawValue("")
 	self.skipRepeatNotification:SetRawValue(false)
 	self.noDashFallback:SetRawValue(false)
+	self.noVentFallback:SetRawValue(false)
 	self.hitboxFacingOffset:SetRawValue(true)
 	self.hitboxShiftOffset:SetRawValue(0)
+	self.blockFallbackHoldTime:SetRawValue(0.3)
 
 	-- Reset action list.
 	self:arefresh(nil)
@@ -511,6 +513,8 @@ function BuilderSection:timing()
 			self.hitboxFacingOffset:SetRawValue(found.fhb)
 			self.hitboxShiftOffset:SetRawValue(found.hso)
 			self.noDashFallback:SetRawValue(found.ndfb)
+			self.noVentFallback:SetRawValue(found.nvfb)
+			self.blockFallbackHoldTime:SetRawValue(found.bfht)
 
 			-- Load extra elements.
 			self:exload(found)
@@ -666,6 +670,18 @@ function BuilderSection:builder()
 		Default = 1,
 		Callback = self:tnc(function(timing, value)
 			timing.tag = value
+		end),
+	})
+
+	self.blockHoldTime = tab:AddSlider(nil, {
+		Text = "Block Fallback Hold Time",
+		Min = 0,
+		Max = 5,
+		Suffix = "s",
+		Default = 0.3,
+		Rounding = 2,
+		Callback = self:tnc(function(timing, value)
+			timing.bfht = value
 		end),
 	})
 
@@ -833,6 +849,15 @@ function BuilderSection:builder()
 		Default = false,
 		Callback = self:tnc(function(timing, value)
 			timing.ndfb = value
+		end),
+	})
+
+	self.noVentFallback = tab:AddToggle(nil, {
+		Text = "No Vent Fallback",
+		Tooltip = "If enabled, the timing will not fallback to a vent.",
+		Default = false,
+		Callback = self:tnc(function(timing, value)
+			timing.nvfb = value
 		end),
 	})
 

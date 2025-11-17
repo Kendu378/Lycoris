@@ -66,15 +66,13 @@ Essential Additions
   
 - 4. Auto Roll Cancel (for Float Like a Butterfly or Death From Above)
 
-- 5. Clientside Hit Prediction + No Dodge Fallback (e.g Astral Wind)
+- 5. Clientside Hit Prediction + No Dodge Fallback Additions (e.g Astral Wind)
    - Astral Wind (needs to keep blocking if parrying; else hold block lol)
   
 - 6. Instead of first action, grab the last mutli-hit action for the timing information
 
 - 7. Per-Timing Block Hold Time With Global 0.3s
   
-- 8. Parry, Dodge, Block Queue System
-- 
 Farming Fixes
 
 - 4. Clean Up "Echo Farm"

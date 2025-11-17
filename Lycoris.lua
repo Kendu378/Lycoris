@@ -34,6 +34,9 @@ local PersistentData = require("Utility/PersistentData")
 ---@module Game.KeyHandling
 local KeyHandling = require("Game/KeyHandling")
 
+---@module Game.QueuedBlocking
+local QueuedBlocking = require("Game/QueuedBlocking")
+
 ---@module Utility.Maid
 local Maid = require("Utility/Maid")
 
@@ -261,6 +264,8 @@ function Lycoris.init()
 		return
 	end
 
+	QueuedBlocking.init()
+
 	SaveManager.init()
 
 	ModuleManager.refresh()
@@ -344,6 +349,8 @@ function Lycoris.detach()
 	JoyFarm.stop()
 
 	Menu.detach()
+
+	QueuedBlocking.detach()
 
 	ControlModule.detach()
 

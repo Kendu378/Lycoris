@@ -411,6 +411,22 @@ local onTick = LPH_NO_VIRTUALIZE(function(...)
 		task.wait(Configuration.expectOptionValue("AutoSprintDelayTime"))
 	end
 
+	local effectReplicator = replicatedStorage:FindFirstChild("EffectReplicator")
+	if not effectReplicator then
+		return
+	end
+
+	local effectReplicatorModule = require(effectReplicator)
+	if not effectReplicatorModule then
+		return
+	end
+
+	if
+		not Configuration.expectToggleValue("AutoSprintOnCrouch") and effectReplicatorModule:HasEffect("ClientCrouch")
+	then
+		return oldTick(...)
+	end
+
 	---@note: Set the timestamp set by sprinting to -math.huge so it's always over 0.25s.
 	return -math.huge
 end)
@@ -554,12 +570,18 @@ end)
 ---On unreliable fire server.
 ---@return any
 local onUnreliableFireServer = LPH_NO_VIRTUALIZE(function(...)
+	local args = { ... }
+	local self = args[1]
+
+	local stopDodgeRemote = KeyHandling.getRemote("StopDodge")
+
+	if stopDodgeRemote and self == stopDodgeRemote and Configuration.expectToggleValue("ExtendRollCancelFrames") then
+		return
+	end
+
 	if checkcaller() then
 		return oldUnreliableFireServer(...)
 	end
-
-	local args = { ... }
-	local self = args[1]
 
 	if banRemotes[self] then
 		return Logger.warn("(%s) Anticheat is calling a unreliable ban remote.", self.Name)
@@ -578,12 +600,6 @@ local onUnreliableFireServer = LPH_NO_VIRTUALIZE(function(...)
 	if (feintClickRemote and self == feintClickRemote) or (offhandAttackRemote and self == offhandAttackRemote) then
 		onInterceptedInput(INPUT_RIGHT_CLICK)
 		return oldUnreliableFireServer(...)
-	end
-
-	local stopDodgeRemote = KeyHandling.getRemote("StopDodge")
-
-	if stopDodgeRemote and self == stopDodgeRemote and Configuration.expectToggleValue("ExtendRollCancelFrames") then
-		return
 	end
 
 	return oldUnreliableFireServer(...)

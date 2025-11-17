@@ -199,98 +199,6 @@ InputClient.getInputData = LPH_NO_VIRTUALIZE(function()
 	return inputDataCache
 end)
 
----End block function.
----@param noUnsprint boolean
-InputClient.bend = LPH_NO_VIRTUALIZE(function(noUnsprint)
-	local unblockRemote = KeyHandling.getRemote("Unblock")
-	if not unblockRemote then
-		return Logger.warn("Cannot end block without unblock remote.")
-	end
-
-	local sprintFunction = InputClient.sprintFunctionCache
-	local inputData = InputClient.getInputData()
-
-	if not sprintFunction or not inputData then
-		return Logger.warn("Cannot end block without sprint function or input data.")
-	end
-
-	local effectReplicator = replicatedStorage:FindFirstChild("EffectReplicator")
-	if not effectReplicator then
-		return Logger.warn("Cannot end block without effect replicator.")
-	end
-
-	local effectReplicatorModule = require(effectReplicator)
-	if not effectReplicatorModule then
-		return Logger.warn("Cannot end block without effect replicator module.")
-	end
-
-	while effectReplicatorModule:HasEffect("Blocking") do
-		-- Unblock.
-		unblockRemote:FireServer()
-
-		-- Wait.
-		task.wait()
-	end
-
-	inputData["f"] = false
-
-	---@note: This can be undesired behavior if we were simply trying to unblock as a backup method.
-	if noUnsprint then
-		return
-	end
-
-	sprintFunction(false)
-end)
-
----Start block function.
-InputClient.bstart = LPH_NO_VIRTUALIZE(function()
-	local effectReplicator = replicatedStorage:FindFirstChild("EffectReplicator")
-	if not effectReplicator then
-		return Logger.warn("Cannot start block without effect replicator.")
-	end
-
-	local effectReplicatorModule = require(effectReplicator)
-	if not effectReplicatorModule then
-		return Logger.warn("Cannot start block without effect replicator module.")
-	end
-
-	local blockRemote = KeyHandling.getRemote("Block")
-	if not blockRemote then
-		return Logger.warn("Cannot start block without block remote.")
-	end
-
-	local sprintFunction = InputClient.sprintFunctionCache
-	local inputData = InputClient.getInputData()
-	if not sprintFunction or not inputData then
-		return Logger.warn("Cannot start block without sprint function or input data.")
-	end
-
-	local bufferEffect = effectReplicatorModule:FindEffect("M1Buffering")
-	if bufferEffect then
-		bufferEffect:Remove()
-	end
-
-	if effectReplicatorModule:HasEffect("CastingSpell") then
-		return Logger.warn("Cannot start block while casting spell.")
-	end
-
-	blockRemote:FireServer()
-
-	inputData["f"] = true
-
-	sprintFunction(false)
-
-	while not effectReplicatorModule:HasEffect("Blocking") do
-		task.wait()
-
-		if effectReplicatorModule:FindEffect("Action") or effectReplicatorModule:FindEffect("Knocked") then
-			continue
-		end
-
-		blockRemote:FireServer()
-	end
-end)
-
 ---Left click function.
 ---@param cframe CFrame
 ---@param ignoreChecks boolean
@@ -379,18 +287,6 @@ InputClient.amantra = LPH_NO_VIRTUALIZE(function(tool)
 	activateMantraRemote:FireServer(tool)
 end)
 
----Deflect. This is called this way because it can either give parry or block frames depending on whether or not parry is on cooldown.
----@param extraWaitTime number?
-InputClient.deflect = LPH_NO_VIRTUALIZE(function(extraWaitTime)
-	InputClient.bstart()
-
-	if extraWaitTime then
-		task.wait(extraWaitTime)
-	end
-
-	InputClient.bend()
-end)
-
 ---Vent function.
 InputClient.vent = LPH_NO_VIRTUALIZE(function()
 	local character = players.LocalPlayer.Character
@@ -463,7 +359,7 @@ InputClient.dodge = LPH_NO_VIRTUALIZE(function(skipRollCancel, rollCancelDelay)
 	end
 
 	local pivotVelocity = effectReplicatorModule:FindEffect("PivotVelocity")
-	local usePivotVelocityRoll = false
+	local pivotStep = false
 
 	local lookVector = root.CFrame.LookVector
 	local moveDirection = humanoid.MoveDirection
@@ -483,7 +379,7 @@ InputClient.dodge = LPH_NO_VIRTUALIZE(function(skipRollCancel, rollCancelDelay)
 
 		pivotVelocity.Value:Destroy()
 		pivotVelocity:Remove()
-		usePivotVelocityRoll = true
+		pivotStep = true
 	end
 
 	local usedRollCancelDelay = Configuration.expectOptionValue("RollCancelDelay") or 0.0
@@ -496,80 +392,6 @@ InputClient.dodge = LPH_NO_VIRTUALIZE(function(skipRollCancel, rollCancelDelay)
 		rollCancelDelay = nil
 	end
 
-	---@note: Run this in a seperate task because the roll movement must still continue even when detached and destroyed. Else, it will behave wrong.
-	--- This is OK. Before any yields occur, we fetch the remotes beforehand. Also, the clean up is done at the very end of the function.
-	task.spawn(InputClient.roll, usePivotVelocityRoll and true or nil, usedRollCancelDelay)
-end)
-
----Re-created feint function.
-InputClient.feint = LPH_NO_VIRTUALIZE(function()
-	local character = players.LocalPlayer.Character
-	if not character then
-		return Logger.warn("Cannot feint without character.")
-	end
-
-	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-	if not humanoidRootPart then
-		return Logger.warn("Cannot feint without humanoid root part.")
-	end
-
-	local characterHandler = character:FindFirstChild("CharacterHandler")
-	if not characterHandler then
-		return Logger.warn("Cannot feint without character handler.")
-	end
-
-	local requests = characterHandler:FindFirstChild("Requests")
-	if not requests then
-		return Logger.warn("Cannot feint without requests.")
-	end
-
-	local feintReleaseRemote = requests:FindFirstChild("FeintRelease")
-	if not feintReleaseRemote then
-		return Logger.warn("Cannot feint without feint release remote.")
-	end
-
-	local inputDataTable = InputClient.getInputData()
-	if not inputDataTable then
-		return Logger.warn("Cannot feint without input data.")
-	end
-
-	local feintClickRemote = KeyHandling.getRemote("FeintClick")
-	if not feintClickRemote then
-		return Logger.warn("Cannot feint without feint click remote.")
-	end
-
-	local effectReplicator = replicatedStorage:FindFirstChild("EffectReplicator")
-	if not effectReplicator then
-		return Logger.warn("Cannot dodge without effect replicator.")
-	end
-
-	local effectReplicatorModule = require(effectReplicator)
-	if not effectReplicatorModule then
-		return Logger.warn("Cannot dodge without effect replicator module.")
-	end
-
-	-- ClientFeint inlined
-	if effectReplicatorModule:HasEffect("ClientDodge") then
-		effectReplicatorModule:CreateEffect("ClientFeint"):Debris(0.4)
-	end
-
-	if humanoidRootPart:FindFirstChild("ClientRemove") then
-		humanoidRootPart.ClientRemove:Destroy()
-	end
-
-	inputDataTable["Right"] = true
-
-	feintClickRemote:FireServer(inputDataTable)
-
-	feintReleaseRemote:FireServer(inputDataTable)
-
-	inputDataTable["Right"] = false
-end)
-
----Re-created roll function for safety.
----@param pivotStep boolean
----@param rollCancelTime number?
-InputClient.roll = LPH_NO_VIRTUALIZE(function(pivotStep, rollCancelTime)
 	local unblockRemote = KeyHandling.getRemote("Unblock")
 	local dodgeRemote = KeyHandling.getRemote("Dodge")
 	local stopDodge = KeyHandling.getRemote("StopDodge")
@@ -583,7 +405,6 @@ InputClient.roll = LPH_NO_VIRTUALIZE(function(pivotStep, rollCancelTime)
 		return
 	end
 
-	local character = players.LocalPlayer.Character
 	local characterHandler = character and character:FindFirstChild("CharacterHandler")
 	local inputClient = characterHandler and characterHandler:FindFirstChild("InputClient")
 	if not inputClient then
@@ -592,11 +413,6 @@ InputClient.roll = LPH_NO_VIRTUALIZE(function(pivotStep, rollCancelTime)
 
 	local hrp = character:FindFirstChild("HumanoidRootPart")
 	if not hrp then
-		return
-	end
-
-	local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-	if not humanoid then
 		return
 	end
 
@@ -663,16 +479,6 @@ InputClient.roll = LPH_NO_VIRTUALIZE(function(pivotStep, rollCancelTime)
 	local clientEffectDirect = requests and requests:FindFirstChild("ClientEffectDirect")
 
 	if not clientEffectDirect then
-		return
-	end
-
-	local effectReplicator = replicatedStorage:FindFirstChild("EffectReplicator")
-	if not effectReplicator then
-		return
-	end
-
-	local effectReplicatorModule = require(effectReplicator)
-	if not effectReplicatorModule then
 		return
 	end
 
@@ -818,8 +624,6 @@ InputClient.roll = LPH_NO_VIRTUALIZE(function(pivotStep, rollCancelTime)
 		rollTimeSeconds = 0.5
 	end
 
-	local lookVector = hrp.CFrame.LookVector
-	local moveDirection = humanoid.MoveDirection
 	local rollAnimation = nil
 
 	if moveDirection.Magnitude < 0.1 then
@@ -1015,291 +819,364 @@ InputClient.roll = LPH_NO_VIRTUALIZE(function(pivotStep, rollCancelTime)
 		strength = 1.8,
 	})
 
-	local freeDodgeBoolean = false
-	local rollCancelStart = os.clock()
+	---@note: Run this in a seperate task because the roll movement must still continue even when detached and destroyed. Else, it will behave wrong.
+	--- This is OK. Before any yields occur, we fetch the remotes beforehand. Also, the clean up is done at the very end of the function.
+	task.spawn(function()
+		local freeDodgeBoolean = false
+		local rollCancelStart = os.clock()
 
-	if
-		airDashBoolean
-		and (
-			game.PlaceId == 5614144350
-			or players.LocalPlayer.Backpack:FindFirstChild("Talent:Aerial Assault")
-			or game.PlaceId == 13891478131
-		)
-	then
-		if not arcSuitDash then
-			clientEffectDirect:Fire("GaleLeap15", {
-				char = character,
-			})
-		else
-			clientEffectDirect:Fire("ArcExhaust", {
-				char = character,
-				dur = 0.6,
-			})
-		end
-
-		local clientAirDodgeEffect = effectReplicatorModule:CreateEffect("ClientAirDodge")
-
-		while game:GetService("RunService").RenderStepped:Wait() do
-			if effectReplicatorModule:HasEffect("MantraCasted") and loadedRollAnimation.IsPlaying then
-				loadedRollAnimation:Stop()
+		if
+			airDashBoolean
+			and (
+				game.PlaceId == 5614144350
+				or players.LocalPlayer.Backpack:FindFirstChild("Talent:Aerial Assault")
+				or game.PlaceId == 13891478131
+			)
+		then
+			if not arcSuitDash then
+				clientEffectDirect:Fire("GaleLeap15", {
+					char = character,
+				})
+			else
+				clientEffectDirect:Fire("ArcExhaust", {
+					char = character,
+					dur = 0.6,
+				})
 			end
 
-			if
-				(
-						effectReplicatorModule:HasEffect("LightAttack")
-						or effectReplicatorModule:HasEffect("CriticalActive")
-					)
-					and not isPressureForwarding
-				or effectReplicatorModule:HasEffect("CastingSpell")
-				or effectReplicatorModule:HasEffect("UsingSpell")
-				or effectReplicatorModule:HasEffect("Feint")
-				or effectReplicatorModule:HasEffect("ClientFeint")
-				or effectReplicatorModule:HasEffect("Parry")
-				or effectReplicatorModule:HasEffect("DodgedFrame")
-				or rollCancelTime and os.clock() - rollCancelStart > rollCancelTime
-			then
-				stopDodge:FireServer(inputDataTable, effectReplicatorModule:HasEffect("LightAttack"), airDashBoolean)
+			local clientAirDodgeEffect = effectReplicatorModule:CreateEffect("ClientAirDodge")
+
+			while game:GetService("RunService").RenderStepped:Wait() do
+				if effectReplicatorModule:HasEffect("MantraCasted") and loadedRollAnimation.IsPlaying then
+					loadedRollAnimation:Stop()
+				end
 
 				if
-					players.LocalPlayer.Backpack:FindFirstChild("Talent:Death from Above")
-					or effectReplicatorModule:HasEffect("RevealBleeding")
-						and players.LocalPlayer.Backpack:FindFirstChild("Talent:Float Like a Butterfly")
+					(
+							effectReplicatorModule:HasEffect("LightAttack")
+							or effectReplicatorModule:HasEffect("CriticalActive")
+						)
+						and not isPressureForwarding
+					or effectReplicatorModule:HasEffect("CastingSpell")
+					or effectReplicatorModule:HasEffect("UsingSpell")
+					or effectReplicatorModule:HasEffect("Feint")
+					or effectReplicatorModule:HasEffect("ClientFeint")
+					or effectReplicatorModule:HasEffect("Parry")
+					or effectReplicatorModule:HasEffect("DodgedFrame")
+					or usedRollCancelDelay and os.clock() - rollCancelStart > usedRollCancelDelay
 				then
-					pcall(function() --[[ Line: 1147 ]]
-						requests.ServerAirDashCancel:FireServer()
-					end)
-				end
-
-				loadedRollAnimation:Stop()
-
-				if inputDataTable["A"] then
-					cancelLeft:Play(0.1)
-				else
-					cancelRight:Play(0.1)
-				end
-
-				replicatedDebris:Fire(rollBodyVelocity, 0.1)
-				rollBodyVelocity.MaxForce = Vector3.new(100, 0, 100)
-				rollBodyVelocity.Velocity = Vector3.zero
-				freeDodgeBoolean = true
-				break
-			else
-				if rollBodyVelocity and rollBodyVelocity.Parent then
-					moveDirection = workspace.CurrentCamera.CFrame.LookVector
-					moveDirection = Vector3.new(
-						moveDirection.X * newMoveDirectionMulti,
-						moveDirection.Y * airDashVertMulti,
-						moveDirection.Z * newMoveDirectionMulti
+					stopDodge:FireServer(
+						inputDataTable,
+						effectReplicatorModule:HasEffect("LightAttack"),
+						airDashBoolean
 					)
 
-					if effectReplicatorModule:HasEffect("Wings") and not isPressureForwarding then
-						rollBodyVelocity.Velocity = moveDirection
+					if
+						players.LocalPlayer.Backpack:FindFirstChild("Talent:Death from Above")
+						or effectReplicatorModule:HasEffect("RevealBleeding")
+							and players.LocalPlayer.Backpack:FindFirstChild("Talent:Float Like a Butterfly")
+					then
+						pcall(function() --[[ Line: 1147 ]]
+							requests.ServerAirDashCancel:FireServer()
+						end)
+					end
+
+					loadedRollAnimation:Stop()
+
+					if inputDataTable["A"] then
+						cancelLeft:Play(0.1)
 					else
-						rollBodyVelocity.Velocity = moveDirection
-						if rollBodyVelocity.Velocity.Y > 0 then
-							rollBodyVelocity.Velocity = rollBodyVelocity.Velocity / Vector3.new(1, 2, 1)
+						cancelRight:Play(0.1)
+					end
+
+					replicatedDebris:Fire(rollBodyVelocity, 0.1)
+					rollBodyVelocity.MaxForce = Vector3.new(100, 0, 100)
+					rollBodyVelocity.Velocity = Vector3.zero
+					freeDodgeBoolean = true
+					break
+				else
+					if rollBodyVelocity and rollBodyVelocity.Parent then
+						moveDirection = workspace.CurrentCamera.CFrame.LookVector
+						moveDirection = Vector3.new(
+							moveDirection.X * newMoveDirectionMulti,
+							moveDirection.Y * airDashVertMulti,
+							moveDirection.Z * newMoveDirectionMulti
+						)
+
+						if effectReplicatorModule:HasEffect("Wings") and not isPressureForwarding then
+							rollBodyVelocity.Velocity = moveDirection
+						else
+							rollBodyVelocity.Velocity = moveDirection
+							if rollBodyVelocity.Velocity.Y > 0 then
+								rollBodyVelocity.Velocity = rollBodyVelocity.Velocity / Vector3.new(1, 2, 1)
+							end
 						end
 					end
-				end
-				if
-					rollTimeSeconds < tick() - rollTimestamp
-					or not rollBodyVelocity
-					or not rollBodyVelocity.Parent
-					or not inAir(humanoid, effectReplicatorModule)
-					or hrp:FindFirstChild("GravBV")
-				then
-					break
+					if
+						rollTimeSeconds < tick() - rollTimestamp
+						or not rollBodyVelocity
+						or not rollBodyVelocity.Parent
+						or not inAir(humanoid, effectReplicatorModule)
+						or hrp:FindFirstChild("GravBV")
+					then
+						break
+					end
 				end
 			end
-		end
 
-		clientAirDodgeEffect:Remove()
-		loadedRollAnimation:Stop()
+			clientAirDodgeEffect:Remove()
+			loadedRollAnimation:Stop()
 
-		if tick() - rollTimestamp < rollTimeSeconds then
-			---@note: Again, exempt crouch boolean flag.
-			humanoid:LoadAnimation(landingAnim):Play()
+			if tick() - rollTimestamp < rollTimeSeconds then
+				---@note: Again, exempt crouch boolean flag.
+				humanoid:LoadAnimation(landingAnim):Play()
 
-			local airDashBodyVelocity = Instance.new("BodyVelocity")
-			airDashBodyVelocity:AddTag("AllowedBM")
-			airDashBodyVelocity.MaxForce = Vector3.new(50000, 0, 50000)
-			airDashBodyVelocity.Velocity = hrp.CFrame.LookVector * 60
-			airDashBodyVelocity.Parent = hrp
-
-			replicatedDebris:Fire(airDashBodyVelocity, 0.2)
-
-			repeat
-				task.wait(0.01)
+				local airDashBodyVelocity = Instance.new("BodyVelocity")
+				airDashBodyVelocity:AddTag("AllowedBM")
+				airDashBodyVelocity.MaxForce = Vector3.new(50000, 0, 50000)
 				airDashBodyVelocity.Velocity = hrp.CFrame.LookVector * 60
-			until not airDashBodyVelocity or not airDashBodyVelocity.Parent
-		end
-	else
-		repeat
-			if effectReplicatorModule:HasEffect("MantraCasted") and loadedRollAnimation.IsPlaying then
-				loadedRollAnimation:Stop(0)
+				airDashBodyVelocity.Parent = hrp
+
+				replicatedDebris:Fire(airDashBodyVelocity, 0.2)
+
+				repeat
+					task.wait(0.01)
+					airDashBodyVelocity.Velocity = hrp.CFrame.LookVector * 60
+				until not airDashBodyVelocity or not airDashBodyVelocity.Parent
 			end
-
-			if not aerialAssaultBoolean and inAir(humanoid, effectReplicatorModule) then
-				aerialAssaultBoolean = true
-				rollMoveDirectionMulti = rollMoveDirectionMulti - 10
-			end
-
-			local combatActionEffects = effectReplicatorModule:FindEffect("Feint")
-				or effectReplicatorModule:HasEffect("ClientFeint")
-				or effectReplicatorModule:HasEffect("Parry")
-				or effectReplicatorModule:HasEffect("DodgedFrame")
-
-			if
-				combatActionEffects
-				or (effectReplicatorModule:HasEffect("LightAttack") or effectReplicatorModule:HasEffect(
-					"CriticalActive"
-				)) and not effectReplicatorModule:HasEffect("PressureForwarding")
-				or effectReplicatorModule:HasEffect("CastingSpell")
-				or effectReplicatorModule:HasEffect("UsingSpell")
-				or rollCancelTime and os.clock() - rollCancelStart > rollCancelTime
-			then
-				stopDodge:FireServer(inputDataTable, effectReplicatorModule:HasEffect("LightAttack"))
-
-				if loadedRollAnimation.IsPlaying then
+		else
+			repeat
+				if effectReplicatorModule:HasEffect("MantraCasted") and loadedRollAnimation.IsPlaying then
 					loadedRollAnimation:Stop(0)
 				end
 
-				if
-					(effectReplicatorModule:FindEffect("Feint") or effectReplicatorModule:HasEffect("ClientFeint"))
-					and not loadedCancelLeftAnimation.IsPlaying
-					and not loadedCancelRightAnimation.IsPlaying
-				then
-					if inputDataTable["A"] then
-						loadedCancelLeftAnimation:Play(0.1)
-					else
-						loadedCancelRightAnimation:Play(0.1)
-					end
-				end
-
-				if combatActionEffects then
-					freeDodgeBoolean = true
-				else
-					freeDodgeBoolean = "mantra"
-					break
-				end
-			end
-
-			if rollBodyVelocity and rollBodyVelocity.Parent then
-				local currentMoveDirection = humanoid.MoveDirection
-				if currentMoveDirection.Magnitude < 0.1 then
-					currentMoveDirection = moveDirection
-				end
-
-				if not pivotStep then
-					moveDirection = currentMoveDirection
-				end
-
-				if freeDodgeBoolean == true and rollMoveDirectionMulti >= 30 then
+				if not aerialAssaultBoolean and inAir(humanoid, effectReplicatorModule) then
+					aerialAssaultBoolean = true
 					rollMoveDirectionMulti = rollMoveDirectionMulti - 10
 				end
 
-				rollBodyVelocity.Velocity = moveDirection * rollMoveDirectionMulti
-			end
+				local combatActionEffects = effectReplicatorModule:FindEffect("Feint")
+					or effectReplicatorModule:HasEffect("ClientFeint")
+					or effectReplicatorModule:HasEffect("Parry")
+					or effectReplicatorModule:HasEffect("DodgedFrame")
 
-			runService.RenderStepped:Wait()
-		until rollTimeSeconds < tick() - rollTimestamp
-			or not rollBodyVelocity
-			or not rollBodyVelocity.Parent
-			or hrp:FindFirstChild("GravBV")
-			or effectReplicatorModule:HasEffect("CancelDodge")
-	end
+				if
+					combatActionEffects
+					or (effectReplicatorModule:HasEffect("LightAttack") or effectReplicatorModule:HasEffect(
+						"CriticalActive"
+					)) and not effectReplicatorModule:HasEffect("PressureForwarding")
+					or effectReplicatorModule:HasEffect("CastingSpell")
+					or effectReplicatorModule:HasEffect("UsingSpell")
+					or usedRollCancelDelay and os.clock() - rollCancelStart > usedRollCancelDelay
+				then
+					stopDodge:FireServer(inputDataTable, effectReplicatorModule:HasEffect("LightAttack"))
 
-	clientEffectDirect:Fire("footprintCheck", {
-		char = character,
-		strength = 1.5,
-	})
+					if loadedRollAnimation.IsPlaying then
+						loadedRollAnimation:Stop(0)
+					end
 
-	if isPressureForwarding or arcSuitDash then
-		loadedRollAnimation:Stop()
-	end
+					if
+						(effectReplicatorModule:FindEffect("Feint") or effectReplicatorModule:HasEffect("ClientFeint"))
+						and not loadedCancelLeftAnimation.IsPlaying
+						and not loadedCancelRightAnimation.IsPlaying
+					then
+						if inputDataTable["A"] then
+							loadedCancelLeftAnimation:Play(0.1)
+						else
+							loadedCancelRightAnimation:Play(0.1)
+						end
+					end
 
-	if rollBodyVelocity then
-		rollBodyVelocity:Destroy()
-	end
+					if combatActionEffects then
+						freeDodgeBoolean = true
+					else
+						freeDodgeBoolean = "mantra"
+						break
+					end
+				end
 
-	local dodgeCooldown = 1.3
+				if rollBodyVelocity and rollBodyVelocity.Parent then
+					local currentMoveDirection = humanoid.MoveDirection
+					if currentMoveDirection.Magnitude < 0.1 then
+						currentMoveDirection = moveDirection
+					end
 
-	if
-		effectReplicatorModule:HasEffect("RollCancelFatigue")
-		and (
-			effectReplicatorModule:HasEffect("DownComesTheClaw")
-			or not players.LocalPlayer.Backpack:FindFirstChild("Talent:Tap Dancer")
-		)
-	then
-		dodgeCooldown = 1.8
-	end
+					if not pivotStep then
+						moveDirection = currentMoveDirection
+					end
 
-	if
-		freeDodgeBoolean
-		and not effectReplicatorModule:HasEffect("RollCancelFatigue")
-		and not effectReplicatorModule:HasEffect("DownComesTheClaw")
-		and not airDashBoolean
-	then
-		effectReplicatorModule:CreateEffect("RollCancelFatigue"):Debris(dodgeCooldown)
-		dodgeCooldown = 0
-	end
+					if freeDodgeBoolean == true and rollMoveDirectionMulti >= 30 then
+						rollMoveDirectionMulti = rollMoveDirectionMulti - 10
+					end
 
-	if effectReplicatorModule:HasEffect("DanceBlade") then
-		dodgeCooldown = 0
-	end
+					rollBodyVelocity.Velocity = moveDirection * rollMoveDirectionMulti
+				end
 
-	local dodgeCooldownTimestamp = tick()
-
-	if dodgeCooldown > 0 then
-		repeat
-			task.wait()
-		until dodgeCooldown <= tick() - dodgeCooldownTimestamp
-			or effectReplicatorModule:HasEffect("DanceBlade")
-			or effectReplicatorModule:HasEffect("PivotStepRESET")
-	end
-
-	dashItEffect:Remove()
-
-	---@note: Inlined freefall function.
-	if loadedFreefallAnimation.IsPlaying then
-		local expectedDurationTime = 0.25
-
-		if effectReplicatorModule:HasEffect("Jumped") then
-			expectedDurationTime = expectedDurationTime + 0.2
+				runService.RenderStepped:Wait()
+			until rollTimeSeconds < tick() - rollTimestamp
+				or not rollBodyVelocity
+				or not rollBodyVelocity.Parent
+				or hrp:FindFirstChild("GravBV")
+				or effectReplicatorModule:HasEffect("CancelDodge")
 		end
 
-		local durationWaited = 0.0
+		clientEffectDirect:Fire("footprintCheck", {
+			char = character,
+			strength = 1.5,
+		})
 
-		repeat
-			durationWaited = durationWaited + task.wait()
-		until effectReplicatorModule:HasEffect("Landed") or expectedDurationTime <= durationWaited
-
-		if durationWaited < expectedDurationTime or loadedFreefallAnimation.IsPlaying then
-			return
+		if isPressureForwarding or arcSuitDash then
+			loadedRollAnimation:Stop()
 		end
 
-		if effectReplicatorModule:HasEffect("DashIt") then
-			repeat
-				task.wait()
-			until not effectReplicatorModule:HasEffect("DashIt")
+		if rollBodyVelocity then
+			rollBodyVelocity:Destroy()
+		end
+
+		local dodgeCooldown = 1.3
+
+		if
+			effectReplicatorModule:HasEffect("RollCancelFatigue")
+			and (
+				effectReplicatorModule:HasEffect("DownComesTheClaw")
+				or not players.LocalPlayer.Backpack:FindFirstChild("Talent:Tap Dancer")
+			)
+		then
+			dodgeCooldown = 1.8
 		end
 
 		if
-			humanoid:GetState() == Enum.HumanoidStateType.Freefall
-			and not effectReplicatorModule:HasEffect("Swimming")
-			and not effectReplicatorModule:HasEffect("Gliding")
-			and not effectReplicatorModule:HasEffect("Knocked")
+			freeDodgeBoolean
+			and not effectReplicatorModule:HasEffect("RollCancelFatigue")
+			and not effectReplicatorModule:HasEffect("DownComesTheClaw")
+			and not airDashBoolean
 		then
-			loadedFreefallAnimation.Priority = Enum.AnimationPriority.Movement
-			loadedFreefallAnimation:Play(0.3)
+			effectReplicatorModule:CreateEffect("RollCancelFatigue"):Debris(dodgeCooldown)
+			dodgeCooldown = 0
 		end
+
+		if effectReplicatorModule:HasEffect("DanceBlade") then
+			dodgeCooldown = 0
+		end
+
+		local dodgeCooldownTimestamp = tick()
+
+		if dodgeCooldown > 0 then
+			repeat
+				task.wait()
+			until dodgeCooldown <= tick() - dodgeCooldownTimestamp
+				or effectReplicatorModule:HasEffect("DanceBlade")
+				or effectReplicatorModule:HasEffect("PivotStepRESET")
+		end
+
+		dashItEffect:Remove()
+
+		---@note: Inlined freefall function.
+		if loadedFreefallAnimation.IsPlaying then
+			local expectedDurationTime = 0.25
+
+			if effectReplicatorModule:HasEffect("Jumped") then
+				expectedDurationTime = expectedDurationTime + 0.2
+			end
+
+			local durationWaited = 0.0
+
+			repeat
+				durationWaited = durationWaited + task.wait()
+			until effectReplicatorModule:HasEffect("Landed") or expectedDurationTime <= durationWaited
+
+			if durationWaited < expectedDurationTime or loadedFreefallAnimation.IsPlaying then
+				return
+			end
+
+			if effectReplicatorModule:HasEffect("DashIt") then
+				repeat
+					task.wait()
+				until not effectReplicatorModule:HasEffect("DashIt")
+			end
+
+			if
+				humanoid:GetState() == Enum.HumanoidStateType.Freefall
+				and not effectReplicatorModule:HasEffect("Swimming")
+				and not effectReplicatorModule:HasEffect("Gliding")
+				and not effectReplicatorModule:HasEffect("Knocked")
+			then
+				loadedFreefallAnimation.Priority = Enum.AnimationPriority.Movement
+				loadedFreefallAnimation:Play(0.3)
+			end
+		end
+
+		noRollEffect:Remove()
+
+		if effectReplicatorModule:HasEffect("Overcharge") then
+			effectReplicatorModule:RemoveEffectsOfClass("Overcharge")
+		end
+	end)
+end)
+
+---Re-created feint function.
+InputClient.feint = LPH_NO_VIRTUALIZE(function()
+	local character = players.LocalPlayer.Character
+	if not character then
+		return Logger.warn("Cannot feint without character.")
 	end
 
-	noRollEffect:Remove()
-
-	if effectReplicatorModule:HasEffect("Overcharge") then
-		effectReplicatorModule:RemoveEffectsOfClass("Overcharge")
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+	if not humanoidRootPart then
+		return Logger.warn("Cannot feint without humanoid root part.")
 	end
+
+	local characterHandler = character:FindFirstChild("CharacterHandler")
+	if not characterHandler then
+		return Logger.warn("Cannot feint without character handler.")
+	end
+
+	local requests = characterHandler:FindFirstChild("Requests")
+	if not requests then
+		return Logger.warn("Cannot feint without requests.")
+	end
+
+	local feintReleaseRemote = requests:FindFirstChild("FeintRelease")
+	if not feintReleaseRemote then
+		return Logger.warn("Cannot feint without feint release remote.")
+	end
+
+	local inputDataTable = InputClient.getInputData()
+	if not inputDataTable then
+		return Logger.warn("Cannot feint without input data.")
+	end
+
+	local feintClickRemote = KeyHandling.getRemote("FeintClick")
+	if not feintClickRemote then
+		return Logger.warn("Cannot feint without feint click remote.")
+	end
+
+	local effectReplicator = replicatedStorage:FindFirstChild("EffectReplicator")
+	if not effectReplicator then
+		return Logger.warn("Cannot dodge without effect replicator.")
+	end
+
+	local effectReplicatorModule = require(effectReplicator)
+	if not effectReplicatorModule then
+		return Logger.warn("Cannot dodge without effect replicator module.")
+	end
+
+	-- ClientFeint inlined
+	if effectReplicatorModule:HasEffect("ClientDodge") then
+		effectReplicatorModule:CreateEffect("ClientFeint"):Debris(0.4)
+	end
+
+	if humanoidRootPart:FindFirstChild("ClientRemove") then
+		humanoidRootPart.ClientRemove:Destroy()
+	end
+
+	inputDataTable["Right"] = true
+
+	feintClickRemote:FireServer(inputDataTable)
+
+	feintReleaseRemote:FireServer(inputDataTable)
+
+	inputDataTable["Right"] = false
 end)
 
 ---Cache InputClient module. Returns whether the caching was a success or not.

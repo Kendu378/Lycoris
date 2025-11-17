@@ -22,6 +22,9 @@ local InputClient = require("Game/InputClient")
 ---@module Features.Combat.Objects.RepeatInfo
 local RepeatInfo = require("Features/Combat/Objects/RepeatInfo")
 
+---@module Game.QueuedBlocking
+local QueuedBlocking = require("Game/QueuedBlocking")
+
 ---@module Features.Combat.Objects.HitboxOptions
 local HitboxOptions = require("Features/Combat/Objects/HitboxOptions")
 
@@ -463,8 +466,10 @@ AnimatorDefender.process = LPH_NO_VIRTUALIZE(function(self, track)
 		and PP_SCRAMBLE_STR(faction._type) == "Parry"
 		and faction:when() > (self.rtt() + 0.6)
 	then
-		InputClient.deflect()
+		-- Start deflect.
+		QueuedBlocking.invoke(QueuedBlocking.BLOCK_TYPE_DEFLECT, "Defender_FakeDeflect", nil)
 
+		-- Notify.
 		self:notify(timing, "Intentionally mistimed to simulate human error.")
 	end
 

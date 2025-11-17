@@ -156,26 +156,10 @@ function CombatTab.initAutoDefenseSection(groupbox)
 		Tooltip = "This is used as a last resort. If 'Deflect Block Fallback' is on, it will wait for shaky block.",
 	})
 
-	local dbfToggle = autoDefenseDepBox:AddToggle("DeflectBlockFallback", {
+	autoDefenseDepBox:AddToggle("DeflectBlockFallback", {
 		Text = "Deflect Block Fallback",
 		Default = false,
 		Tooltip = "If enabled, the auto defense will fallback to block frames if parry action and/or fallback is not available.",
-	})
-
-	local dbfDepBox = autoDefenseDepBox:AddDependencyBox()
-
-	dbfDepBox:AddSlider("HoldBlockTime", {
-		Text = "Hold Block Time",
-		Default = 0.0,
-		Min = 0,
-		Max = 0.3,
-		Suffix = "s",
-		Rounding = 2,
-		Tooltip = "Additional time to hold block for when using block as a fallback.",
-	})
-
-	dbfDepBox:SetupDependencies({
-		{ dbfToggle, true },
 	})
 
 	local rollCancelToggle = autoDefenseDepBox:AddToggle("RollCancel", {

@@ -10,6 +10,9 @@ local InputClient = require("Game/InputClient")
 ---@module Features.Combat.Objects.Task
 local Task = require("Features/Combat/Objects/Task")
 
+---@module Game.QueuedBlocking
+local QueuedBlocking = require("Game/QueuedBlocking")
+
 ---@module Utility.Maid
 local Maid = require("Utility/Maid")
 
@@ -243,45 +246,6 @@ Defender.rpue = LPH_NO_VIRTUALIZE(function(self, entity, timing, info, cache)
 	self:parry(timing, nil)
 end)
 
----Check if we're holding block and we're not supposed to do anything.
----@return boolean
-Defender.cblocking = LPH_NO_VIRTUALIZE(function()
-	local keybinds = replicatedStorage:FindFirstChild("KeyBinds")
-	if not keybinds then
-		return false
-	end
-
-	local keybindsModule = require(keybinds)
-	if not keybindsModule or not keybindsModule.Current then
-		return false
-	end
-
-	local selectedFilters = Configuration.expectOptionValue("AutoDefenseFilters") or {}
-	local bindings = keybindsModule:GetBindings() or {}
-
-	for _, keybind in next, bindings["Block"] do
-		local success, keyCode = pcall(function()
-			return Enum.KeyCode[tostring(keybind)]
-		end)
-
-		if not success or not keyCode then
-			continue
-		end
-
-		if not userInputService:IsKeyDown(keyCode) then
-			continue
-		end
-
-		if not selectedFilters["Disable While Holding Block"] then
-			continue
-		end
-
-		return true
-	end
-
-	return false
-end)
-
 ---Check if we're in a valid state to proceed with action handling. Extend me.
 ---@param self Defender
 ---@param options ValidationOptions
@@ -305,7 +269,7 @@ Defender.valid = LPH_NO_VIRTUALIZE(function(self, options)
 
 	local selectedFilters = Configuration.expectOptionValue("AutoDefenseFilters") or {}
 
-	if self:cblocking() then
+	if selectedFilters["Disable While Holding Block"] and StateListener.hblock() then
 		return internalNotifyFunction(timing, "User is pressing down on a key binded to Block.")
 	end
 
@@ -664,29 +628,6 @@ Defender.hc = LPH_NO_VIRTUALIZE(function(self, options, info)
 	return result
 end)
 
----Handle end block.
----@param self Defender
-Defender.bend = LPH_NO_VIRTUALIZE(function(self)
-	-- Iterate for start block tasks.
-	for idx, task in next, self.tasks do
-		-- Check if task is a start block.
-		if task.identifier ~= "Start Block" then
-			continue
-		end
-
-		-- End start block tasks.
-		task:cancel()
-
-		-- Clear in table.
-		self.tasks[idx] = nil
-	end
-
-	-- End block.
-	if not self:cblocking() then
-		InputClient.bend(false)
-	end
-end)
-
 ---Handle action.
 ---@param self Defender
 ---@param timing Timing
@@ -726,11 +667,11 @@ Defender.handle = LPH_NO_VIRTUALIZE(function(self, timing, action, started)
 	end
 
 	if PP_SCRAMBLE_STR(action._type) == "Start Block" then
-		return InputClient.bstart()
+		return QueuedBlocking.invoke(QueuedBlocking.BLOCK_TYPE_NORMAL, "Defender_StartBlock", nil)
 	end
 
 	if PP_SCRAMBLE_STR(action._type) == "End Block" then
-		return self:bend()
+		return QueuedBlocking.stop("Defender_StartBlock")
 	end
 
 	if PP_SCRAMBLE_STR(action._type) == "Dodge" then
@@ -802,18 +743,21 @@ Defender.parry = LPH_NO_VIRTUALIZE(function(self, timing, action)
 
 	-- Parry if possible. Handles replacements.
 	if StateListener.cparry() then
+		-- Handle deflecting.
 		if timing.nfdb or not StateListener.cdodge() or not dashReplacement then
-			return InputClient.deflect()
+			return QueuedBlocking.invoke(QueuedBlocking.BLOCK_TYPE_DEFLECT, "Defender_Deflect", nil)
 		end
 
+		-- Notify.
 		internalNotify(timing, "Action type 'Parry' replaced to 'Dodge' type.")
 
+		-- Dash replacement.
 		return InputClient.dodge()
 	end
 
 	-- What fallbacks can we run?
 	local canBlock = StateListener.cblock() and Configuration.expectToggleValue("DeflectBlockFallback")
-	local canVent = StateListener.cvent() and Configuration.expectToggleValue("VentFallback")
+	local canVent = StateListener.cvent() and Configuration.expectToggleValue("VentFallback") and not timing.nvfb
 	local canDodge = StateListener.cdodge()
 		and Configuration.expectToggleValue("RollOnParryCooldown")
 		and not timing.ndfb
@@ -828,7 +772,7 @@ Defender.parry = LPH_NO_VIRTUALIZE(function(self, timing, action)
 
 	if canBlock then
 		-- Block.
-		InputClient.deflect(Configuration.expectToggleValue("HoldBlockTime"))
+		QueuedBlocking.invoke(QueuedBlocking.BLOCK_TYPE_NORMAL, "Defender_BlockFallback", timing.bfht)
 
 		-- Notify.
 		return internalNotify(timing, "Action type 'Parry' fallback to 'Block' type.")
@@ -903,26 +847,6 @@ Defender.clean = LPH_NO_VIRTUALIZE(function(self)
 
 	-- Reset auto feint.
 	self.afeinted = false
-
-	-- Was there a start block, end block, or parry?
-	local blocking = false
-
-	for idx, task in next, self.tasks do
-		-- Cancel task.
-		task:cancel()
-
-		-- Clear in table.
-		self.tasks[idx] = nil
-
-		-- Check.
-		blocking = blocking
-			or (task.identifier == "Start Block" or task.identifier == "End Block" or task.identifier == "Parry")
-	end
-
-	-- Run end block, just in case we get stuck.
-	if blocking and not self:cblocking() then
-		InputClient.bend(true)
-	end
 end)
 
 ---Process module.

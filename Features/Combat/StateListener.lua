@@ -29,6 +29,7 @@ local stateMaid = Maid.new()
 -- Services.
 local players = game:GetService("Players")
 local replicatedStorage = game:GetService("ReplicatedStorage")
+local userInputService = game:GetService("UserInputService")
 
 -- Constants.
 local CHIME_ARENA_PLACE_ID = 6832944305
@@ -137,6 +138,40 @@ local function withinTime(effect, time, offset)
 	end
 
 	return os.clock() - timestamp <= (time or dtime)
+end
+
+---Are we currently holding block?
+---@return boolean
+function StateListener.hblock()
+	local keybinds = replicatedStorage:FindFirstChild("KeyBinds")
+	if not keybinds then
+		return false
+	end
+
+	local keybindsModule = require(keybinds)
+	if not keybindsModule or not keybindsModule.Current then
+		return false
+	end
+
+	local bindings = keybindsModule:GetBindings() or {}
+
+	for _, keybind in next, bindings["Block"] do
+		local success, keyCode = pcall(function()
+			return Enum.KeyCode[tostring(keybind)]
+		end)
+
+		if not success or not keyCode then
+			continue
+		end
+
+		if not userInputService:IsKeyDown(keyCode) then
+			continue
+		end
+
+		return true
+	end
+
+	return false
 end
 
 ---Are we currently casting Sightless Beam?

@@ -13,6 +13,9 @@ local JoyFarm = require("Features/Automation/JoyFarm")
 ---@module Game.InputClient
 local InputClient = require("Game/InputClient")
 
+---@module Game.QueuedBlocking
+local QueuedBlocking = require("Game/QueuedBlocking")
+
 ---@module Game.KeyHandling
 local KeyHandling = require("Game/KeyHandling")
 
@@ -205,15 +208,24 @@ function AutomationTab.initDebuggingSection(groupbox)
 	groupbox:AddButton("Start Echo Farm", EchoFarm.invoke)
 	groupbox:AddButton("Stop Echo Farm", EchoFarm.stop)
 
-	groupbox:AddButton("Start Block", InputClient.bstart)
-	groupbox:AddButton("Stop Block", InputClient.bend)
-
 	groupbox:AddButton("Start Deflect", function()
-		InputClient.deflect()
+		QueuedBlocking.invoke(QueuedBlocking.BLOCK_TYPE_DEFLECT, "StartDeflect", nil)
 	end)
 
 	groupbox:AddButton("Start Deflect 0.1s", function()
-		InputClient.deflect(0.1)
+		QueuedBlocking.invoke(QueuedBlocking.BLOCK_TYPE_DEFLECT, "StartDeflect", 0.1)
+	end)
+
+	groupbox:AddButton("Start Block 0.3s", function()
+		QueuedBlocking.invoke(QueuedBlocking.BLOCK_TYPE_NORMAL, "StartBlock", 0.3)
+	end)
+
+	groupbox:AddButton("Start Block", function()
+		QueuedBlocking.invoke(QueuedBlocking.BLOCK_TYPE_NORMAL, "StartBlock", nil)
+	end)
+
+	groupbox:AddButton("Stop All Block", function()
+		QueuedBlocking.empty()
 	end)
 
 	groupbox:AddButton("Raw Start Block", function()

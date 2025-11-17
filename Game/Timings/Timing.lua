@@ -20,6 +20,8 @@ local ActionContainer = require("Game/Timings/ActionContainer")
 ---@field hso number Hitbox shift offset. This offset is applied backwards. Positive is backwards, negative is forwards.
 ---@field ndfb boolean No dash fallback.
 ---@field cbm boolean A non-saved field to indicate whether this was non-part-timing created by a module.
+---@field nvfb boolean No vent fallback.
+---@field bfht number Block fallback hold time.
 local Timing = {}
 Timing.__index = Timing
 
@@ -105,6 +107,14 @@ function Timing:load(values)
 	if typeof(values.ndfb) == "boolean" then
 		self.ndfb = values.ndfb
 	end
+
+	if typeof(values.nvfb) == "boolean" then
+		self.nvfb = values.nvfb
+	end
+
+	if typeof(values.bfht) == "number" then
+		self.bfht = values.bfht
+	end
 end
 
 ---Equals check.
@@ -179,6 +189,14 @@ function Timing:equals(other)
 		return false
 	end
 
+	if self.nvfb ~= other.nvfb then
+		return false
+	end
+
+	if self.bfht ~= other.bfht then
+		return false
+	end
+
 	return true
 end
 
@@ -204,6 +222,8 @@ function Timing:clone()
 	clone.fhb = self.fhb
 	clone.ndfb = self.ndfb
 	clone.hso = self.hso
+	clone.nvfb = self.nvfb
+	clone.bfht = self.bfht
 
 	return clone
 end
@@ -235,6 +255,8 @@ function Timing:serialize()
 		phd = self.phd,
 		pfh = self.pfh,
 		hso = self.hso,
+		nvfb = self.nvfb,
+		bfht = self.bfht,
 	}
 end
 
@@ -261,6 +283,8 @@ function Timing.new(values)
 	self.fhb = true
 	self.ndfb = false
 	self.hso = 0
+	self.nvfb = false
+	self.bfht = 0.3
 
 	if values then
 		self:load(values)
