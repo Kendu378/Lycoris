@@ -13,6 +13,9 @@ local HitboxOptions = require("Features/Combat/Objects/HitboxOptions")
 ---@module Utility.Configuration
 local Configuration = require("Utility/Configuration")
 
+---@module Game.Latency
+local Latency = require("Game/Latency")
+
 ---@class PartDefender: Defender
 ---@field part BasePart
 ---@field timing PartTiming
@@ -63,7 +66,7 @@ PartDefender.valid = LPH_NO_VIRTUALIZE(function(self, options)
 	hoptions:ucache()
 
 	if not timing.duih or timing.umoa then
-		if not self:hc(hoptions, timing.duih and RepeatInfo.new(timing, self.rdelay(), self.vuid) or nil) then
+		if not self:hc(hoptions, timing.duih and RepeatInfo.new(timing, Latency.rdelay(), self.vuid) or nil) then
 			return internalNotifyFunction(timing, "Not in hitbox.")
 		end
 	end

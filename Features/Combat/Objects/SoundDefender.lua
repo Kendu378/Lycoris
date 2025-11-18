@@ -16,6 +16,9 @@ local RepeatInfo = require("Features/Combat/Objects/RepeatInfo")
 ---@module Features.Combat.Objects.HitboxOptions
 local HitboxOptions = require("Features/Combat/Objects/HitboxOptions")
 
+---@module Game.Latency
+local Latency = require("Game/Latency")
+
 ---@class SoundDefender: Defender
 ---@field owner Model? The owner of the part.
 ---@field sound Sound The sound that we're defending.
@@ -63,7 +66,7 @@ SoundDefender.valid = LPH_NO_VIRTUALIZE(function(self, options)
 	hoptions.action = action
 	hoptions:ucache()
 
-	if not self:hc(hoptions, timing.duih and RepeatInfo.new(timing, self.rdelay(), self:uid(10)) or nil) then
+	if not self:hc(hoptions, timing.duih and RepeatInfo.new(timing, Latency.rdelay(), self:uid(10)) or nil) then
 		return internalNotifyFunction(timing, "Not in hitbox.")
 	end
 

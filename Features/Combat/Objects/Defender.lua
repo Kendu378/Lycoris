@@ -46,6 +46,9 @@ local StateListener = require("Features/Combat/StateListener")
 ---@module Utility.Finder
 local Finder = require("Utility/Finder")
 
+---@module Game.Latency
+local Latency = require("Game/Latency")
+
 ---@class Defender
 ---@field tasks Task[]
 ---@field tmaid Maid Cleaned up every clean cycle.
@@ -60,7 +63,6 @@ Defender.__index = Defender
 Defender.__type = "Defender"
 
 -- Services.
-local stats = game:GetService("Stats")
 local replicatedStorage = game:GetService("ReplicatedStorage")
 local userInputService = game:GetService("UserInputService")
 local players = game:GetService("Players")
@@ -142,7 +144,7 @@ end)
 Defender.fsecs = LPH_NO_VIRTUALIZE(function(self, timing)
 	local player = players:GetPlayerFromCharacter(self.entity)
 	local sd = (player and player:GetAttribute("AveragePing") or 50.0) / 2000
-	return (timing.pfht or 0.15) + (sd + Defender.rdelay())
+	return (timing.pfht or 0.15) + (sd + Latency.rdelay())
 end)
 
 ---Start repeat until parry end.
@@ -165,7 +167,7 @@ Defender.srpue = LPH_NO_VIRTUALIZE(function(self, entity, timing, info)
 	}
 
 	self:mark(Task.new(string.format("RPUE_%s_%i", timing.name, 0), function()
-		return cache["rsd"] - info.irdelay - self.sdelay()
+		return cache["rsd"] - info.irdelay - Latency.sdelay()
 	end, timing.punishable, timing.after, self.rpue, self, entity, timing, info, cache))
 
 	-- Notify.
@@ -176,14 +178,14 @@ Defender.srpue = LPH_NO_VIRTUALIZE(function(self, entity, timing, info)
 			cache["name"],
 			cache["rsd"],
 			cache["rpd"],
-			self.rtt()
+			Latency.rtt()
 		)
 	else
 		self:notify(
 			timing,
 			"Added RPUE '%s' ([redacted], then every [redacted]) with ping '%.2f' (changing) subtracted.",
 			cache["name"],
-			self.rtt()
+			Latency.rtt()
 		)
 	end
 end)
@@ -226,7 +228,7 @@ Defender.rpue = LPH_NO_VIRTUALIZE(function(self, entity, timing, info, cache)
 	info.index = info.index + 1
 
 	self:mark(Task.new(string.format("RPUE_%s_%i", cache.name, info.index), function()
-		return cache["rpd"] - info.irdelay - self.sdelay()
+		return cache["rpd"] - info.irdelay - Latency.sdelay()
 	end, timing.punishable, timing.after, self.rpue, self, entity, timing, info, cache))
 
 	if not target then
@@ -483,47 +485,6 @@ Defender.notify = LPH_NO_VIRTUALIZE(function(self, timing, str, ...)
 	Logger.notify("[%s] (%s) %s", PP_SCRAMBLE_STR(timing.name), self.__type, string.format(str, ...))
 end)
 
----@note: Perhaps one day, we can get better approximations for these.
---- These used to rely on GetNetworkPing which we assumed would be sending or atleast receiving delay.
---- That is incorrect, it is RakNet ping thereby being RTT.
-
----Get receiving delay.
----@return number
-function Defender.rdelay()
-	return math.max(Defender.rtt() / 2, 0.0)
-end
-
----Get sending delay.
----@return number
-function Defender.sdelay()
-	return math.max(Defender.rtt() / 2, 0.0)
-end
-
----Get data ping.
----@note: https://devforum.roblox.com/t/in-depth-information-about-robloxs-remoteevents-instance-replication-and-physics-replication-w-sources/1847340
----@note: The forum post above is misleading, not only is it the RTT time, please note that this also takes into account all delays like frame time.
----@note: This is our round-trip time (e.g double the ping) since we have a receiving delay (replication) and a sending delay when we send the input to the server.
----@todo: For every usage, the sending delay needs to be continously updated. The receiving one must be calculated once at initial send for AP ping compensation.
----@return number
-function Defender.rtt()
-	local network = stats:FindFirstChild("Network")
-	if not network then
-		return
-	end
-
-	local serverStatsItem = network:FindFirstChild("ServerStatsItem")
-	if not serverStatsItem then
-		return
-	end
-
-	local dataPingItem = serverStatsItem:FindFirstChild("Data Ping")
-	if not dataPingItem then
-		return
-	end
-
-	return (dataPingItem:GetValue() / 1000)
-end
-
 ---Repeat conditional.
 ---@param self Defender
 ---@param info RepeatInfo
@@ -606,7 +567,7 @@ Defender.hc = LPH_NO_VIRTUALIZE(function(self, options, info)
 	end
 
 	-- Run prediction check.
-	local closest = EntityHistory.pclosest(players.LocalPlayer, tick() - (self.sdelay() * PREDICTION_LENIENCY_MULTI))
+	local closest = EntityHistory.pclosest(players.LocalPlayer, tick() - (Latency.sdelay() * PREDICTION_LENIENCY_MULTI))
 	if not closest then
 		return false
 	end
@@ -897,7 +858,7 @@ Defender.afeint = LPH_NO_VIRTUALIZE(function(self, timing, action, started)
 	-- If not, then we did our goal, and prevented the user from getting hit.
 
 	-- Time until our animation ends.
-	local animTimeLeft = (lfaction:when() - (os.clock() - latimestamp)) + self.rtt()
+	local animTimeLeft = (lfaction:when() - (os.clock() - latimestamp)) + Latency.rtt()
 
 	-- Time until the enemy's action hits us.
 	local enemyTimeLeft = action:when() - (os.clock() - started)
@@ -950,11 +911,11 @@ Defender.action = LPH_NO_VIRTUALIZE(function(self, timing, action)
 	end
 
 	-- Get initial receive delay.
-	local rdelay = self.rdelay()
+	local rdelay = Latency.rdelay()
 
 	-- Add action.
 	self:mark(Task.new(PP_SCRAMBLE_STR(action._type), function()
-		return action:when() - rdelay - self.sdelay()
+		return action:when() - rdelay - Latency.sdelay()
 	end, timing.punishable, timing.after, self.handle, self, timing, action, os.clock()))
 
 	-- Log.
@@ -964,14 +925,14 @@ Defender.action = LPH_NO_VIRTUALIZE(function(self, timing, action)
 			"Added action '%s' (%.2fs) with ping '%.2f' (changing) subtracted.",
 			PP_SCRAMBLE_STR(action.name),
 			action:when(),
-			self.rtt()
+			Latency.rtt()
 		)
 	else
 		self:notify(
 			timing,
 			"Added action '%s' ([redacted]) with ping '%.2f' (changing) subtracted.",
 			PP_SCRAMBLE_STR(action.name),
-			self.rtt()
+			Latency.rtt()
 		)
 	end
 end)

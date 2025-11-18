@@ -17,6 +17,9 @@ local Defense = getfenv().Defense
 ---@module Utility.TaskSpawner
 local TaskSpawner = getfenv().TaskSpawner
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
 ---Module function.
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
@@ -34,7 +37,7 @@ return function(self, timing)
 			return candidate.Name == "TRACKER"
 		end)
 
-		task.wait(0.70 - self.rtt())
+		task.wait(0.70 - Latency.rtt())
 
 		if self:distance(self.entity) <= 14 then
 			local action = Action.new()

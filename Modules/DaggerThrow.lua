@@ -5,6 +5,9 @@ local Action = getfenv().Action
 ---@diagnostic disable-next-line: unused-local
 local ProjectileTracker = getfenv().ProjectileTracker
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
 ---Check if orbs have all been destroyed.
 local function areOrbsStillAlive(orbs)
 	for _, orb in next, orbs do
@@ -31,7 +34,7 @@ return function(self, timing)
 		return
 	end
 
-	task.wait(0.7 - self.rtt())
+	task.wait(0.7 - Latency.rtt())
 
 	local orbs = {}
 

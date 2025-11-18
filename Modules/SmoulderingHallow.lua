@@ -10,6 +10,10 @@ local Action = getfenv().Action
 ---@module Features.Combat.Defense
 local Defense = getfenv().Defense
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
+-- Create listener for Smouldering Hallow projectiles
 local plistener = ProjectileListener.new("SmoulderingCrit")
 
 ---Module function.
@@ -21,7 +25,7 @@ return function(self, timing)
 			return
 		end
 
-		task.wait(0.01 - self.rtt())
+		task.wait(0.01 - Latency.rtt())
 
 		if self:distance(self.entity) <= 0 then
 			local action = Action.new()

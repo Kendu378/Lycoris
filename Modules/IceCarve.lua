@@ -10,6 +10,9 @@ local Waiter = getfenv().Waiter
 ---@module Features.Combat.Objects.RepeatInfo
 local RepeatInfo = getfenv().RepeatInfo
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
 ---Module function.
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
@@ -57,7 +60,7 @@ return function(self, timing)
 
 	local startTimestamp = os.clock()
 
-	local info = RepeatInfo.new(timing, self.rdelay(), self:uid(10))
+	local info = RepeatInfo.new(timing, Latency.rdelay(), self:uid(10))
 	info.track = track
 
 	---@todo: Move to 'rc'

@@ -1,6 +1,9 @@
 ---@class Action
 local Action = getfenv().Action
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
 ---Module function.
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
@@ -23,7 +26,7 @@ return function(self, timing)
 	local lastTimestamp = os.clock()
 
 	while task.wait() do
-		if (os.clock() - lastTimestamp) > (0.6 - self.rtt()) then
+		if (os.clock() - lastTimestamp) > (0.6 - Latency.rtt()) then
 			break
 		end
 

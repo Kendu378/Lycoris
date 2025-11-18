@@ -5,6 +5,9 @@ local Action = getfenv().Action
 ---@diagnostic disable-next-line: unused-local
 local ProjectileTracker = getfenv().ProjectileTracker
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
 ---Check if cubes have all been destroyed.
 local function areCubesStillAlive(cubes)
 	for _, cube in next, cubes do
@@ -43,7 +46,7 @@ return function(self, timing)
 		return self:action(timing, action)
 	end
 
-	task.wait(3.1 - self.rtt())
+	task.wait(3.1 - Latency.rtt())
 
 	if not hrp:FindFirstChild("REP_SOUND_13692212248") then
 		return

@@ -51,6 +51,9 @@ local Maid = require("Utility/Maid")
 ---@module Utility.Signal
 local Signal = require("Utility/Signal")
 
+---@module Game.Latency
+local Latency = require("Game/Latency")
+
 -- Module filesystem.
 local fs = Filesystem.new("Lycoris-Rewrite-Modules")
 local gfs = Filesystem.new(fs:append("Globals"))
@@ -85,6 +88,7 @@ function ModuleManager.execute(lf, id, file, global)
 	getfenv(lf).HitboxOptions = HitboxOptions
 	getfenv(lf).RepeatInfo = RepeatInfo
 	getfenv(lf).StateListener = StateListener
+	getfenv(lf).Latency = Latency
 
 	-- Load globals if we should.
 	for name, entry in next, (not global) and ModuleManager.globals or {} do

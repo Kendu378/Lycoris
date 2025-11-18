@@ -19,8 +19,8 @@ local Finder = require("Utility/Finder")
 ---@module Utility.Table
 local Table = require("Utility/Table")
 
----@module Features.Combat.Objects.Defender
-local Defender = require("Features/Combat/Objects/Defender")
+---@module Game.Latency
+local Latency = require("Game/Latency")
 
 ---@module Utility.Maid
 local Maid = require("Utility/Maid")
@@ -72,7 +72,7 @@ local function targetPart(part)
 	getMouse.OnClientInvoke = function()
 		---@note: Add some prediction to prevent mobs from running in a straight line.
 		local currentCamera = workspace.CurrentCamera
-		local at = part.CFrame + (part.AssemblyLinearVelocity * (0.25 + Defender.rtt()))
+		local at = part.CFrame + (part.AssemblyLinearVelocity * (0.25 + Latency.rtt()))
 		local pos = currentCamera:WorldToViewportPoint(at.Position)
 		local ray = currentCamera:ViewportPointToRay(pos.X, pos.Y)
 

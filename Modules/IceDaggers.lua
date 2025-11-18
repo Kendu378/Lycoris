@@ -10,6 +10,9 @@ local ProjectileTracker = getfenv().ProjectileTracker
 ---@module Features.Combat.Defense
 local Defense = getfenv().Defense
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
 --- Combined module for IceDaggers & FleetingSparks
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
@@ -24,7 +27,7 @@ return function(self, timing)
 		return candidate and candidate.Name and (candidate.Name == "IceDagger" or candidate.Name == "LightningMote")
 	end)
 
-	local delay = 0.5 - (self.rtt() or 0)
+	local delay = 0.5 - (Latency.rtt() or 0)
 	if delay < 0 then
 		delay = 0
 	end

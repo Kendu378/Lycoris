@@ -10,6 +10,9 @@ local Action = getfenv().Action
 ---@module Features.Combat.Defense
 local Defense = getfenv().Defense
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
 -- Create listener for Fire Forge projectiles
 local plistener = ProjectileListener.new("CrimsonRain")
 
@@ -22,7 +25,7 @@ return function(self, timing)
 			return
 		end
 
-		task.wait(0.01 - self.rtt())
+		task.wait(0.01 - Latency.rtt())
 
 		local action = Action.new()
 		action._when = 0

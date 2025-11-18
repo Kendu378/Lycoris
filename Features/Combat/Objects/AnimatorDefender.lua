@@ -37,6 +37,9 @@ local EntityHistory = require("Features/Combat/EntityHistory")
 ---@module Features.Combat.StateListener
 local StateListener = require("Features/Combat/StateListener")
 
+---@module Game.Latency
+local Latency = require("Game/Latency")
+
 ---@class AnimatorDefender: Defender
 ---@field animator Animator
 ---@field offset number?
@@ -282,7 +285,7 @@ AnimatorDefender.valid = LPH_NO_VIRTUALIZE(function(self, options)
 	hoptions.entity = self.entity
 	hoptions:ucache()
 
-	local info = RepeatInfo.new(timing, self.rdelay(), self:uid(10))
+	local info = RepeatInfo.new(timing, Latency.rdelay(), self:uid(10))
 	info.track = self.track
 
 	local hc = self:hc(hoptions, timing.duih and info or nil)
@@ -445,7 +448,7 @@ AnimatorDefender.process = LPH_NO_VIRTUALIZE(function(self, track)
 	-- Set current data.
 	self.timing = timing
 	self.track = track
-	self.offset = self.rdelay()
+	self.offset = Latency.rdelay()
 
 	-- Fake mistime rate.
 	---@type Action?
@@ -464,7 +467,7 @@ AnimatorDefender.process = LPH_NO_VIRTUALIZE(function(self, track)
 		and StateListener.cdodge()
 		and faction
 		and PP_SCRAMBLE_STR(faction._type) == "Parry"
-		and faction:when() > (self.rtt() + 0.6)
+		and faction:when() > (Latency.rtt() + 0.6)
 	then
 		-- Start deflect.
 		QueuedBlocking.invoke(QueuedBlocking.BLOCK_TYPE_DEFLECT, "Defender_FakeDeflect", nil)
@@ -484,7 +487,7 @@ AnimatorDefender.process = LPH_NO_VIRTUALIZE(function(self, track)
 	end
 
 	-- Start RPUE.
-	local info = RepeatInfo.new(timing, self.rdelay(), self:uid(10))
+	local info = RepeatInfo.new(timing, Latency.rdelay(), self:uid(10))
 	info.track = track
 	self:srpue(self.entity, timing, info)
 end)

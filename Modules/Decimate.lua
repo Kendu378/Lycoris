@@ -1,6 +1,9 @@
 ---@module Game.Timings.Action
 local Action = getfenv().Action
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
 ---Module function.
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
@@ -10,7 +13,7 @@ return function(self, timing)
 		return
 	end
 
-	task.wait(0.1 - self.rtt())
+	task.wait(0.1 - Latency.rtt())
 
 	timing.iae = true
 

@@ -4,6 +4,9 @@ local Logger = getfenv().Logger
 ---@module Features.Combat.Objects.RepeatInfo
 local RepeatInfo = getfenv().RepeatInfo
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
 ---Module function.
 ---@param self EffectDefender
 ---@param timing EffectTiming
@@ -34,6 +37,6 @@ return function(self, timing)
 	timing._rpd = 250
 	timing.hitbox = Vector3.new(120, 120, 120)
 
-	local info = RepeatInfo.new(timing, self.rdelay(), self:uid(10))
+	local info = RepeatInfo.new(timing, Latency.rdelay(), self:uid(10))
 	self:srpue(owner, timing, info)
 end

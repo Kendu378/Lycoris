@@ -4,13 +4,16 @@ local Action = getfenv().Action
 ---@module Modules.Globals.Mantra
 local Mantra = getfenv().Mantra
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
 ---Module function.
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
 return function(self, timing)
 	local data = Mantra.data(self.entity, "Mantra:GunWind{{Wind Gun}}")
 
-	task.wait(0.45 - self.rtt())
+	task.wait(0.45 - Latency.rtt())
 
 	local action = Action.new()
 	action._when = self.track.Speed > 1.00 and 0 or 350

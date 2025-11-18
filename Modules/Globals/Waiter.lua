@@ -1,6 +1,9 @@
 ---Waiter module.
 local Waiter = {}
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
 ---Find a track.
 ---@param aid string Animation ID to look for.
 ---@param animator Animator The animator to search in.
@@ -26,7 +29,7 @@ end
 ---@param callback function The callback to run.
 function Waiter.stw(defender, time, callback)
 	local lastTimestamp = os.clock()
-	local initialPing = defender.rtt()
+	local initialPing = Latency.rtt()
 
 	while (os.clock() - lastTimestamp) <= (time - initialPing) do
 		-- Wait.

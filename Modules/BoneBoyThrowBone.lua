@@ -11,6 +11,9 @@ local ProjectileTracker = getfenv().ProjectileTracker
 ---@module Features.Combat.Defense
 local Defense = getfenv().Defense
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
 ---Module function.
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
@@ -24,7 +27,7 @@ return function(self, timing)
 		return candidate.Name == "BoneSpear"
 	end)
 
-	task.wait(2.7 - self.rtt())
+	task.wait(2.7 - Latency.rtt())
 
 	if self:distance(self.entity) <= 25 then
 		local action = Action.new()

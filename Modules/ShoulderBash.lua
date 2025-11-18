@@ -7,6 +7,9 @@ local Waiter = getfenv().Waiter
 ---@class Timing
 local Timing = getfenv().Timing
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
 ---Module function.
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
@@ -21,7 +24,7 @@ return function(self, timing)
 		return
 	end
 
-	task.wait(0.35 - self.rtt())
+	task.wait(0.35 - Latency.rtt())
 
 	if self:distance(self.entity) <= 10 then
 		local firstTiming = Timing.new()

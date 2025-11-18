@@ -13,6 +13,9 @@ local Defense = getfenv().Defense
 -- Create listener for Fire Forge projectiles
 local plistener = ProjectileListener.new("FireForge")
 
+---@module Game.Latency
+local Latency = getfenv().Latency
+
 ---Module function.
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
@@ -22,7 +25,7 @@ return function(self, timing)
 			return
 		end
 
-		task.wait(0.05 - self.rtt())
+		task.wait(0.05 - Latency.rtt())
 
 		if self:distance(self.entity) <= 20 then
 			local action = Action.new()
