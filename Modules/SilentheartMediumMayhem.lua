@@ -8,7 +8,7 @@ return function(self, timing)
 	timing.pfh = true
 
 	local action = Action.new()
-	action._when = 500
+	action._when = 450
 
 	if self.track.speed >= 0.8 then
 		action._when = 400

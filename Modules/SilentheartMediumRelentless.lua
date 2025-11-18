@@ -9,6 +9,7 @@ return function(self, timing)
 	timing.hitbox = Vector3.new(30, 30, 30)
 	timing.mat = 2000
 	timing.iae = true
+	timing.ndfb = true
 
 	local action = Action.new()
 	action._when = 1000
