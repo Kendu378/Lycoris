@@ -421,7 +421,7 @@ Defender.hitbox = LPH_NO_VIRTUALIZE(function(self, cframe, fd, soffset, size, fi
 	end
 
 	-- Used CFrame.
-	local usedCFrame = root.CFrame * CFrame.new(0, 0, -(root.Size.Z / 2))
+	local usedCFrame = cframe
 
 	if fd then
 		usedCFrame = usedCFrame * CFrame.new(0, 0, -(size.Z / 2))
