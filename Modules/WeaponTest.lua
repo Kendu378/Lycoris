@@ -23,8 +23,8 @@ return function(self, timing)
 
 	timing.pfh = true
 	timing.phd = true
-	timing.pfht = 0.3
-	timing.phds = 0.2
+	timing.pfht = 0.4
+	timing.phds = 0.6
 
 	local windup = nil
 	local ispeed = self.track.Speed

@@ -16,6 +16,9 @@ local QueuedBlocking = require("Game/QueuedBlocking")
 ---@module Game.KeyHandling
 local KeyHandling = require("Game/KeyHandling")
 
+---@module Features.Game.Tweening
+local Tweening = require("Features/Game/Tweening")
+
 ---Attribute section.
 ---@param groupbox table
 function AutomationTab.initAttributeSection(groupbox)
@@ -241,6 +244,28 @@ function AutomationTab.initDebuggingSection(groupbox)
 		end
 
 		unblockRemote:FireServer()
+	end)
+
+	groupbox:AddButton("Test Tween", function()
+		local positions = {
+			CFrame.new(2414.70, 442.28, -5595.58),
+			CFrame.new(2424.78, 408.30, -5501.38),
+			CFrame.new(2429.86, 408.30, -5495.80),
+			CFrame.new(2507.99, 414.60, -5560.85),
+			CFrame.new(600.33, 983.29, -7643.66),
+			CFrame.new(669.22, 979.31, -7668.61),
+			CFrame.new(2960.38, 404.16, -5604.14),
+		}
+
+		for idx, position in next, positions do
+			Tweening.goal(string.format("TweenToTest_%i", idx), position, true)
+		end
+	end)
+
+	groupbox:AddButton("Cancel Tween", function()
+		for idx = 1, 7 do
+			Tweening.stop(string.format("TweenToTest_%i", idx))
+		end
 	end)
 end
 

@@ -15,6 +15,7 @@ return function(self, timing)
 	local range = data.stratus * 1.4 + data.cloud * 0.9
 
 	timing.ffh = true
+	timing.pfh = true
 	timing.fhb = true
 	timing.rpue = false
 

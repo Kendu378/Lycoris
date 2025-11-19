@@ -156,6 +156,14 @@ Defender.srpue = LPH_NO_VIRTUALIZE(function(self, entity, timing, info)
 	if timing.umoa or timing.cbm then
 		timing["_rpd"] = PP_SCRAMBLE_RE_NUM(timing["_rpd"])
 		timing["_rsd"] = PP_SCRAMBLE_RE_NUM(timing["_rsd"])
+		timing["hitbox"] = Vector3.new(
+			PP_SCRAMBLE_RE_NUM(timing.hitbox.X),
+			PP_SCRAMBLE_RE_NUM(timing.hitbox.Y),
+			PP_SCRAMBLE_RE_NUM(timing.hitbox.Z)
+		)
+	end
+
+	if timing.cbm then
 		timing["imdd"] = PP_SCRAMBLE_RE_NUM(timing["imdd"])
 		timing["imxd"] = PP_SCRAMBLE_RE_NUM(timing["imxd"])
 	end
@@ -222,7 +230,7 @@ Defender.rpue = LPH_NO_VIRTUALIZE(function(self, entity, timing, info, cache)
 	if timing.duih and target then
 		success = self:hc(options, info)
 	end
-	print(distance, cache.imdd, cache.imxd)
+
 	if timing and (distance < cache.imdd or distance > cache.imxd) then
 		success = false
 	end
