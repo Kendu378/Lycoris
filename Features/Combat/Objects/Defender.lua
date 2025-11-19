@@ -634,7 +634,7 @@ Defender.handle = LPH_NO_VIRTUALIZE(function(self, timing, action, started)
 	end
 
 	if actionType == "Start Block" then
-		return QueuedBlocking.invoke(QueuedBlocking.BLOCK_TYPE_NORMAL, "Defender_StartBlock", nil)
+		return QueuedBlocking.invoke(QueuedBlocking.BLOCK_TYPE_NORMAL, "Defender_StartBlock", 20.0)
 	end
 
 	if actionType == "Dodge" then
@@ -646,7 +646,7 @@ Defender.handle = LPH_NO_VIRTUALIZE(function(self, timing, action, started)
 	end
 
 	if actionType == "End Block" then
-		return QueuedBlocking.stop("Defender_StartBlock")
+		return
 	end
 
 	if actionType == "Jump" then
