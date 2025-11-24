@@ -17,14 +17,14 @@ return function(self, timing)
 
 	repeat
 		task.wait()
-	until self.track.TimePosition >= 0.6 or not self.track.IsPlaying
+	until self.track.TimePosition >= 0.5 or not self.track.IsPlaying
 
 	if not self.track.IsPlaying then
 		return
 	end
 
 	timing.duih = true
-	timing.hitbox = Vector3.new(20, 15, 30)
+	timing.hitbox = Vector3.new(20, 15, 35)
 	timing.fhb = true
 
 	local actionTwo = Action.new()

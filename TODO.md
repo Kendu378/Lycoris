@@ -86,6 +86,7 @@ Gank Fixes
   - ESP Fade In / Fade Out
   - ESP Glow?
   - ESP Focus Keybind
+  - Damage / Healing Numbers
   
 Quality Of Life
 

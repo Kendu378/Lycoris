@@ -22,6 +22,12 @@ local LeaderboardClient = require("Game/LeaderboardClient")
 ---@module Features.Game.Spoofing
 local Spoofing = require("Features/Game/Spoofing")
 
+---@module Game.Objects.DodgeOptions
+local DodgeOptions = require("Game/Objects/DodgeOptions")
+
+---@module Utility.TaskSpawner
+local TaskSpawner = require("Utility/TaskSpawner")
+
 -- Services.
 local playersService = game:GetService("Players")
 local replicatedStorage = game:GetService("ReplicatedStorage")
@@ -43,19 +49,26 @@ local oldHasEffect = nil
 local lastCallingFunction = nil
 local lastFunctionCacheAttempt = 0
 
+-- Action rolling.
+local lastActionRoll = nil
+
 -- Ban remotes table.
 local banRemotes = {}
-
--- Last timestamp.
-local lastTimestamp = os.clock()
 
 -- Input types.
 local INPUT_LEFT_CLICK = 1
 local INPUT_RIGHT_CLICK = 2
+local INPUT_CRITICAL = 3
+local INPUT_CAST = 4
+local INPUT_BLOCK = 5
 
----On intercepted input.
+-- Input types two.
+local INPUT_TYPE_BEFORE = 1
+local INPUT_TYPE_AFTER = 2
+
+---Handle flow state.
 ---@param type number
-local onInterceptedInput = LPH_NO_VIRTUALIZE(function(type)
+local handleFlowState = LPH_NO_VIRTUALIZE(function(type)
 	local effectReplicator = replicatedStorage:FindFirstChild("EffectReplicator")
 	if not effectReplicator then
 		return
@@ -63,10 +76,6 @@ local onInterceptedInput = LPH_NO_VIRTUALIZE(function(type)
 
 	local effectReplicatorModule = require(effectReplicator)
 	if not effectReplicatorModule then
-		return
-	end
-
-	if not Configuration.expectToggleValue("AutoFlowState") then
 		return
 	end
 
@@ -174,6 +183,65 @@ local onInterceptedInput = LPH_NO_VIRTUALIZE(function(type)
 		Logger.warn("Detected 'Rising Star' move.")
 
 		flowStateRemote:FireServer()
+	end
+end)
+
+---Handle action rolling.
+---@param type number
+local handleActionRolling = LPH_NO_VIRTUALIZE(function(type)
+	local actionRollTypes = Configuration.expectOptionValue("ActionRollingActions") or {}
+	local actionRollInputs = {
+		[INPUT_LEFT_CLICK] = actionRollTypes["Roll On M1"],
+		[INPUT_CRITICAL] = actionRollTypes["Roll On Critical"],
+		[INPUT_CAST] = actionRollTypes["Roll On Cast"],
+		[INPUT_BLOCK] = actionRollTypes["Roll On Parry"],
+	}
+
+	if not actionRollInputs[type] then
+		return
+	end
+
+	if
+		lastActionRoll
+		and os.clock() - lastActionRoll < (Configuration.expectOptionValue("ActionRollCooldown") or 2.0)
+	then
+		return
+	end
+
+	-- Timestamp it.
+	lastActionRoll = os.clock()
+
+	-- Wait.
+	if type ~= INPUT_BLOCK then
+		task.wait(0.1)
+	end
+
+	-- Perform options.
+	local options = DodgeOptions.new()
+	options.rollCancel = true
+	options.rollCancelDelay = Configuration.expectOptionValue("ActionRollCancelDelay") or 0.1
+	options.actionRolling = true
+
+	-- Dodge.
+	Logger.warn("(%i) Performing action roll dodge.", type)
+
+	if type == INPUT_CAST then
+		TaskSpawner.spawn("ActionRolling_CastDodge", InputClient.dodge, options)
+	else
+		InputClient.dodge(options)
+	end
+end)
+
+---On intercepted input.
+---@param type number
+---@param state number
+local onInterceptedInput = LPH_NO_VIRTUALIZE(function(type, state)
+	if Configuration.expectToggleValue("AutoFlowState") and state == INPUT_TYPE_BEFORE and type ~= INPUT_CAST then
+		handleFlowState(type)
+	end
+
+	if Configuration.expectToggleValue("ActionRolling") and state == INPUT_TYPE_AFTER then
+		handleActionRolling(type)
 	end
 end)
 
@@ -544,7 +612,20 @@ local onNameCall = LPH_NO_VIRTUALIZE(function(...)
 	end
 
 	if name == "ActivateMantra" then
+		-- State.
 		StateListener.lMantraActivated = args[2]
+
+		-- Before.
+		onInterceptedInput(INPUT_CAST, INPUT_TYPE_BEFORE)
+
+		-- Now.
+		local result = oldNameCall(...)
+
+		-- After.
+		onInterceptedInput(INPUT_CAST, INPUT_TYPE_AFTER)
+
+		-- Return.
+		return result
 	end
 
 	if name == "Gesture" and Configuration.expectToggleValue("EmoteSpoofer") and typeof(args[2]) == "string" then
@@ -560,32 +641,44 @@ local onUnreliableFireServer = LPH_NO_VIRTUALIZE(function(...)
 	local args = { ... }
 	local self = args[1]
 
-	local stopDodgeRemote = KeyHandling.getRemote("StopDodge")
-
-	if stopDodgeRemote and self == stopDodgeRemote and Configuration.expectToggleValue("ExtendRollCancelFrames") then
-		return
-	end
-
-	if checkcaller() then
-		return oldUnreliableFireServer(...)
-	end
-
 	if banRemotes[self] then
 		return Logger.warn("(%s) Anticheat is calling a unreliable ban remote.", self.Name)
 	end
 
 	local leftClickRemote = KeyHandling.getRemote("LeftClick")
-
-	if leftClickRemote and self == leftClickRemote then
-		onInterceptedInput(INPUT_LEFT_CLICK)
-		return oldUnreliableFireServer(...)
-	end
-
+	local criticalRemote = KeyHandling.getRemote("CriticalClick")
 	local feintClickRemote = KeyHandling.getRemote("FeintClick")
 	local offhandAttackRemote = KeyHandling.getRemote("OffhandAttack")
 
+	local inputType = nil
+
+	if criticalRemote and self == criticalRemote then
+		inputType = INPUT_CRITICAL
+	end
+
+	if leftClickRemote and self == leftClickRemote then
+		inputType = INPUT_LEFT_CLICK
+	end
+
 	if (feintClickRemote and self == feintClickRemote) or (offhandAttackRemote and self == offhandAttackRemote) then
-		onInterceptedInput(INPUT_RIGHT_CLICK)
+		inputType = INPUT_RIGHT_CLICK
+	end
+
+	if inputType then
+		-- Before.
+		onInterceptedInput(inputType, INPUT_TYPE_BEFORE)
+
+		-- Now.
+		local result = oldUnreliableFireServer(...)
+
+		-- After.
+		onInterceptedInput(inputType, INPUT_TYPE_AFTER)
+
+		-- Return.
+		return result
+	end
+
+	if checkcaller() then
 		return oldUnreliableFireServer(...)
 	end
 
@@ -595,15 +688,33 @@ end)
 ---On fire server.
 ---@return any
 local onFireServer = LPH_NO_VIRTUALIZE(function(...)
-	if checkcaller() then
-		return oldFireServer(...)
-	end
-
 	local args = { ... }
 	local self = args[1]
 
 	if banRemotes[self] then
 		return Logger.warn("(%s) Anticheat is calling a ban remote.", self.Name)
+	end
+
+	local blockRemote = KeyHandling.getRemote("Block")
+
+	local inputType = nil
+
+	if blockRemote and self == blockRemote then
+		inputType = INPUT_BLOCK
+	end
+
+	if inputType then
+		-- Before.
+		onInterceptedInput(inputType, INPUT_TYPE_BEFORE)
+
+		-- Now.
+		local result = oldFireServer(...)
+
+		-- After.
+		onInterceptedInput(inputType, INPUT_TYPE_AFTER)
+
+		-- Return.
+		return result
 	end
 
 	return oldFireServer(...)

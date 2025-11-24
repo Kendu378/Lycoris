@@ -72,7 +72,10 @@ local debrisService = game:GetService("Debris")
 -- Constants.
 local MAX_VISUALIZATION_TIME = 5.0
 local MAX_REPEAT_WAIT = 10.0
-local PREDICTION_LENIENCY_MULTI = 5.0
+local PREDICTION_LENIENCY_MULTI = 10.0
+
+---@module Game.Objects.DodgeOptions
+local DodgeOptions = require("Game/Objects/DodgeOptions")
 
 ---Log a miss to the UI library with distance check.
 ---@param type string
@@ -588,7 +591,7 @@ Defender.hc = LPH_NO_VIRTUALIZE(function(self, options, info)
 	end
 
 	-- Run prediction check.
-	local closest = EntityHistory.pclosest(players.LocalPlayer, tick() - (Latency.sdelay() * PREDICTION_LENIENCY_MULTI))
+	local closest = EntityHistory.pclosest(players.LocalPlayer, tick() - (Latency.rtt() * PREDICTION_LENIENCY_MULTI))
 	if not closest then
 		return false
 	end
@@ -659,12 +662,17 @@ Defender.handle = LPH_NO_VIRTUALIZE(function(self, timing, action, started)
 		return QueuedBlocking.invoke(QueuedBlocking.BLOCK_TYPE_NORMAL, "Defender_StartBlock", 20.0)
 	end
 
+	local options = DodgeOptions.new()
+	options.rollCancel = Configuration.expectToggleValue("RollCancel") and actionType ~= "Forced Full Dodge"
+	options.rollCancelDelay = Configuration.expectOptionValue("RollCancelDelay") or 0.0
+	options.direct = Configuration.expectToggleValue("BlatantRoll")
+
 	if actionType == "Dodge" then
-		return InputClient.dodge(false)
+		return InputClient.dodge(options)
 	end
 
 	if actionType == "Forced Full Dodge" then
-		return InputClient.dodge(true)
+		return InputClient.dodge(options)
 	end
 
 	if actionType == "End Block" then
@@ -706,6 +714,12 @@ end)
 ---@param timing Timing
 ---@param action Action
 Defender.parry = LPH_NO_VIRTUALIZE(function(self, timing, action)
+	-- Options.
+	local options = DodgeOptions.new()
+	options.rollCancel = Configuration.expectToggleValue("RollCancel")
+	options.rollCancelDelay = Configuration.expectOptionValue("RollCancelDelay") or 0.0
+	options.direct = Configuration.expectToggleValue("BlatantRoll")
+
 	-- Dash instead of parry.
 	local dashReplacement = Random.new():NextNumber(1.0, 100.0)
 		<= (Configuration.expectOptionValue("DashInsteadOfParryRate") or 0.0)
@@ -741,7 +755,7 @@ Defender.parry = LPH_NO_VIRTUALIZE(function(self, timing, action)
 		internalNotify(timing, "Action type 'Parry' replaced to 'Dodge' type.")
 
 		-- Dash replacement.
-		return InputClient.dodge()
+		return InputClient.dodge(options)
 	end
 
 	-- What fallbacks can we run?
@@ -759,7 +773,7 @@ Defender.parry = LPH_NO_VIRTUALIZE(function(self, timing, action)
 
 	if canDodge then
 		-- Dodge.
-		InputClient.dodge()
+		InputClient.dodge(options)
 
 		-- Notify.
 		return internalNotify(timing, "Action type 'Parry' fallback to 'Dodge' type.")

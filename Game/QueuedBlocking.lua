@@ -91,12 +91,15 @@ local function onRenderStepped()
 	-- Handle blocking input.
 	inputData["f"] = blockQueueLength > 0
 
+	-- Call with direct functions so our hooks call...
+	local fireServer = Instance.new("RemoteEvent").FireServer
+
 	if blocking then
-		return blockQueueLength <= 0 and unblockRemote:FireServer()
+		return blockQueueLength <= 0 and fireServer(unblockRemote)
 	end
 
 	if not effectReplicatorModule:FindEffect("Action") and not effectReplicatorModule:FindEffect("Knocked") then
-		return blockQueueLength > 0 and blockRemote:FireServer()
+		return blockQueueLength > 0 and fireServer(blockRemote)
 	end
 end
 
