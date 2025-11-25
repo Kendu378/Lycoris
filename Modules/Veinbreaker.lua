@@ -10,8 +10,8 @@ return function(self, timing)
 	timing.pfh = true
 
 	local action = Action.new()
-	action._when = math.min(100 + distance * 15)
-	action._type = "Dodge"
+	action._when = 0
+	action._type = "Forced Full Dodge"
 	action.hitbox = Vector3.new(30, 20, 35)
 	action.name = string.format("(%.2f) Dynamic Veinbreaker Timing", distance)
 

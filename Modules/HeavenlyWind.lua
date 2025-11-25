@@ -5,7 +5,6 @@ local Action = getfenv().Action
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
 return function(self, timing)
-
 	local action = Action.new()
 	action._when = 250
 	action._type = "Parry"

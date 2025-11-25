@@ -37,8 +37,8 @@ return function(self, timing)
 		radiantKickTiming.fhb = false
 		radiantKickTiming.duih = false
 		radiantKickTiming.rpue = false
-		radiantKickTiming.iae = true
 		radiantKickTiming.name = "RadiantKick"
+		radiantKickTiming.iae = true
 		radiantKickTiming.cbm = true
 
 		local action = Action.new()

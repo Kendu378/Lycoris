@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 ---@type PartTiming
 local PartTiming = getfenv().PartTiming
 
@@ -47,53 +48,47 @@ return function(self, timing)
 
 		-- === FleetingSparks logic ===
 		if name == "LightningMote" then
-			if self:distance(self.entity) <= 10 then
-				local actionclose = Action.new()
-				actionclose._type = "Parry"
-				actionclose._when = 0
-				actionclose.name = "Fleeting Sparks Close Timing"
-				actionclose.ihbc = true
-				return self:action(timing, actionclose)
-			end
+			TaskSpawner.spawn("FleetingSparks_MoveStack", function()
+				local onDescendantAdded = Signal.new(Players.LocalPlayer.Character.DescendantAdded)
 
-			local action = Action.new()
-			action._when = 0
-			action._type = "Parry"
-			action.name = "Fleeting Sparks Part"
+				task.wait(0.4 - Latency.rtt())
 
-			local pt = PartTiming.new()
-			pt.uhc = false
-			pt.duih = true
-			pt.fhb = false
-			pt.name = "FleetingSparksProjectile"
-			pt.actions:push(action)
-			pt.cbm = true
-
-			pt.hitbox = Vector3.new(10, 10, 10)
-			Defense.cdpo(projectile, pt)
-
-			local baseHitbox = Vector3.new(10, 10, 10)
-			local lastSpeed = 0
-			local smoothing = 0.3 -- 0.1–0.3 recommended: lower = snappier, higher = smoother
-
-			while task.wait() do
-				if not projectile or not projectile.Parent then
-					break
+				if self:distance(self.entity) <= 5 then
+					local action = Action.new()
+					action._when = 0
+					action.ihbc = true
+					action._type = "Parry"
+					action.name = "Fleeting Sparks Close"
+					return self:action(timing, action)
 				end
 
-				local velocity = projectile.AssemblyLinearVelocity or projectile.Velocity or Vector3.zero
-				local rawSpeed = velocity.Magnitude
+				local isFirstTarget = true
+				local listenerConn = onDescendantAdded:connect("FleetingSparks_EffectListener", function(child)
+					if child.Name ~= "Targeted" then
+						return
+					end
 
-				-- smooth speed using exponential moving average
-				local smoothedSpeed = lastSpeed + (rawSpeed - lastSpeed) * smoothing
-				lastSpeed = smoothedSpeed
+					if not child.Parent or not child.Parent:IsA("Attachment") then
+						return
+					end
 
-				-- compute scale factor (smoothly changing)
-				local scaleFactor = math.clamp(smoothedSpeed / 5, 1, 4)
-				local newHitbox = baseHitbox * scaleFactor
+					if isFirstTarget then
+						isFirstTarget = false
+						return
+					end
 
-				pt.hitbox = newHitbox
-			end
+					local action = Action.new()
+					action._when = 100
+					action.ihbc = true
+					action._type = "Parry"
+					action.name = "Fleeting Sparks Effect"
+					return self:action(timing, action)
+				end)
+
+				task.wait(1.2)
+
+				listenerConn:Disconnect()
+			end)
 		-- === IceDaggers logic ===
 		elseif name == "IceDagger" then
 			while task.wait() do
@@ -134,19 +129,18 @@ return function(self, timing)
 		-- Parry close.
 		local action = Action.new()
 		action.ihbc = true
-		action._type = "Parry"
+		action._when = 100
+		action._type = "Start Block"
 		action.name =
 			string.format("(%.2f) (%.2f) Ice Daggers Close Timing", distance, hrp.AssemblyLinearVelocity.Magnitude)
+		self:action(timing, action)
 
-		if distance <= 10 then
-			action._when = 100
-		end
-
-		if distance > 10 or hrp.AssemblyLinearVelocity.Magnitude > 20 then
-			action._when = 400
-		end
-
-		return self:action(timing, action)
+		local actionTwo = Action.new()
+		actionTwo._when = 1000
+		actionTwo.ihbc = true
+		actionTwo._type = "End Block"
+		actionTwo.name = "Ice Daggers Close End"
+		return self:action(timing, actionTwo)
 	end))
 
 	self.tmaid:add(thread)

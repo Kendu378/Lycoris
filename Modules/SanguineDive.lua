@@ -10,7 +10,7 @@ return function(self, timing)
 		return
 	end
 
-	if hrp:FindFirstChild("REP_SOUND_15776883508") then
+	if not hrp:FindFirstChild("REP_SOUND_15776883508") then
 		return
 	end
 

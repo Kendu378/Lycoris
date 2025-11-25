@@ -627,7 +627,7 @@ local onNameCall = LPH_NO_VIRTUALIZE(function(...)
 		end
 	end
 
-	if name == "ActivateMantra" then
+	if name == "ActivateMantra" and getnamecallmethod() == "FireServer" then
 		-- State.
 		StateListener.lMantraActivated = args[2]
 

@@ -7,6 +7,9 @@ local Weapon = getfenv().Weapon
 ---@module Utility.Signal
 local Signal = getfenv().Signal
 
+---@module Utility.Configuration
+local Configuration = getfenv().Configuration
+
 ---Module function.
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
@@ -23,8 +26,8 @@ return function(self, timing)
 
 	timing.pfh = true
 	timing.phd = true
-	timing.pfht = 0.4
-	timing.phds = 1.0
+	timing.pfht = 0.25
+	timing.phds = 0.6
 
 	local windup = nil
 	local ispeed = self.track.Speed
@@ -99,7 +102,11 @@ return function(self, timing)
 	action._type = "Parry"
 	action.hitbox = Vector3.new(data.length * 2.7, data.length * 3, data.length * 1.8)
 
-	if data.type == "Pistol" or data.type == "Rapier" or data.type == "Spear" or data.type == "Bow" then
+	if data.type == "Bow" then
+		action.hitbox = Vector3.new(data.length * 1.5, data.length * 2, data.length * 1.5)
+	end
+
+	if data.type == "Pistol" or data.type == "Rapier" or data.type == "Spear" then
 		action.hitbox = Vector3.new(data.length * 1.7, data.length * 3, data.length * 1.8)
 	end
 
@@ -135,6 +142,11 @@ return function(self, timing)
 		end
 
 		if child.Name ~= "REP_SOUND_5115545256" and child.Name ~= "REP_SOUND_4954198253" then
+			return
+		end
+
+		-- If allow failure, then we should not cancel on feint.
+		if Configuration.expectToggleValue("AllowFailure") and child.Name == "REP_SOUND_4954198253" then
 			return
 		end
 

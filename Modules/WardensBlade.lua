@@ -21,10 +21,9 @@ return function(self, timing)
 		return true
 	end)
 
+	---@todo: FIXME: I can be movestacked but need to also have a hook
 	local info = RepeatInfo.new(timing, Latency.rdelay(), self:uid(10))
 	info.track = self.track
-
-	---@todo: Mantra modifiers.
 	timing.fhb = false
 	timing.ieae = true
 	timing.iae = true

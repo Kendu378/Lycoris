@@ -14,10 +14,15 @@ return function(self, timing)
 	if hrp:WaitForChild("REP_SOUND_15776883341", 0.1) then
 		timing.pfh = true
 		local action = Action.new()
-		action._when = math.min(300 + distance * 8)
+		action._when = 450
+
+		if self:distance(self.entity) > 10 then
+			action._when = 550
+		end
+
 		action._type = "Parry"
-		action.hitbox = Vector3.new(20, 15, 30)
-		action.name = "Blood Scythe Timing"
+		action.hitbox = Vector3.new(20, 15, 25)
+		action.name = string.format("(%.2f) Blood Scythe Timing", distance)
 		return self:action(timing, action)
 	else
 		timing.pfh = false

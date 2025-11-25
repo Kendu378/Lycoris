@@ -12,7 +12,7 @@ function Mantra.data(entity, name)
 	local mantra = backpack and backpack:FindFirstChild(name)
 
 	local rs = mantra and mantra:GetAttribute("RichStats")
-	local bsp = rs and rs:match("[Blast]")
+	local bsp = rs and string.match(rs, "%[Blast%]")
 	local dsc = rs and string.match(rs, "(%d+)%s*[xX]%s*Drift Shard")
 	local rsc = rs and string.match(rs, "(%d+)%s*[xX]%s*Rush Shard")
 	local plc = rs and string.match(rs, "(%d+)%s*[xX]%s*Perfect Lens")

@@ -67,6 +67,8 @@ Essential Additions
   - ESP Glow?
   - ESP Focus Keybind
   - Damage / Healing Numbers
+
+- Look into M1 Feint -> Mantra Feint -> M1
   
 Farming Fixes
 

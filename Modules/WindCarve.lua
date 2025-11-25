@@ -18,11 +18,12 @@ return function(self, timing)
 	timing.pfh = true
 	timing.fhb = true
 	timing.rpue = false
+	timing.duih = true
+	timing.hitbox = Vector3.new(20 + range, 20 + range, 20 + range)
 
 	local action = Action.new()
 	action._when = 400
 	action._type = "Start Block"
-	action.hitbox = Vector3.new(18 + range, 15 + range, 15 + range)
 	action.name = "Wind Carve Start"
 	self:action(timing, action)
 

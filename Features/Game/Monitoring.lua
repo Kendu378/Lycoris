@@ -333,12 +333,19 @@ return LPH_NO_VIRTUALIZE(function()
 
 		-- Create builder link.
 		local response = request({
-			Url = "https://api.deepwoken.co/build",
+			Url = "https://deepwoken.co/api/proxy",
 			Method = "POST",
 			Headers = {
 				["Content-Type"] = "application/json",
 			},
-			Body = JSON.encode(data),
+			Body = JSON.encode({
+				options = {
+					body = JSON.encode(data),
+					method = "POST",
+					credentials = "include",
+				},
+				url = "https://api.deepwoken.co/build",
+			}),
 		})
 
 		if not response then

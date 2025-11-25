@@ -24,7 +24,7 @@ return function(self, timing)
 	end
 
 	timing.duih = true
-	timing.hitbox = Vector3.new(20, 15, 35)
+	timing.hitbox = Vector3.new(20, 15, 25)
 	timing.fhb = true
 
 	local actionTwo = Action.new()

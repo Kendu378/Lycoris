@@ -83,7 +83,6 @@ AnimatorDefender.stopped = LPH_NO_VIRTUALIZE(function(self, track, timing, notif
 
 	if
 		Configuration.expectToggleValue("AllowFailure")
-		and not timing.umoa
 		and not timing.rpue
 		and Random.new():NextNumber(1.0, 100.0) <= (Configuration.expectOptionValue("IgnoreAnimationEndRate") or 0.0)
 		and StateListener.cdodge()

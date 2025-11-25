@@ -10,8 +10,8 @@ return function(self, timing)
 	local action = Action.new()
 	action._when = 450
 
-	if self.track.speed >= 0.8 then
-		action._when = 400
+	if self.track.Speed >= 0.8 then
+		action._when = 350
 	end
 
 	action._type = "Parry"

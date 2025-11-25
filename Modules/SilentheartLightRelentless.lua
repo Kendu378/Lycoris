@@ -11,7 +11,20 @@ return function(self, timing)
 	timing.iae = true
 
 	local action = Action.new()
-	action._when = self.track.Speed <= 1.5 and 1000 or 900
+	action._when = 1100
+
+	if self.track.Speed <= 1.3 then
+		action._when = 1200
+	end
+
+	if self.track.Speed <= 1.1 then
+		action._when = 1300
+	end
+
+	if self.track.Speed >= 1.5 then
+		action._when = 1000
+	end
+
 	action._type = "Parry"
 	action.hitbox = Vector3.new(30, 30, 30)
 	action.name = string.format("(%.2f) Relentless Silentheart Timing", self.track.Speed)

@@ -46,10 +46,16 @@ return function(self, timing)
 			return
 		end
 
+		if self:distance(self.owner) >= 50 then
+			return
+		end
+
+		timing.fhb = false
+
 		local action = Action.new()
 		action._when = 0
 		action._type = "Dodge"
-		action.hitbox = Vector3.new(15, 15, 15)
+		action.ihbc = true
 		action.name = "Dynamic Shadow Sludge Timing"
 		self:action(timing, action)
 	end)

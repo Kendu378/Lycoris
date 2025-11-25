@@ -51,6 +51,7 @@ return function(self, timing)
 	local actionTwo = Action.new()
 	actionTwo._when = 500
 	actionTwo._type = "End Block"
+	actionTwo.name = "Lightning Stream End"
 	actionTwo.ihbc = true
 
 	local pt = PartTiming.new()
@@ -60,6 +61,7 @@ return function(self, timing)
 	pt.name = "LightningStreamProjectile"
 	pt.hitbox = Vector3.new(55 + range, 55 + range, 55 + range)
 	pt.actions:push(action)
+	pt.actions:push(actionTwo)
 	pt.cbm = true
 
 	Defense.cdpo(tracker:wait(), pt)

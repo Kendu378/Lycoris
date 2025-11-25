@@ -13,9 +13,9 @@ return function(self, timing)
 		return
 	end
 
-	timing.pfh = true
+	timing.ffh = true
 	timing.phd = true
-	timing.pfht = 0.15
+	timing.pfht = 0.25
 	timing.phds = 1.0
 
 	local windup = nil

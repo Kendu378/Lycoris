@@ -209,7 +209,7 @@ function VisualsTab.initVisualAssistanceSection(groupbox)
 		Finished = true,
 		Callback = function(value)
 			local dresponse = request({
-				Url = "https://api.deepwoken.co/get?type=all",
+				Url = "https://deepwoken.co/api/proxy?url=https://api.deepwoken.co/get?type=all",
 				Method = "GET",
 				Headers = { ["Content-Type"] = "application/json" },
 			})
@@ -227,7 +227,7 @@ function VisualsTab.initVisualAssistanceSection(groupbox)
 
 			local id = value:gsub("https://deepwoken.co/builder%?id=", ""):gsub(" ", ""):gsub("\n", "")
 			local bresponse = request({
-				Url = ("https://api.deepwoken.co/build?id=%s"):format(id),
+				Url = ("https://deepwoken.co/api/proxy?url=https://api.deepwoken.co/build?id=%s"):format(id),
 				Method = "GET",
 				Headers = { ["Content-Type"] = "application/json" },
 			})

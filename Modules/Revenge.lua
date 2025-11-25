@@ -10,7 +10,8 @@ local Mantra = getfenv().Mantra
 return function(self, timing)
 	local data = Mantra.data(self.entity, "Mantra:RevengeAgility{{Revenge}}")
 	local range = data.rush * 12 + data.drift * 6
-	timing.pfh = true
+
+	timing.ffh = true
 
 	local action = Action.new()
 	action._when = 400

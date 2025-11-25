@@ -179,6 +179,7 @@ Defender.srpue = LPH_NO_VIRTUALIZE(function(self, entity, timing, info)
 	options.hmid = info.hmid
 	options:ucache()
 
+	-- Start RPUE.
 	self:mark(Task.new(string.format("RPUE_%s_%i", timing.name, 0), function()
 		return cache["rsd"] - info.irdelay - Latency.sdelay()
 	end, timing.punishable, timing.after, self.rpue, self, entity, timing, info, cache, options))
@@ -244,8 +245,8 @@ Defender.rpue = LPH_NO_VIRTUALIZE(function(self, entity, timing, info, cache, op
 
 	info.index = info.index + 1
 
-	self:mark(Task.new(string.format("RPUE_%s_%i", cache.name, info.index), function()
-		return cache["rpd"] - info.irdelay - Latency.sdelay()
+	self:mark(Task.new(string.format("RPUE_%s_%i", timing.name, info.index), function()
+		return cache.rpd - info.irdelay - Latency.sdelay()
 	end, timing.punishable, timing.after, self.rpue, self, entity, timing, info, cache, options))
 
 	if not target then
@@ -850,8 +851,8 @@ Defender.clean = LPH_NO_VIRTUALIZE(function(self)
 		-- Clear in table.
 		self.tasks[idx] = nil
 
-		-- If we are cancelling a stop block, then we want to end the block.
-		if task.identifier ~= "End Block" then
+		-- If we are cancelling a stop block or start block, then we want to end the block.
+		if task.identifier ~= "End Block" and task.identifier ~= "Start Block" then
 			continue
 		end
 

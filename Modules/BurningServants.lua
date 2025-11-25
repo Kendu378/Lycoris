@@ -22,14 +22,14 @@ return function(self, timing)
 		local action = Action.new()
 		action._when = 325
 		action._type = "Parry"
-		action.hitbox = Vector3.new(20 + range, 25, 20 + range)
+		action.hitbox = Vector3.new(30 + range, 25, 30 + range)
 		action.name = "(1) Burning Servants Timing"
 		self:action(timing, action)
 
 		local secondAction = Action.new()
 		secondAction._when = math.min(2000 + range * 20, 2300)
 		secondAction._type = "Parry"
-		secondAction.hitbox = Vector3.new(20 + range, 25, 20 + range)
+		secondAction.hitbox = Vector3.new(30 + range, 25, 30 + range)
 		secondAction.name = "(2) Burning Servants Timing 2"
 		return self:action(timing, secondAction)
 	else
