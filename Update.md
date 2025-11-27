@@ -10,6 +10,7 @@
 + (changed) WeaponTest
 + (changed) RapidPunches
 + (changed) GlacialArc
++ (added) IceGuySniper
 ```
 *Light weapons now prefer to block when air swinging. This should solve a big issue with them.*
 *Heavy weapons now have reduced hitboxes which are way more strict!*
