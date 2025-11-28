@@ -340,7 +340,12 @@ AnimatorDefender.update = LPH_NO_VIRTUALIZE(function(self)
 			continue
 		end
 
-		local adjusted = track.Speed * (Configuration.expectOptionValue("AnimationSpeedMultiplier") or 1.0)
+		local multiplier = Random.new():NextNumber(
+			Configuration.expectOptionValue("AnimationSpeedMinimum") or 1.0,
+			Configuration.expectOptionValue("AnimationSpeedMaximum") or 1.0
+		)
+
+		local adjusted = track.Speed * multiplier
 
 		track:AdjustSpeed(adjusted)
 

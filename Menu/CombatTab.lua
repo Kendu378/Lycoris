@@ -335,8 +335,17 @@ function CombatTab.initCombatAssistance(groupbox)
 		Tooltip = "Only change the animation speed of animations that are inside of the 'Auto Parry' animations list.",
 	})
 
-	ascDepBox:AddSlider("AnimationSpeedMultiplier", {
-		Text = "Animation Speed Multiplier",
+	ascDepBox:AddSlider("AnimationSpeedMinimum", {
+		Text = "Animation Speed Minimum",
+		Default = 1.0,
+		Min = 0.1,
+		Max = 5,
+		Suffix = "x",
+		Rounding = 2,
+	})
+
+	ascDepBox:AddSlider("AnimationSpeedMaximum", {
+		Text = "Animation Speed Maximum",
 		Default = 1.25,
 		Min = 0.1,
 		Max = 5,
