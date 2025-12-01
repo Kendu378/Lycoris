@@ -13,7 +13,7 @@ return function(self, timing)
 		return
 	end
 
-	timing.pfh = true
+	timing.ffh = true
 	timing.duih = false
 	timing.fhb = true
 	timing.dp = false
@@ -70,13 +70,8 @@ return function(self, timing)
 	action._when = windup * 1000
 	action._type = "Parry"
 	action.hitbox = Vector3.new(data.length * 2.5, data.length * 2, data.length * 2.5)
-	action.name = string.format(
-		"(%.2f, %.2f, %.2f) (%.2f) Dynamic Weapon Swing",
-		data.oss,
-		data.ss,
-		self.track.Speed,
-		data.length
-	)
+	action.name =
+		string.format("(%.2f, %.2f, %.2f) (%.2f) Dynamic Weapon Run", data.oss, data.ss, self.track.Speed, data.length)
 
 	if data.type == "Twinblade" then
 		-- Twinblade adjustment.

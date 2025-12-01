@@ -282,6 +282,7 @@ AnimatorDefender.valid = LPH_NO_VIRTUALIZE(function(self, options)
 	hoptions.ptime = self:fsecs(timing)
 	hoptions.action = action
 	hoptions.entity = self.entity
+	hoptions.visualize = options.visualize
 	hoptions:ucache()
 
 	local info = RepeatInfo.new(timing, Latency.rdelay(), self:uid(10))
@@ -329,10 +330,15 @@ AnimatorDefender.update = LPH_NO_VIRTUALIZE(function(self)
 	end
 
 	-- Animation speed changer.
+	local min = Configuration.expectOptionValue("AnimationSpeedMinimum") or 1.0
+	local max = Configuration.expectOptionValue("AnimationSpeedMaximum") or 1.3
+	local rng = Random.new()
+
 	for track, _ in next, self.sct do
 		if not track.IsPlaying then
 			self.sct[track] = nil
 			self.tsc[track] = nil
+			self.multiplier[track] = nil
 			continue
 		end
 
@@ -340,10 +346,22 @@ AnimatorDefender.update = LPH_NO_VIRTUALIZE(function(self)
 			continue
 		end
 
-		local multiplier = Random.new():NextNumber(
-			Configuration.expectOptionValue("AnimationSpeedMinimum") or 1.0,
-			Configuration.expectOptionValue("AnimationSpeedMaximum") or 1.0
-		)
+		local mode = rng:NextInteger(1, 2)
+		local generated = nil
+
+		if not self.multiplier[track] and not Configuration.expectToggleValue("SwitchBetweenSpeeds") then
+			generated = rng:NextInteger(min, max)
+		end
+
+		if not self.multiplier[track] and Configuration.expectToggleValue("SwitchBetweenSpeeds") then
+			generated = mode == 1 and min or max
+		end
+
+		if not self.multiplier[track] and generated then
+			self.multiplier[track] = generated
+		end
+
+		local multiplier = self.multiplier[track] or 1.0
 
 		local adjusted = track.Speed * multiplier
 
@@ -535,6 +553,7 @@ function AnimatorDefender.new(animator, manimations)
 	self.rpbdata = {}
 	self.sct = {}
 	self.tsc = {}
+	self.multiplier = {}
 
 	self.maid:mark(animationPlayed:connect(
 		"AnimatorDefender_OnAnimationPlayed",

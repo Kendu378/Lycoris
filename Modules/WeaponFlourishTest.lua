@@ -13,15 +13,51 @@ return function(self, timing)
 		return
 	end
 
-	timing.fhb = true
+	-- Fallbacks. Reset to normal.
+	timing.nvfb = true
+	timing.pbfb = false
+	timing.ndfb = false
+	timing.bfht = 0.3
+
+	-- Prediction settings.
+	timing.dp = false
 	timing.pfh = true
 	timing.phd = true
+
+	-- Prediction history times.
 	timing.pfht = 0.25
 	timing.phds = 0.6
-	timing.dp = false
 
 	if data.type == "Fist" or data.type == "Dagger" or data.type == "Pistol" then
-		timing.phds = 0.15
+		timing.pbfb = true
+		timing.bfht = 0.6
+		timing.phds = data.type == "Dagger" and 0.6 or 0.25
+		timing.pfh = false
+		timing.dp = true
+	end
+
+	if
+		data.type == "Sword"
+		or data.type == "Twinblade"
+		or data.type == "Spear"
+		or data.type == "Club"
+		or data.type == "Rifle"
+	then
+		timing.pbfb = true
+		timing.bfht = 0.6
+		timing.phd = false
+		timing.ffh = true
+		timing.dp = true
+	end
+
+	if
+		data.type == "Greathammer"
+		or data.type == "Greatcannon"
+		or data.type == "Greatsword"
+		or data.type == "Greataxe"
+	then
+		timing.phd = false
+		timing.pfh = true
 		timing.dp = true
 	end
 
@@ -34,7 +70,7 @@ return function(self, timing)
 	elseif data.type == "Greathammer" then
 		windup = (0.14 / self.track.Speed) + 0.140
 	elseif data.type == "Greatsword" then
-		windup = (0.17 / self.track.Speed) + 0.100
+		windup = (0.17 / self.track.Speed) + 0.050
 	elseif data.type == "Twinblade" then
 		windup = (0.166 / self.track.Speed) + 0.140
 	elseif data.type == "Bow" then
@@ -67,9 +103,35 @@ return function(self, timing)
 	local action = Action.new()
 	action._when = windup * 1000
 	action._type = "Parry"
-	action.hitbox = Vector3.new(data.length * 2, data.length * 2, data.length * 2)
+	action.hitbox = Vector3.new(data.length * 2.7, data.length * 3, data.length * 1.8)
+
+	if data.type == "Bow" then
+		action.hitbox = Vector3.new(data.length * 1.5, data.length * 2, data.length * 1.5)
+	end
+
+	if data.type == "Pistol" or data.type == "Rapier" or data.type == "Spear" then
+		action.hitbox = Vector3.new(data.length * 1.7, data.length * 3, data.length * 1.8)
+	end
+
+	if data.type == "Sword" or data.type == "Twinblade" then
+		action.hitbox = Vector3.new(data.length * 2.0, data.length * 3, data.length * 2.0)
+	end
+
+	if
+		data.type == "Greathammer"
+		or data.type == "Greatcannon"
+		or data.type == "Greatsword"
+		or data.type == "Greataxe"
+	then
+		action.hitbox = Vector3.new(data.length * 2, data.length * 2, data.length * 1.6)
+	end
+
+	if data.type == "Fist" or data.type == "Dagger" then
+		action.hitbox = Vector3.new(data.length * 2.7, data.length * 3, data.length * 2)
+	end
+
 	action.name = string.format(
-		"(%.2f, %.2f, %.2f) (%.2f) Dynamic Weapon Swing",
+		"(%.2f, %.2f, %.2f) (%.2f) Dynamic Weapon Flourish",
 		data.oss,
 		data.ss,
 		self.track.Speed,

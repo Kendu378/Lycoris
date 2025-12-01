@@ -39,7 +39,7 @@ return function(self, timing)
 
 		task.wait(0.70 - Latency.rtt())
 
-		if self:distance(self.entity) <= 14 then
+		if self:distance(self.entity) <= 20 then
 			local action = Action.new()
 			action._type = "Start Block"
 			action._when = 0
@@ -50,9 +50,9 @@ return function(self, timing)
 			local actionTwo = Action.new()
 			actionTwo._type = "End Block"
 			action.name = "Rising Shadow End"
-			actionTwo._when = 500
+			actionTwo._when = 1000
 			actionTwo.ihbc = true
-			self:action(timing, actionTwo)
+			return self:action(timing, actionTwo)
 		end
 
 		local action = Action.new()
@@ -61,7 +61,7 @@ return function(self, timing)
 		action.name = "Rising Shadow Part"
 
 		local actionTwo = Action.new()
-		actionTwo._when = 500
+		actionTwo._when = 1000
 		actionTwo.name = "Rising Shadow End"
 		actionTwo._type = "End Block"
 		actionTwo.ihbc = true

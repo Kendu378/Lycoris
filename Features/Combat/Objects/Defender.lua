@@ -58,6 +58,7 @@ local Latency = require("Game/Latency")
 ---@field hmaid Maid Maid for hitbox visualizations.
 ---@field uids number Unique ID counter for hitbox visualizations.
 ---@field afeinted boolean Whether if we have auto-feinted this defense cycle.
+---@field ifeinted boolean Whether if we have initial auto-feinted this defense cycle.
 local Defender = {}
 Defender.__index = Defender
 Defender.__type = "Defender"
@@ -333,10 +334,6 @@ Defender.valid = LPH_NO_VIRTUALIZE(function(self, options)
 		if effectReplicatorModule:FindEffect("Knocked") then
 			return internalNotifyFunction(timing, "User is knocked.")
 		end
-
-		if effectReplicatorModule:FindEffect("HitAnim") then
-			return internalNotifyFunction(timing, "User is in hit animation.")
-		end
 	end
 
 	if timing.tag == "M1" and selectedFilters["Filter Out M1s"] then
@@ -562,6 +559,15 @@ Defender.hc = LPH_NO_VIRTUALIZE(function(self, options, info)
 	local action = options.action
 	local timing = options.timing
 
+	-- Inner visualization function.
+	local function innerVisualize(...)
+		if not options.visualize then
+			return
+		end
+
+		return self:visualize(...)
+	end
+
 	-- Run basic validation.
 	local character = players.LocalPlayer.Character
 	if not character then
@@ -591,8 +597,8 @@ Defender.hc = LPH_NO_VIRTUALIZE(function(self, options, info)
 	local result, usedCFrame = self:hitbox(position, timing.fhb, timing.hso, hitbox, options.filter)
 
 	if usedCFrame then
-		self:visualize(options.hmid, usedCFrame, hitbox, options:ghcolor(result))
-		self:visualize(options.hmid and options.hmid + 1 or nil, root.CFrame, root.Size, options:ghcolor(result))
+		innerVisualize(options.hmid, usedCFrame, hitbox, options:ghcolor(result))
+		innerVisualize(options.hmid and options.hmid + 1 or nil, root.CFrame, root.Size, options:ghcolor(result))
 	end
 
 	if not options.spredict or result then
@@ -614,8 +620,8 @@ Defender.hc = LPH_NO_VIRTUALIZE(function(self, options, info)
 
 	-- Visualize predicted hitbox.
 	if usedCFrame then
-		self:visualize(options.hmid and options.hmid + 1 or nil, usedCFrame, hitbox, options:gphcolor(result))
-		self:visualize(options.hmid and options.hmid + 1 or nil, closest, root.Size, options:gphcolor(result))
+		innerVisualize(options.hmid and options.hmid + 1 or nil, usedCFrame, hitbox, options:gphcolor(result))
+		innerVisualize(options.hmid and options.hmid + 1 or nil, closest, root.Size, options:gphcolor(result))
 	end
 
 	-- Return result.
@@ -646,7 +652,7 @@ Defender.handle = LPH_NO_VIRTUALIZE(function(self, timing, action, started)
 		and self.__type == "Animation"
 		and actionType ~= "End Block"
 	then
-		self:afeint(timing, action, started)
+		self:afeint(timing, action, started, false)
 	end
 
 	if actionType ~= "End Block" then
@@ -918,19 +924,28 @@ end)
 ---@param timing Timing
 ---@param action Action
 ---@param started number Timestamp of when the auto feint task started.
-Defender.afeint = LPH_NO_VIRTUALIZE(function(self, timing, action, started)
+---@param initial boolean Whether this is the initial auto feint check.
+Defender.afeint = LPH_NO_VIRTUALIZE(function(self, timing, action, started, initial)
+	local function innerNotify(...)
+		if initial then
+			return
+		end
+
+		return self:notify(...)
+	end
+
 	local lfaction = StateListener.lAnimFaction
 	if not lfaction then
-		return self:notify(timing, "Auto feint blocked because there is no local first action.")
+		return innerNotify(timing, "Auto feint blocked because there is no local first action.")
 	end
 
 	local latimestamp = StateListener.lAnimTimestamp
 	if not latimestamp then
-		return self:notify(timing, "Auto feint blocked because there is no last animation timestamp.")
+		return innerNotify(timing, "Auto feint blocked because there is no last animation timestamp.")
 	end
 
 	if not StateListener.cfeint() then
-		return self:notify(timing, "Auto feint blocked because we are unable to feint.")
+		return innerNotify(timing, "Auto feint blocked because we are unable to feint.")
 	end
 
 	-- Our goal is to attempt to detect if this local timing will out-pace the animation timing that the enemey is doing.
@@ -944,28 +959,40 @@ Defender.afeint = LPH_NO_VIRTUALIZE(function(self, timing, action, started)
 	local enemyTimeLeft = action:when() - (os.clock() - started)
 
 	-- The local player will hit them before they do, so we don't want to feint.
-	if enemyTimeLeft > animTimeLeft then
-		return self:notify(
-			timing,
-			"Auto feint blocked because enemy action (%.2fs, %.2fs) would not hit before local animation ends (%.2fs, %.2fs, %.2fs).",
-			enemyTimeLeft,
-			(os.clock() - started),
-			animTimeLeft,
-			lfaction:when(),
-			(os.clock() - latimestamp)
-		)
+	local autoFeintType = Configuration.expectOptionValue("AutoFeintType")
+
+	if autoFeintType ~= "Aggressive" then
+		if not timing.ha and enemyTimeLeft > animTimeLeft then
+			return innerNotify(
+				timing,
+				"Auto feint blocked because enemy action (%.2fs, %.2fs) would not hit before local animation ends (%.2fs, %.2fs, %.2fs).",
+				enemyTimeLeft,
+				(os.clock() - started),
+				animTimeLeft,
+				lfaction:when(),
+				(os.clock() - latimestamp)
+			)
+		end
 	end
 
 	local options = ValidationOptions.new(action, timing)
 	options.sstun = true
 	options.notify = false
+	options.visualize = false
 
 	if not self:valid(options) then
-		return self:notify(timing, "Auto feint failed because action is not valid.")
+		return innerNotify(timing, "Auto feint failed because action is not valid.")
 	end
 
-	self:notify(timing, "Auto feint executed.")
-	self.afeinted = true
+	if not self.ifeinted then
+		self:notify(timing, "Auto feint executed.")
+	end
+
+	if not initial then
+		self.afeinted = true
+	else
+		self.ifeinted = true
+	end
 
 	InputClient.feint()
 end)
@@ -997,6 +1024,19 @@ Defender.action = LPH_NO_VIRTUALIZE(function(self, timing, action)
 	self:mark(Task.new(PP_SCRAMBLE_STR(action._type), function()
 		return action:when() - rdelay - Latency.sdelay()
 	end, timing.punishable, timing.after, self.handle, self, timing, action, os.clock()))
+
+	-- Add auto feint action.
+	if
+		Configuration.expectToggleValue("AutoFeint")
+		and not timing.duih
+		and action._when > 0
+		and self.__type == "Animation"
+		and actionType ~= "End Block"
+	then
+		self:mark(Task.new(PP_SCRAMBLE_STR(action._type), function()
+			return (action:when() - rdelay - Latency.sdelay()) / 2
+		end, timing.punishable, timing.after, self.afeint, self, timing, action, os.clock(), true))
+	end
 
 	-- Log.
 	if not LRM_UserNote or LRM_UserNote == "tester" then
@@ -1084,6 +1124,7 @@ function Defender.new()
 	self.markers = {}
 	self.lvisualization = os.clock()
 	self.afeinted = false
+	self.ifeinted = false
 	return self
 end
 

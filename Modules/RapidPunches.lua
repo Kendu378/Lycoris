@@ -32,7 +32,7 @@ return function(self, timing)
 		return
 	end
 
-	if humanoidRootPart:FindFirstChild("REP_SOUND_6323221579") then
+	if humanoidRootPart:WaitForChild("REP_SOUND_6323221579", 0.1) then
 		local radiantKickTiming = Timing.new()
 		radiantKickTiming.fhb = false
 		radiantKickTiming.duih = false
@@ -57,7 +57,7 @@ return function(self, timing)
 	firstPartTiming.cbm = true
 
 	local action = Action.new()
-	action._when = 350
+	action._when = 300
 	action._type = "Parry"
 	action.hitbox = Vector3.new(16, 10, 20)
 	action.name = "Rapid Punches First Part"
@@ -65,7 +65,7 @@ return function(self, timing)
 
 	timing.fhb = true
 	timing._rsd = 0
-	timing._rpd = 150
+	timing._rpd = 250
 	timing.duih = true
 	timing.rpue = true
 	timing.hitbox = Vector3.new(16, 10, 12)

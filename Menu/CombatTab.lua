@@ -272,10 +272,25 @@ function CombatTab.initTimingProbabilitySection(groupbox) end
 ---Initialize attack assistance section.
 ---@param groupbox table
 function CombatTab.initAttackAssistanceSection(groupbox)
-	groupbox:AddToggle("AutoFeint", {
+	local afToggle = groupbox:AddToggle("AutoFeint", {
 		Text = "Auto Feint",
 		Default = false,
 		Tooltip = "Attempt to automatically feint your attacks before the parry timing to prevent swing-throughs.",
+	})
+
+	local afDepBox = groupbox:AddDependencyBox()
+
+	afDepBox:AddDropdown("AutoFeintType", {
+		Text = "Auto Feint Type",
+		Values = {
+			"Passive",
+			"Aggressive",
+		},
+		Default = 1,
+	})
+
+	afDepBox:SetupDependencies({
+		{ afToggle, true },
 	})
 end
 
@@ -333,6 +348,12 @@ function CombatTab.initCombatAssistance(groupbox)
 		Text = "Limit To AP Animations",
 		Default = false,
 		Tooltip = "Only change the animation speed of animations that are inside of the 'Auto Parry' animations list.",
+	})
+
+	ascDepBox:AddToggle("SwitchBetweenSpeeds", {
+		Text = "Switch Between Speeds",
+		Default = false,
+		Tooltip = "Only switch between values around minimum and maximum animation speeds instead of a random value in between.",
 	})
 
 	ascDepBox:AddSlider("AnimationSpeedMinimum", {

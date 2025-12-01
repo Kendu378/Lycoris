@@ -41,10 +41,25 @@ return function(self, timing)
 
 	if data.type == "Fist" or data.type == "Dagger" or data.type == "Pistol" then
 		timing.pbfb = true
-		timing.bfht = 0.5
+		timing.bfht = 0.6
 		timing.phds = data.type == "Dagger" and 0.6 or 0.25
 		timing.pfh = false
 		timing.dp = true
+	end
+
+	if
+		data.type == "Sword"
+		or data.type == "Twinblade"
+		or data.type == "Spear"
+		or data.type == "Club"
+		or data.type == "Rifle"
+	then
+		timing.pbfb = true
+		timing.bfht = 0.3
+		timing.phd = false
+		timing.ffh = true
+		timing.pfht = 0.5
+		timing.dp = false
 	end
 
 	if
@@ -53,8 +68,8 @@ return function(self, timing)
 		or data.type == "Greatsword"
 		or data.type == "Greataxe"
 	then
-		timing.phds = 0.2
-		timing.pfh = false
+		timing.phd = false
+		timing.pfh = true
 		timing.dp = true
 	end
 
@@ -112,7 +127,7 @@ return function(self, timing)
 	elseif data.type == "Spear" then
 		windup = (0.150 / self.track.Speed) + 0.100
 	elseif data.type == "Greatsword" then
-		windup = (0.158 / self.track.Speed) + 0.170
+		windup = (0.158 / self.track.Speed) + 0.150
 	elseif data.type == "Fist" then
 		windup = (0.140 / self.track.Speed) + 0.130
 	elseif data.type == "Dagger" then
@@ -140,7 +155,7 @@ return function(self, timing)
 	end
 
 	if data.type == "Sword" or data.type == "Twinblade" then
-		action.hitbox = Vector3.new(data.length * 2.0, data.length * 3, data.length * 1.9)
+		action.hitbox = Vector3.new(data.length * 1.7, data.length * 3, data.length * 1.8)
 	end
 
 	if
@@ -149,7 +164,7 @@ return function(self, timing)
 		or data.type == "Greatsword"
 		or data.type == "Greataxe"
 	then
-		action.hitbox = Vector3.new(data.length * 2, data.length * 2, data.length * 1.6)
+		action.hitbox = Vector3.new(data.length * 2.2, data.length * 2, data.length * 1.8)
 	end
 
 	if data.type == "Fist" or data.type == "Dagger" then

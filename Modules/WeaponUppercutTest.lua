@@ -68,7 +68,7 @@ return function(self, timing)
 	action._type = "Parry"
 	action.hitbox = Vector3.new(data.length * 2, data.length * 2, data.length * 2.2)
 	action.name = string.format(
-		"(%.2f, %.2f, %.2f) (%.2f) Dynamic Weapon Swing",
+		"(%.2f, %.2f, %.2f) (%.2f) Dynamic Weapon Upper",
 		data.oss,
 		data.ss,
 		self.track.Speed,

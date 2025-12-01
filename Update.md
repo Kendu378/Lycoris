@@ -1,18 +1,43 @@
 # Deepwoken Rewrite
-**Module diff vs. previous snapshot: +2/-0/~0 (added/removed/changed)**
+**Module diff vs. previous snapshot: +1/-0/~10 (added/removed/changed)**
 ```diff
-+ (added) Tornado
-+ (added) WyrmCrit
++ (added) SilentheartWarn
++ (changed) PressureBlast
++ (changed) WeaponTest
++ (changed) RisingShadow
++ (changed) WeaponAerialAttackTest
++ (changed) OwlDisperse
++ (changed) WeaponFlourishTest
++ (changed) RapidPunches
++ (changed) GaleHeroblade
++ (changed) WeaponUppercutTest
++ (changed) WeaponRunningAttackTest
 ```
-*Wyrmtooth critical is fully fixed.*
+Relentless Hunt now should no longer parries your own move. 
+It attempts to parry instead of block with some added information in the notification.
+**All "Medium Weapon" combat hitboxes have been changed, report any bad hitboxes.**
 
-**Timing diff vs. previous snapshot: +1/-5/~0 (part: +1/-0/~0, effect: +0/-5/~0)**
+**Timing diff vs. previous snapshot: +1/-1/~5 (animation: +1/-1/~4, effect: +0/-0/~1)**
 ```diff
-+ (added) Part : Tornado (by Blastbrean)
++ (changed) Animation : IceLance (by Blastbrean)
++ (added) Animation : IceSmashWindup (by Blastbrean)
+- (removed) Animation : IceSmash (by Blastbrean)
++ (changed) Animation : RisingFrost (by Blastbrean)
++ (changed) Animation : TwisterKicks (by Blastbrean)
++ (changed) Animation : HeavenlyWind (by Blastbrean)
++ (changed) Effect : SilentheartWarn (by Blastbrean)
++ (changed) Animation : IceCarve (by Blastbrean)
++ (changed) Animation : DarkBlade (by Blastbrean)
 ```
-*You should not parry your own Tornado anymore.*
 
 **New features?**
-*No new features. They will come later today. ESP Rework and Whitelisting Rework soon!*
+```diff
+- (bug fix) Animation speed changer cycled through many random speeds in one timing
+- (removed) "User is in hit animation" check is now removed
++ (added) Animation speed changer has new switch between speeds feature
++ (added) Aggressive auto feint type which ignores all player attacking checks
++ (changed) Auto feint now respects hyperarmor (this caused auto feint to be useless in PVE) (this data may be missing for some timings; please report if so)
++ (changed) Auto feint now runs another check a bit before the timing to combat feinting latency
+```
 
 *No change in commit ID. This update is super minor.*
