@@ -221,6 +221,10 @@ local updateGoldenTongue = LPH_NO_VIRTUALIZE(function()
 		return
 	end
 
+	if Configuration.expectToggleValue("CheckIfInCombat") and effectReplicatorModule:FindEffect("Combat") then
+		return
+	end
+
 	local textChannels = textChatService:FindFirstChild("TextChannels")
 	local rbxSystem = textChannels and textChannels:FindFirstChild("RBXSystem")
 	if not rbxSystem then

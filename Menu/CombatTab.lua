@@ -478,10 +478,22 @@ function CombatTab.initCombatAssistance(groupbox)
 		{ awToggle, true },
 	})
 
-	groupbox:AddToggle("AutoGoldenTongue", {
+	local agtToggle = groupbox:AddToggle("AutoGoldenTongue", {
 		Text = "Auto Golden Tongue",
 		Default = false,
 		Tooltip = "Automatically say a hidden message when your 'Golden Tongue' talent is on cooldown.",
+	})
+
+	local agtDepBox = groupbox:AddDependencyBox()
+
+	agtDepBox:AddToggle("CheckIfInCombat", {
+		Text = "Check If In Combat",
+		Default = false,
+		Tooltip = "Only send the message if we're currently in combat.",
+	})
+
+	agtDepBox:SetupDependencies({
+		{ agtToggle, true },
 	})
 
 	groupbox:AddToggle("AutoFlowState", {
