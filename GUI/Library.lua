@@ -161,7 +161,7 @@ return LPH_NO_VIRTUALIZE(function()
 
 	function Library:GetOverrideData(name)
 		for idx, data in next, Library.OverrideData do
-			if name:match(idx) then
+			if name:lower():match(idx:lower()) then
 				return data
 			end
 		end

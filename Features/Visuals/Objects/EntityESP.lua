@@ -248,6 +248,10 @@ EntityESP.hchanged = LPH_NO_VIRTUALIZE(function(self)
 		return
 	end
 
+	if self.billboard.Enabled == false then
+		return
+	end
+
 	if not Configuration.idToggleValue(self.identifier, "ShowHealthChanges") then
 		return
 	end
