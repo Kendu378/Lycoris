@@ -27,7 +27,7 @@ return function(self, timing)
 	-- Funny htibox options.
 	timing.htype = Enum.PartType.Ball
 	timing.fhb = false
-	timing.hso = -2
+	timing.hso = -5
 
 	-- Fallbacks. Reset to normal.
 	timing.nvfb = true
@@ -150,7 +150,7 @@ return function(self, timing)
 	local action = Action.new()
 	action._when = windup * 1000
 	action._type = "Parry"
-	action.hitbox = Vector3.new(data.length * 2.7, data.length * 2.7, data.length * 2.7)
+	action.hitbox = Vector3.new(data.length * 2.8, data.length * 2.8, data.length * 2.8)
 	action.name = string.format(
 		"(%.2f, %.2f, %.2f) (%.2f) Dynamic Weapon Swing",
 		data.oss,
