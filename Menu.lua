@@ -203,6 +203,8 @@ end
 function Menu.detach()
 	menuMaid:clean()
 
+	BuilderTab.detach()
+
 	Library:Unload()
 
 	Logger.warn("Menu detached.")

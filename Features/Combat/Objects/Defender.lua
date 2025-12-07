@@ -403,7 +403,8 @@ end
 ---@param cframe CFrame
 ---@param size Vector3
 ---@param color Color3
-Defender.visualize = LPH_NO_VIRTUALIZE(function(self, identifier, cframe, size, color)
+---@param shape Enum.PartType
+Defender.visualize = LPH_NO_VIRTUALIZE(function(self, identifier, cframe, size, color, shape)
 	local id = identifier or self:uid(10)
 	local vpart = self.hmaid[id] or Instance.new("Part")
 
@@ -421,6 +422,7 @@ Defender.visualize = LPH_NO_VIRTUALIZE(function(self, identifier, cframe, size, 
 		vpart.Size = size
 		vpart.CFrame = cframe
 		vpart.Color = color
+		vpart.Shape = shape
 		vpart.Transparency = Configuration.expectToggleValue("EnableVisualizations") and 0.2 or 1.0
 	end
 
@@ -440,8 +442,9 @@ end)
 ---@param soffset number
 ---@param size Vector3
 ---@param filter Instance[]
+---@param shape Enum.PartType
 ---@return boolean?, CFrame?
-Defender.hitbox = LPH_NO_VIRTUALIZE(function(self, cframe, fd, soffset, size, filter)
+Defender.hitbox = LPH_NO_VIRTUALIZE(function(self, cframe, fd, soffset, size, filter, shape)
 	local shouldManualFilter = getexecutorname
 		and (getexecutorname():match("Solara") or getexecutorname():match("Xeno"))
 
@@ -470,8 +473,19 @@ Defender.hitbox = LPH_NO_VIRTUALIZE(function(self, cframe, fd, soffset, size, fi
 		usedCFrame = usedCFrame * CFrame.new(0, 0, soffset)
 	end
 
+	-- Create simulation part.
+	local simulationPart = Instance.new("Part")
+	simulationPart.Size = size
+	simulationPart.Material = Enum.Material.ForceField
+	simulationPart.Shape = shape
+	simulationPart.CFrame = usedCFrame
+
+	if shape == Enum.PartType.Cylinder then
+		simulationPart.CFrame = usedCFrame * CFrame.Angles(0, 0, math.rad(90))
+	end
+
 	-- Parts in bounds.
-	local parts = workspace:GetPartBoundsInBox(usedCFrame, size, overlapParams)
+	local parts = workspace:GetPartsInPart(simulationPart, overlapParams)
 
 	-- Return result.
 	return shouldManualFilter and checkParts(parts, filter) or #parts > 0, usedCFrame
@@ -607,13 +621,14 @@ Defender.hc = LPH_NO_VIRTUALIZE(function(self, options, info)
 	local hitbox = options:hitbox()
 	local eposition = options.spredict and options:extrapolate() or nil
 	local position = options:pos()
+	local pt = timing.htype or Enum.PartType.Block
 
 	-- Run hitbox check.
-	local result, usedCFrame = self:hitbox(position, timing.fhb, timing.hso, hitbox, options.filter)
+	local result, usedCFrame = self:hitbox(position, timing.fhb, timing.hso, hitbox, options.filter, pt)
 
 	if usedCFrame then
-		innerVisualize(options.hmid, usedCFrame, hitbox, options:ghcolor(result))
-		innerVisualize(options.hmid and options.hmid + 1 or nil, root.CFrame, root.Size, options:ghcolor(result))
+		innerVisualize(options.hmid, usedCFrame, hitbox, options:ghcolor(result), pt)
+		innerVisualize(options.hmid and options.hmid + 1 or nil, root.CFrame, root.Size, options:ghcolor(result), pt)
 	end
 
 	if not options.spredict or result then
@@ -630,13 +645,13 @@ Defender.hc = LPH_NO_VIRTUALIZE(function(self, options, info)
 
 	-- Run check.
 	store:run(root, "CFrame", closest, function()
-		result, usedCFrame = self:hitbox(eposition, timing.fhb, timing.hso, hitbox, options.filter)
+		result, usedCFrame = self:hitbox(eposition, timing.fhb, timing.hso, hitbox, options.filter, pt)
 	end)
 
 	-- Visualize predicted hitbox.
 	if usedCFrame then
-		innerVisualize(options.hmid and options.hmid + 1 or nil, usedCFrame, hitbox, options:gphcolor(result))
-		innerVisualize(options.hmid and options.hmid + 1 or nil, closest, root.Size, options:gphcolor(result))
+		innerVisualize(options.hmid and options.hmid + 1 or nil, usedCFrame, hitbox, options:gphcolor(result), pt)
+		innerVisualize(options.hmid and options.hmid + 1 or nil, closest, root.Size, options:gphcolor(result), pt)
 	end
 
 	-- Return result.

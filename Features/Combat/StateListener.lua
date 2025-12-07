@@ -427,6 +427,16 @@ local onEffectReplicated = LPH_NO_VIRTUALIZE(function(effect)
 				return
 			end
 
+			local effectReplicator = replicatedStorage:WaitForChild("EffectReplicator")
+			local effectReplicatorModule = require(effectReplicator)
+
+			if
+				not Configuration.expectToggleValue("CheckIfMoveHit")
+				and not effectReplicatorModule:FindEffect("LandedMantra")
+			then
+				return
+			end
+
 			QueuedBlocking.invoke(QueuedBlocking.BLOCK_TYPE_NORMAL, "AutoMantraFollowup", nil)
 
 			repeat

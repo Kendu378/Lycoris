@@ -517,10 +517,22 @@ function CombatTab.initCombatAssistance(groupbox)
 		{ agtToggle, true },
 	})
 
-	groupbox:AddToggle("AutoMantraFollowup", {
+	local amfToggle = groupbox:AddToggle("AutoMantraFollowup", {
 		Text = "Auto Mantra Followup",
 		Default = false,
 		Tooltip = "Automatically press the followup button while using a mantra.",
+	})
+
+	local amfDepBox = groupbox:AddDependencyBox()
+
+	amfDepBox:AddToggle("CheckIfMoveHit", {
+		Text = "Check If Move Hit",
+		Default = false,
+		Tooltip = "Only press the followup button if a 'DamagedAnother' effect is detected.",
+	})
+
+	amfDepBox:SetupDependencies({
+		{ amfToggle, true },
 	})
 
 	groupbox:AddToggle("AutoFlowState", {

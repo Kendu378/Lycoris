@@ -161,7 +161,6 @@ AnimatorDefender.pfh = LPH_NO_VIRTUALIZE(function(self, options)
 	end
 
 	local clone = options:clone()
-	clone.spredict = true
 	clone.hcolor = Color3.new(0, 1, 1)
 	clone.mcolor = Color3.new(1, 1, 0)
 	clone:ucache()
@@ -183,7 +182,6 @@ end)
 AnimatorDefender.phd = LPH_NO_VIRTUALIZE(function(self, timing, options)
 	for _, cframe in next, EntityHistory.pstepped(self.entity, HISTORY_STEPS, timing.phds) or {} do
 		local clone = options:clone()
-		clone.spredict = true
 		clone.cframe = cframe
 		clone.hcolor = Color3.new(0.839215, 0.976470, 0.537254)
 		clone.mcolor = Color3.new(0.564705, 0, 1)

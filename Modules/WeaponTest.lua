@@ -24,6 +24,11 @@ return function(self, timing)
 		return
 	end
 
+	-- Funny htibox options.
+	timing.htype = Enum.PartType.Ball
+	timing.fhb = false
+	timing.hso = -4
+
 	-- Fallbacks. Reset to normal.
 	timing.nvfb = true
 	timing.pbfb = false
@@ -146,37 +151,7 @@ return function(self, timing)
 	local action = Action.new()
 	action._when = windup * 1000
 	action._type = "Parry"
-	action.hitbox = Vector3.new(data.length * 2.7, data.length * 3, data.length * 1.8)
-
-	if data.type == "Bow" then
-		action.hitbox = Vector3.new(data.length * 1.5, data.length * 2, data.length * 1.5)
-	end
-
-	if data.type == "Pistol" then
-		action.hitbox = Vector3.new(data.length * 1.5, data.length * 2, data.length * 1.25)
-	end
-
-	if data.type == "Rapier" or data.type == "Spear" then
-		action.hitbox = Vector3.new(data.length * 1.7, data.length * 3, data.length * 2.1)
-	end
-
-	if data.type == "Sword" or data.type == "Twinblade" then
-		action.hitbox = Vector3.new(data.length * 1.7, data.length * 3, data.length * 1.8)
-	end
-
-	if
-		data.type == "Greathammer"
-		or data.type == "Greatcannon"
-		or data.type == "Greatsword"
-		or data.type == "Greataxe"
-	then
-		action.hitbox = Vector3.new(data.length * 2.2, data.length * 2, data.length * 2)
-	end
-
-	if data.type == "Fist" or data.type == "Dagger" then
-		action.hitbox = Vector3.new(data.length * 2.7, data.length * 3, data.length * 2)
-	end
-
+	action.hitbox = Vector3.new(data.length * 2.7, data.length * 2.7, data.length * 2.7)
 	action.name = string.format(
 		"(%.2f, %.2f, %.2f) (%.2f) Dynamic Weapon Swing",
 		data.oss,

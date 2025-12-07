@@ -24,6 +24,7 @@ local ActionContainer = require("Game/Timings/ActionContainer")
 ---@field bfht number Block fallback hold time.
 ---@field pbfb boolean Prefer block fallback.
 ---@field forced boolean Hidden field which allows us to force tasks to go through.
+---@field htype Enum.PartType Shape of hitbox. Never accessible unless inside of a module or inside of real code. This is never serialized.
 local Timing = {}
 Timing.__index = Timing
 
