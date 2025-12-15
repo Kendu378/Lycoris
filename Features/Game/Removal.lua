@@ -46,6 +46,7 @@ return LPH_NO_VIRTUALIZE(function()
 	local echoModifiersMap = removalMaid:mark(OriginalStoreManager.new())
 	local noFogMap = removalMaid:mark(OriginalStoreManager.new())
 	local killBricksMap = removalMaid:mark(OriginalStoreManager.new())
+	local damageBricksMap = removalMaid:mark(OriginalStoreManager.new())
 	local lightBarrierMap = removalMaid:mark(OriginalStoreManager.new())
 	local yunShulBarrierMap = removalMaid:mark(OriginalStoreManager.new())
 	local yunShulResonanceDoorMap = removalMaid:mark(OriginalStoreManager.new())
@@ -242,6 +243,26 @@ return LPH_NO_VIRTUALIZE(function()
 		originalAcidRemote.Name = "AcidRemote"
 		placeholderRemote.Parent = nil
 	end
+	
+	---Update no damage bricks.
+	local function updateNoDamageBricks()
+		for _, store in next, damageBricksMap:data() do
+			local data = store.data
+			if not data then
+				continue
+			end
+
+			store:set(store.data, "Parent", nil)
+		end
+	end
+
+	-- Restore no damage bricks.
+	local function restoreNoDamageBricks()
+		damageBricksMap:restore()
+		for _,v in next, game:GetService("CollectionService"):GetTagged("DamageBrick") do
+			v:Destroy()
+		end
+	end
 
 	---Update removal.
 	local function updateRemoval()
@@ -272,6 +293,12 @@ return LPH_NO_VIRTUALIZE(function()
 			updateNoKillBricks()
 		else
 			killBricksMap:restore()
+		end
+		
+		if Configuration.expectToggleValue("NoDamageBricks") then
+			updateNoDamageBricks()
+		else
+			restoreNoDamageBricks()
 		end
 
 		if Configuration.expectToggleValue("NoHiveGate") then
@@ -395,7 +422,6 @@ return LPH_NO_VIRTUALIZE(function()
 			end
 
 			serverSlide:FireServer(true)
-
 			serverSlideStop:FireServer()
 		end
 	end
@@ -426,6 +452,7 @@ return LPH_NO_VIRTUALIZE(function()
 		local killInstance = descendant.Name == "KillBrick" or descendant.Name == "KillPlane"
 		local killChasm = descendant.Name:match("Chasm")
 		local superWall = descendant.Name == "SuperWall"
+		local damagePart = descendant.Name == "Lava" and descendant:FindFirstChild("Hazardous") and not descendant:HasTag("DamageBrick")
 
 		if killInstance or killChasm or superWall then
 			killBricksMap:mark(descendant, "CFrame")
@@ -433,6 +460,10 @@ return LPH_NO_VIRTUALIZE(function()
 
 		if descendant.Name == "DeepPassage_Yun" then
 			yunShulBarrierMap:mark(descendant, "CFrame")
+		end
+
+		if damagePart then
+			damageBricksMap:mark(descendant, "Parent")
 		end
 	end
 
