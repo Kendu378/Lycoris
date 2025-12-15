@@ -1198,15 +1198,15 @@ local onThrownChildAdded = LPH_NO_VIRTUALIZE(function(child)
 	end
 
 	visualsMaid:mark(TaskSpawner.spawn("Visuals_ChestCheck", function()
+		if child.Name == 'Chest' and child:GetAttribute('LootName') ~= nil then
+			return emplaceObject(child, ChestESP.new("Chest", child, "Chest"))
+		end
+		
 		if not child:IsA("Model") and not child:IsA("Part") then
 			return
 		end
 
 		if child:WaitForChild("LootUpdated", 0.1) then
-			return emplaceObject(child, ChestESP.new("Chest", child, "Chest"))
-		end
-
-		if child.Name == 'Chest' and child:GetAttribute('LootName') ~= nil then
 			return emplaceObject(child, ChestESP.new("Chest", child, "Chest"))
 		end
 	end))
