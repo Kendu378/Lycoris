@@ -33,7 +33,7 @@ return function(self, timing)
 
 	local action = Action.new()
 	action._when = 1000
-	action._type = "Jump"
+	action._type = "Teleport Up"
 	action.ihbc = true
 	action.name = "Lord Regent Lariat"
 	self:action(timing, action)
