@@ -8,7 +8,7 @@
 + (added) Added 'Mark User Holding Sack' to Player ESP
 + (added) Bag ESP now works on VOI Sacks
 + (added) Chest ESP now works on VOI Chests
-+ (added) Aggressive Pathfind Breaker
++ (added) Aggressive pathfind breaker
 + (changed) Completely reworked auto-feint system to rely on user input(s)
 - (bug fix) Attempted to prevent abnormal ESP sizes with new cache invalidation
 ```
