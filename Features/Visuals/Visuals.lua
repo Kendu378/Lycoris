@@ -534,6 +534,11 @@ local updateTraits = LPH_NO_VIRTUALIZE(function(jframe)
 	end
 end)
 
+---Strip weapon tags like [HVY], [LHT], [MED], [FTD], [BLD] for display.
+local function stripTags(str)
+	return str:gsub("%s*%[.-%]$", "")
+end
+
 ---Update talent sheet.
 ---@param rframe Frame
 local updateTalentSheet = LPH_NO_VIRTUALIZE(function(rframe)
@@ -560,18 +565,26 @@ local updateTalentSheet = LPH_NO_VIRTUALIZE(function(rframe)
 		return
 	end
 
-	local label = talentScroll:FindFirstChildWhichIsA("TextLabel")
-	if not label then
+	-- Find a frame template with title child (new ui structure).
+	local talentFrameTemplate = nil
+	for _, child in next, talentScroll:GetChildren() do
+		if child:IsA("Frame") and not child.Name:match("Divider$") and child:FindFirstChild("Title") then
+			talentFrameTemplate = child
+			break
+		end
+	end
+
+	if not talentFrameTemplate then
 		return
 	end
 
-	-- clean maid to re-setup
+	-- Clean maid to re-setup.
 	builderAssistanceMaid:clean()
 
-	-- create state
+	-- Create state.
 	labelMap = {}
 
-	-- first step: color everything inside and remove everything that is in the builder list already
+	-- First step: color everything inside and remove everything that is in the builder list already.
 	local filteredTalents = table.clone(bdata.talents)
 
 	for _, instance in next, talentScroll:GetDescendants() do
@@ -579,8 +592,15 @@ local updateTalentSheet = LPH_NO_VIRTUALIZE(function(rframe)
 			continue
 		end
 
+		if instance.Name ~= "Title" then
+			continue
+		end
+
+		local instanceText = instance.Text
+
 		local idx = Table.find(filteredTalents, function(value, _)
-			return instance.Text:match(value)
+			local valueClean = stripTags(value)
+			return instanceText == valueClean or instanceText == value
 		end)
 
 		if not idx then
@@ -592,57 +612,97 @@ local updateTalentSheet = LPH_NO_VIRTUALIZE(function(rframe)
 		filteredTalents[idx] = nil
 	end
 
-	-- pre second step: create a nice looking separator
+	-- Pre second step: create a nice looking separator.
 	local tseparator = InstanceWrapper.mark(builderAssistanceMaid, "tdivider", divider:Clone())
 	tseparator.Name = "LMissingTalentDivider"
+	tseparator.LayoutOrder = 9990
 	tseparator.Parent = talentScroll
 
-	-- second step: add every filtered talent as red (or purple if pre-shrine)
+	-- Second step: add every filtered talent as red (or purple if pre-shrine).
+	local talentOrder = 9991
 	for _, talent in next, filteredTalents do
 		local data = bdata.ddata:get(talent)
 		if not data then
 			continue
 		end
 
-		local nlabel = InstanceWrapper.mark(builderAssistanceMaid, talent, label:Clone())
-		local pshlocked = (bdata.ddata:possible(talent, bdata.pre) and not bdata.ddata:possible(talent, bdata.post))
-		nlabel.Name = "M" .. talent
-		nlabel.Text = talent
-		nlabel.TextColor3 = pshlocked and Color3.fromRGB(255, 4, 255) or Color3.fromRGB(255, 0, 2)
-		nlabel.Parent = talentScroll
+		local cleanTalent = stripTags(talent)
 
-		labelMap[nlabel.Name] = data
+		local newFrame = InstanceWrapper.mark(builderAssistanceMaid, talent, talentFrameTemplate:Clone())
+		local pshlocked = (bdata.ddata:possible(talent, bdata.pre) and not bdata.ddata:possible(talent, bdata.post))
+		newFrame.Name = "M" .. cleanTalent
+		newFrame.LayoutOrder = talentOrder
+		talentOrder = talentOrder + 1
+
+		local icon = newFrame:FindFirstChild("Icon")
+		if icon then
+			icon:Destroy()
+		end
+
+		local title = newFrame:FindFirstChild("Title")
+		if title then
+			title.Name = "M" .. cleanTalent
+			title.Text = cleanTalent
+			title.TextColor3 = pshlocked and Color3.fromRGB(255, 4, 255) or Color3.fromRGB(255, 0, 2)
+			title.TextTransparency = 0.4
+		end
+
+		newFrame.Parent = talentScroll
+
+		labelMap["M" .. cleanTalent] = data
 	end
 
-	-- pre third step: create a nice looking separator
+	-- Pre third step: create a nice looking separator.
 	local mseparator = InstanceWrapper.mark(builderAssistanceMaid, "mdivider", divider:Clone())
 	mseparator.Name = "XMissingMantraDivider"
+	mseparator.LayoutOrder = 9995
 	mseparator.Parent = talentScroll
 
-	-- third step: add every mantra as red (or purple if pre-shrine)
+	-- Third step: add every mantra as red (or purple if pre-shrine).
+	local mantraOrder = 9996
 	for _, mantra in next, bdata.mantras do
 		local data = bdata.ddata:get(mantra)
 		if not data then
 			continue
 		end
 
+		local cleanMantra = stripTags(mantra)
+
 		local idx = Table.find(players.LocalPlayer.Backpack:GetChildren(), function(value, _)
 			local displayName = value:GetAttribute("DisplayName")
-			return displayName and displayName:match(mantra)
+			if not displayName then
+				return false
+			end
+			local cleanDisplayName = stripTags(displayName)
+			return cleanDisplayName == cleanMantra or displayName == cleanMantra
 		end)
 
-		local nlabel = InstanceWrapper.mark(builderAssistanceMaid, mantra, label:Clone())
+		local newFrame = InstanceWrapper.mark(builderAssistanceMaid, mantra, talentFrameTemplate:Clone())
 		local pshlocked = (bdata.ddata:possible(mantra, bdata.pre) and not bdata.ddata:possible(mantra, bdata.post))
-		nlabel.Name = "Z" .. mantra
-		nlabel.Text = mantra
-		nlabel.TextColor3 = pshlocked and Color3.fromRGB(255, 4, 255) or Color3.fromRGB(255, 0, 2)
-		nlabel.Parent = talentScroll
+		newFrame.Name = "Z" .. cleanMantra
+		newFrame.LayoutOrder = mantraOrder
+		mantraOrder = mantraOrder + 1
 
-		if idx then
-			nlabel.TextColor3 = Color3.fromRGB(9, 255, 0)
+		local icon = newFrame:FindFirstChild("Icon")
+		if icon then
+			icon:Destroy()
 		end
 
-		labelMap[nlabel.Name] = data
+		local title = newFrame:FindFirstChild("Title")
+		if title then
+			title.Name = "Z" .. cleanMantra
+			title.Text = cleanMantra
+			title.TextColor3 = pshlocked and Color3.fromRGB(255, 4, 255) or Color3.fromRGB(255, 0, 2)
+			title.TextTransparency = 0.4
+
+			if idx then
+				title.TextColor3 = Color3.fromRGB(9, 255, 0)
+			end
+		end
+
+		newFrame.Parent = talentScroll
+
+		labelMap["Z" .. cleanMantra] = data
 	end
 end)
 
