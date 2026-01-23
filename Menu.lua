@@ -56,13 +56,11 @@ local renderStepped = Signal.new(runService.RenderStepped)
 local menuMaid = Maid.new()
 
 -- Constants.
+local VERSION = "1.0.2"
 local MENU_TITLE = "Linoria V2 | Deepwoken"
 
 if LRM_UserNote then
-	MENU_TITLE = string.format(
-		"(Commit %s) Linoria V2 | Deepwoken First Release",
-		string.sub("f886f606a72a0d37639ceac35c42170fcc106169", 1, 6)
-	)
+	MENU_TITLE = string.format("(v%s) Linoria V2 | Deepwoken", VERSION)
 end
 
 ---Initialize menu.
