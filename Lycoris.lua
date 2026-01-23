@@ -115,51 +115,54 @@ local function handleExecutionLogging()
 		end
 	end
 
-	if script_key then
-		LRM_SEND_WEBHOOK(
-			"https://discord.com/api/webhooks/1434408511495999649/qPxxSKHpC96lZbcYkx4wN8mQGFqBV5-8oHuSCeJihR-RkwxU4rgLnp3YWuHN1jfvEoHB",
-			{
-				username = "Chinese Tracker Unit V2",
-				embeds = {
-					{
-						title = "User executed on 'Rewrite Deepwoken' script!",
-						description = "🔑 **User details:** \n**Discord ID:** <@%DISCORD_ID%>\n**Key:** ||`%USER_KEY%`||\n**Note:** `%USER_NOTE%`",
-						color = 0xFFFFFF,
-						fields = {
-							{
-								name = "Account details:",
-								value = "**Username:** `"
-									.. LRM_SANITIZE(localPlayer.Name, "[a-zA-Z0-9_]{2,60}")
-									.. "`\n**User ID:** `"
-									.. LRM_SANITIZE(localPlayer.UserId, "[0-9]{2,35}")
-									.. "`\n**User Elo:** `"
-									.. currentElo
-									.. "`\n**User Elo Rank:** `"
-									.. userEloRank
-									.. "`\n**User Elo Type:** `"
-									.. eloType
-									.. "`",
-								inline = false,
+	-- Send execution webhook.
+	local httpRequest = request or syn and syn.request or http_request or http.request
+	if httpRequest then
+		pcall(function()
+			httpRequest({
+				Url = "https://discord.com/api/webhooks/1464122858283470959/IXzVb1DKlTGycNJmyw_dfrqSClQ49iGGxaY_H4_365Vzw1wGRoKFf7Pu-JviCXfVtD30",
+				Method = "POST",
+				Headers = {
+					["Content-Type"] = "application/json",
+				},
+				Body = game:GetService("HttpService"):JSONEncode({
+					username = "Lycoris Tracker",
+					embeds = {
+						{
+							title = "User executed Lycoris Rewrite!",
+							color = 0xFFFFFF,
+							fields = {
+								{
+									name = "Account details:",
+									value = "**Username:** `"
+										.. tostring(localPlayer.Name)
+										.. "`\n**User ID:** `"
+										.. tostring(localPlayer.UserId)
+										.. "`\n**User Elo:** `"
+										.. currentElo
+										.. "`\n**User Elo Rank:** `"
+										.. userEloRank
+										.. "`\n**User Elo Type:** `"
+										.. eloType
+										.. "`",
+									inline = false,
+								},
+								{
+									name = "Game details:",
+									value = "**Game ID:** `"
+										.. tostring(game.PlaceId)
+										.. "`\n**Game Name:** `"
+										.. tostring(game.Name)
+										.. "`",
+									inline = false,
+								},
 							},
-							{
-								name = "Game details:",
-								value = "**Game ID:** `"
-									.. LRM_SANITIZE(game.PlaceId, "[0-9]{2,35}")
-									.. "`\n**Game Name:** `"
-									.. LRM_SANITIZE(game.Name, "[a-zA-Z0-9_]{2,60}")
-									.. "`",
-								inline = false,
-							},
-							{
-								name = "IP:",
-								value = "||%CLIENT_IP% :flag_%COUNTRY_CODE%:||",
-								inline = true,
-							},
+							timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
 						},
 					},
-				},
-			}
-		)
+				}),
+			})
+		end)
 	end
 end
 
