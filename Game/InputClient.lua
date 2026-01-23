@@ -561,22 +561,27 @@ end)
 InputClient.crouch = LPH_NO_VIRTUALIZE(function(state)
 	local character = players.LocalPlayer.Character
 	if not character then
-		return
+		return Logger.warn("Cannot crouch without character.")
+	end
+
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+	if not humanoidRootPart then
+		return Logger.warn("Cannot crouch without humanoid root part.")
 	end
 
 	local characterHandler = character:FindFirstChild("CharacterHandler")
 	if not characterHandler then
-		return
+		return Logger.warn("Cannot crouch without character handler.")
 	end
 
 	local requests = characterHandler:FindFirstChild("Requests")
 	if not requests then
-		return
+		return Logger.warn("Cannot crouch without requests.")
 	end
 
 	local crouchRemote = requests:FindFirstChild("ServerCrouch")
 	if not crouchRemote then
-		return
+		return Logger.warn("Cannot crouch without crouch remote.")
 	end
 
 	crouchRemote:FireServer(state)
