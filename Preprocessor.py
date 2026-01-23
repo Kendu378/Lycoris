@@ -1019,8 +1019,11 @@ class LuaPreprocessor:
 
     def write(self, content: str) -> None:
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
+        # Inject LRM_UserNote = true at the start for preprocessed builds.
+        # This enables commit ID display and other production features.
+        header = "LRM_UserNote = true\n"
         with self.output_path.open("w", encoding="utf-8", newline="") as f:
-            f.write(content)
+            f.write(header + content)
 
     def run(self) -> None:
         source = self.read()
