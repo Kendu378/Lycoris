@@ -1019,21 +1019,8 @@ class LuaPreprocessor:
 
     def write(self, content: str) -> None:
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
-        # Inject LRM_UserNote and auto-execute compatibility for preprocessed builds.
-        header = """LRM_UserNote = true
-
--- Wait for game to fully load before running.
-if not game:IsLoaded() then
-    game.Loaded:Wait()
-end
-
-local plr = game:GetService("Players").LocalPlayer
-local char = plr.Character or plr.CharacterAdded:Wait()
-char:WaitForChild("Humanoid")
-char:WaitForChild("HumanoidRootPart")
-task.wait(5)
-
-"""
+        # Inject LRM_UserNote for preprocessed builds.
+        header = "LRM_UserNote = true\n"
         with self.output_path.open("w", encoding="utf-8", newline="") as f:
             f.write(header + content)
 
