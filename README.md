@@ -1,6 +1,7 @@
 # Lycoris
 
 ```lua
+-- Lycoris
 loadstring(game:HttpGet("https://github.com/Kendu378/Lycoris/releases/latest/download/Preprocessed_Bundled.lua"))()
 ```
 
