@@ -600,11 +600,11 @@ local onIndex = LPH_NO_VIRTUALIZE(function(...)
 
 		if isA(self, "Player") then
 			if index == "DisplayName" then
-				return "Linoria V2 On Top"
+				return "Lycoris On Top"
 			end
 
 			if index == "Name" then
-				return "Linoria V2 On Top"
+				return "Lycoris On Top"
 			end
 
 			if index == "UserId" then
@@ -678,7 +678,7 @@ local onNameCall = LPH_NO_VIRTUALIZE(function(...)
 			end
 
 			if args[2] == "FirstName" then
-				return foreign and "Linoria V2" or Configuration.expectOptionValue("SpoofedFirstName")
+				return foreign and "Lycoris" or Configuration.expectOptionValue("SpoofedFirstName")
 			end
 
 			if args[2] == "LastName" then
@@ -690,7 +690,7 @@ local onNameCall = LPH_NO_VIRTUALIZE(function(...)
 					.. " "
 					.. Configuration.expectOptionValue("SpoofedLastName")
 
-				return foreign and "Linoria V2 On Top" or characterName
+				return foreign and "Lycoris On Top" or characterName
 			end
 
 			if args[2] == "Guild" then

@@ -645,7 +645,7 @@ function GameTab.initInfoSpoofingSection(groupbox)
 
 	isDepBox:AddInput("SpoofedDateString", {
 		Text = "Spoofed Date String",
-		Default = "Linoria, 1970 CE",
+		Default = "Lycoris, 1970 CE",
 		Finished = true,
 		Callback = Spoofing.sds,
 	})
@@ -667,7 +667,7 @@ function GameTab.initInfoSpoofingSection(groupbox)
 
 	isDepBox:AddInput("SpoofedFirstName", {
 		Text = "Spoofed First Name",
-		Default = "Linoria V2",
+		Default = "Lycoris",
 		Finished = true,
 		Callback = refreshHandler,
 	})
@@ -688,7 +688,7 @@ function GameTab.initInfoSpoofingSection(groupbox)
 
 	isDepBox:AddInput("SpoofedServerName", {
 		Text = "Spoofed Server Name",
-		Default = "Linoria V2",
+		Default = "Lycoris",
 		Finished = true,
 		Callback = refreshHandler,
 	})

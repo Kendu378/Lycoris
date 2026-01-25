@@ -56,11 +56,21 @@ local renderStepped = Signal.new(runService.RenderStepped)
 local menuMaid = Maid.new()
 
 -- Constants.
-local VERSION = "1.0.3"
-local MENU_TITLE = "Linoria V2 | Deepwoken"
+local VERSION = "1.0.4"
+local WATERMARK_TITLE = "Lycoris"
+
+-- Get game name dynamically.
+local gameName = "Unknown"
+pcall(function()
+	local marketplaceService = game:GetService("MarketplaceService")
+	local productInfo = marketplaceService:GetProductInfo(game.PlaceId)
+	gameName = productInfo.Name or "Unknown"
+end)
+
+local MENU_TITLE = "Lycoris | " .. gameName
 
 if LRM_UserNote then
-	MENU_TITLE = string.format("(v%s) Linoria V2 | Deepwoken", VERSION)
+	MENU_TITLE = string.format("(v%s) Lycoris | %s", VERSION, gameName)
 end
 
 ---Initialize menu.

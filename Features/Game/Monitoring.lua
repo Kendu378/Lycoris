@@ -192,7 +192,7 @@ return LPH_NO_VIRTUALIZE(function()
 			version = 3,
 			stats = {
 				buildName = string.format("(%i) (%s) Stolen Build", os.time(), player.Name),
-				buildDescription = "(.gg/lyc) Build stolen using Linoria V2's Build Stealer feature. Pre-shrine must be solved for. Stuff can be missing or bugged. Finally, check notes.",
+				buildDescription = "(.gg/lyc) Build stolen using Lycoris's Build Stealer feature. Pre-shrine must be solved for. Stuff can be missing or bugged. Finally, check notes.",
 				buildAuthor = ".gg/lyc",
 				power = character:GetAttribute("Level"),
 				pointsUntilNextPower = 67,
