@@ -288,7 +288,7 @@ function UpdateNotifier.show(version)
 				-- Strip version line and script block from release notes.
 				local notes = data.body
 				notes = notes:gsub("%*Your version should be[^\n]*%*", "")
-				notes = notes:gsub("```lua.-```", "")
+				notes = notes:gsub("```.-```", "")
 				notes = notes:gsub("\n\n\n+", "\n\n")
 				notes = notes:match("^%s*(.-)%s*$") or notes
 				bodyText.Text = notes
