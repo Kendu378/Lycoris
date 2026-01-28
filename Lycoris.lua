@@ -55,6 +55,9 @@ local ServerHop = require("Game/ServerHop")
 ---@module Game.Wipe
 local Wipe = require("Game/Wipe")
 
+---@module Game.UpdateNotifier
+local UpdateNotifier = require("Game/UpdateNotifier")
+
 ---@module Features.Automation.EchoFarm
 local EchoFarm = require("Features/Automation/EchoFarm")
 
@@ -282,6 +285,8 @@ function Lycoris.init()
 	Features.init()
 
 	Menu.init()
+
+	UpdateNotifier.check(Menu.VERSION)
 
 	PlayerScanning.init()
 

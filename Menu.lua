@@ -56,8 +56,9 @@ local renderStepped = Signal.new(runService.RenderStepped)
 local menuMaid = Maid.new()
 
 -- Constants.
-local VERSION = "1.0.5"
+local VERSION = "1.0.6"
 local WATERMARK_TITLE = "Lycoris"
+Menu.VERSION = VERSION
 
 -- Get game name dynamically.
 local gameName = "Unknown"
