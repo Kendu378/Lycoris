@@ -10,15 +10,15 @@ return function(self, timing)
 
 	if isRatKing then
 		timing.fhb = false
-		
+
 		local action = Action.new()
 		action._when = 350
 		action._type = "Parry"
 		action.hitbox = Vector3.new(30, 30, 40)
 		action.name = string.format("(%.2f) Rat King Chorus Timing", distance)
-		
+
 		_G.RatKingChorusTime = os.clock()
-		
+
 		return self:action(timing, action)
 	end
 
