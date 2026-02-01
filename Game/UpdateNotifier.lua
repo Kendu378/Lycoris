@@ -291,8 +291,8 @@ function UpdateNotifier.show(version)
 				notes = notes:gsub("```lua.-```", "")
 				notes = notes:gsub("```%w*\n?", "")
 				notes = notes:gsub("%*%*", "")
-				notes = notes:gsub("\n(%d+%.)", "\n\n%1")
 				notes = notes:gsub("\n\n\n+", "\n\n")
+				notes = notes:gsub("\n(%d+%.) ", "\n\n%1 ")
 				notes = notes:match("^%s*(.-)%s*$") or notes
 				bodyText.Text = notes
 			else
