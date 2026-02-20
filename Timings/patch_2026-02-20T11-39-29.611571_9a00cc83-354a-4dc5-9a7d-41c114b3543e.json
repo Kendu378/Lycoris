@@ -19,6 +19,11 @@
           "rsd": 0,
           "after": 0,
           "punishable": 0,
+          "hitbox": {
+            "Y": 0,
+            "X": 0,
+            "Z": 0
+          },
           "imxd": 204,
           "imdd": 0,
           "umoa": false,
