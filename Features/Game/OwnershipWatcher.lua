@@ -41,7 +41,7 @@ return LPH_NO_VIRTUALIZE(function()
 	-- Ownership watcher module.
 	local OwnershipWatcher = { modelsToScan = {}, parts = {} }
 
-	-- Services
+	-- Services.
 	local runService = game:GetService("RunService")
 
 	---@module Utility.Maid

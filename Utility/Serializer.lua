@@ -180,35 +180,35 @@ local function serializeNil()
 	return string.pack("B", 0xc0)
 end
 
----serialize table to a binary string
+---Serialize table to a binary string.
 ---@param value table
 ---@return string
 local function serializeTable(value)
 	return isAnArray(value) and serializeArray(value) or serializeMap(value)
 end
 
----serialize boolean to a binary string
+---Serialize boolean to a binary string.
 ---@param value boolean
 ---@return string
 local function serializeBoolean(value)
 	return string.pack("B", value and 0xc3 or 0xc2)
 end
 
----serialize int to a binary string
+---Serialize int to a binary string.
 ---@param value number
 ---@return string
 local function serializeInt(value)
 	return value >= 0 and serializeSignedInt(value) or serializeUnsignedInt(value)
 end
 
----serialize number to a binary string
+---Serialize number to a binary string.
 ---@param value number
 ---@return string
 local function serializeNumber(value)
 	return value % 1 == 0 and serializeInt(value) or serializeFloat(value)
 end
 
----serialize string to a binary string
+---Serialize string to a binary string.
 ---@param value number
 ---@return string
 local function serializeString(value)

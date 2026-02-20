@@ -235,7 +235,7 @@ function UpdateNotifier.show(version)
 		dismissBtn.BackgroundColor3 = Library.MainColor
 	end)
 
-	-- Fade in.
+	---Fade in.
 	local function fadeIn()
 		tweenService:Create(overlay, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 			BackgroundTransparency = 0.5
@@ -256,7 +256,7 @@ function UpdateNotifier.show(version)
 		tweenService:Create(dismissBtn, TweenInfo.new(0.3), { BackgroundTransparency = 0, TextTransparency = 0 }):Play()
 	end
 
-	-- Fade out.
+	---Fade out.
 	local function fadeOut()
 		tweenService:Create(overlay, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
 			BackgroundTransparency = 1

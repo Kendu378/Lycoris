@@ -63,7 +63,7 @@ local function onRenderStepped()
 		return QueuedBlocking.empty()
 	end
 
-	-- Are we blocking?
+	-- Are we blocking.
 	local blocking = effectReplicatorModule:HasEffect("Blocking")
 
 	-- Set up input data.
@@ -91,7 +91,7 @@ local function onRenderStepped()
 	-- Handle blocking input.
 	inputData["f"] = blockQueueLength > 0
 
-	-- Call with direct functions so our hooks call...
+	-- Call with direct functions so our hooks call.
 	local fireServer = Instance.new("RemoteEvent").FireServer
 
 	if blocking then

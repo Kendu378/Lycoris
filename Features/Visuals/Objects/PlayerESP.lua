@@ -111,7 +111,7 @@ PlayerESP.update = LPH_NO_VIRTUALIZE(function(self)
 		flabel.Position = UDim2.new(0, 2, 0, flabel.TextSize + 2)
 		flabel.TextColor3 = color
 
-		-- Visibility?
+		-- Visibility.
 		fcontainer.Visible = Configuration.idToggleValue(identifier, "ShowHealthComparison") and distance <= 150
 	end
 
@@ -130,7 +130,7 @@ PlayerESP.update = LPH_NO_VIRTUALIZE(function(self)
 			continue
 		end
 
-		-- Visibility?
+		-- Visibility.
 		container.Visible = Configuration.idToggleValue(identifier, idx)
 
 		-- Modify size.

@@ -136,10 +136,10 @@ local onDescendantAdded = LPH_NO_VIRTUALIZE(function(descendant)
 		animationPlayed:connect("StateListener_AnimationPlayed", onLocalAnimationPlayed)
 end)
 
----Is an effect within a specific time?
+---Is an effect within a specific time.
 ---@param effect table
 ---@param time number? If the number is unspecified, it will use the Debris time.
----@param offset boolean If the number is specified, should we use it as an offset from the Debris time?
+---@param offset boolean If the number is specified, this will be used as an offset from the Debris time.
 ---@return boolean
 local withinTime = LPH_NO_VIRTUALIZE(function(effect, time, offset)
 	if not effect.index then
@@ -163,7 +163,7 @@ local withinTime = LPH_NO_VIRTUALIZE(function(effect, time, offset)
 	return os.clock() - timestamp <= (time or dtime)
 end)
 
----Are we currently holding block?
+---Are we currently holding block.
 ---@return boolean
 StateListener.hblock = LPH_NO_VIRTUALIZE(function()
 	local keybinds = replicatedStorage:FindFirstChild("KeyBinds")
@@ -197,7 +197,7 @@ StateListener.hblock = LPH_NO_VIRTUALIZE(function()
 	return false
 end)
 
----Are we currently casting Sightless Beam?
+---Are we currently casting Sightless Beam.
 ---@return boolean
 StateListener.csb = LPH_NO_VIRTUALIZE(function()
 	if not StateListener.lMantraActivated then
@@ -242,7 +242,7 @@ StateListener.csb = LPH_NO_VIRTUALIZE(function()
 	return false
 end)
 
---Are we in action stun? That small window after doing an action where you can't do anything.
+---Are we in action stun. That small window after doing an action where you can't do anything.
 ---@return boolean
 StateListener.astun = LPH_NO_VIRTUALIZE(function()
 	local effectReplicator = replicatedStorage:WaitForChild("EffectReplicator")
@@ -266,7 +266,7 @@ StateListener.astun = LPH_NO_VIRTUALIZE(function()
 	return false
 end)
 
----Can we vent?
+---Can we vent.
 ---@return boolean
 StateListener.cvent = LPH_NO_VIRTUALIZE(function()
 	local effectReplicator = replicatedStorage:WaitForChild("EffectReplicator")
@@ -306,7 +306,7 @@ StateListener.cvent = LPH_NO_VIRTUALIZE(function()
 	return true
 end)
 
----Can we parry?
+---Can we parry.
 ---@return boolean
 StateListener.cparry = LPH_NO_VIRTUALIZE(function()
 	local effectReplicator = replicatedStorage:WaitForChild("EffectReplicator")
@@ -328,7 +328,7 @@ StateListener.cparry = LPH_NO_VIRTUALIZE(function()
 	return true
 end)
 
----Can we feint?
+---Can we feint.
 ---@return boolean
 StateListener.cfeint = LPH_NO_VIRTUALIZE(function()
 	local effectReplicator = replicatedStorage:WaitForChild("EffectReplicator")
@@ -342,7 +342,7 @@ StateListener.cfeint = LPH_NO_VIRTUALIZE(function()
 	return true
 end)
 
----Can we block?
+---Can we block.
 ---@return boolean
 StateListener.cblock = LPH_NO_VIRTUALIZE(function()
 	local character = players.LocalPlayer and players.LocalPlayer.Character
@@ -377,7 +377,7 @@ StateListener.cblock = LPH_NO_VIRTUALIZE(function()
 	return true
 end)
 
----Can we dodge?
+---Can we dodge.
 ---@return boolean
 StateListener.cdodge = LPH_NO_VIRTUALIZE(function()
 	local effectReplicator = replicatedStorage:WaitForChild("EffectReplicator")
@@ -400,7 +400,7 @@ StateListener.cdodge = LPH_NO_VIRTUALIZE(function()
 	return true
 end)
 
----Are we in chime countdown?
+---Are we in chime countdown.
 ---@return boolean
 StateListener.ccd = LPH_NO_VIRTUALIZE(function()
 	return game.PlaceId == CHIME_ARENA_PLACE_ID and workspace.DistributedGameTime < 15

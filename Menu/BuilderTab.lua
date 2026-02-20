@@ -420,5 +420,5 @@ function BuilderTab.detach()
 	simulationMaid:clean()
 end
 
--- Return CombatTab module.
+-- Return BuilderTab module.
 return BuilderTab

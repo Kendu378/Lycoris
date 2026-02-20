@@ -52,7 +52,7 @@ local DEBUGGING_MODE = true
 -- Maid.
 local echoFarmMaid = Maid.new()
 
--- Currently running?
+-- Currently running.
 local running = false
 
 ---Telemetry log.

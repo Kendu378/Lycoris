@@ -1703,7 +1703,7 @@ InputClient.feint = LPH_NO_VIRTUALIZE(function()
 		return Logger.warn("Cannot dodge without effect replicator module.")
 	end
 
-	-- ClientFeint inlined
+	-- ClientFeint inlined.
 	if effectReplicatorModule:HasEffect("ClientDodge") then
 		effectReplicatorModule:CreateEffect("ClientFeint"):Debris(0.4)
 	end

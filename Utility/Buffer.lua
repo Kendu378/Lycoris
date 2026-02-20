@@ -67,4 +67,5 @@ function Buffer.GetBufferCFrame(targetCFrame)
 	return snapshotBuffer
 end
 
+-- Return Buffer module.
 return Buffer

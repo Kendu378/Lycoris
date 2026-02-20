@@ -76,7 +76,7 @@ function BuilderData:ipre(drinfo)
 	return 1
 end
 
----Did the builder data even shrine of order at all?
+---Check if the builder data performed shrine of order at all.
 ---@note: No specific tag, but if they did not shrine of order, then post and pre are the same.
 ---@return boolean
 function BuilderData:dshrine()

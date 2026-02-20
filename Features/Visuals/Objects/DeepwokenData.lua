@@ -10,7 +10,7 @@ function DeepwokenData:get(name)
 	return self.talents[string.lower(name)] or self.mantras[string.lower(name)]
 end
 
----Are we able to get a specified talent or mantra with the passed in attribute data?
+---Check if we are able to get a specified talent or mantra with the passed in attribute data.
 ---@param name string
 ---@param adata AttributeData
 ---@return boolean

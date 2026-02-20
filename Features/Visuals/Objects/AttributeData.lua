@@ -5,7 +5,7 @@
 local AttributeData = {}
 AttributeData.__index = AttributeData
 
----Is it possible to meet the requirements for a specific talent or mantra?
+---Check if it is possible to meet the requirements for a specific talent or mantra.
 ---@note: Expects the data to be formatted correctly from DeepwokenData
 ---@param reqs table
 ---@return boolean
@@ -121,5 +121,5 @@ function AttributeData.new(values)
 	return self
 end
 
---- Return AttributeData module.
+-- Return AttributeData module.
 return AttributeData

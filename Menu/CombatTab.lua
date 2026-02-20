@@ -16,7 +16,7 @@ local Library = require("GUI/Library")
 ---@module Game.Timings.SaveManager
 local SaveManager = require("Game/Timings/SaveManager")
 
--- Initialize combat targeting section.
+---Initialize combat targeting section.
 ---@param tab table
 function CombatTab.initCombatTargetingSection(tab)
 	tab:AddDropdown("PlayerSelectionType", {
@@ -77,7 +77,7 @@ function CombatTab.initCombatTargetingSection(tab)
 	})
 end
 
--- Initialize combat whitelist section.
+---Initialize combat whitelist section.
 ---@param groupbox table
 function CombatTab.initCombatWhitelistSection(groupbox)
 	groupbox:AddToggle("PlayerListWhitelisting", {
@@ -134,7 +134,7 @@ function CombatTab.initCombatWhitelistSection(groupbox)
 	end)
 end
 
--- Initialize auto defense section.
+---Initialize auto defense section.
 ---@param groupbox table
 function CombatTab.initAutoDefenseSection(groupbox)
 	local autoDefenseToggle = groupbox:AddToggle("EnableAutoDefense", {

@@ -41,7 +41,7 @@ function FiniteStateMachine:get(identifier)
 	return Logger.warn(string.format("(%s) State does not exist in states table.", identifier))
 end
 
----Get a state
+---Get a state.
 ---@param identifier string
 ---@return boolean
 function FiniteStateMachine:has(identifier)

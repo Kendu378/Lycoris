@@ -12,7 +12,7 @@ Maid.new = LPH_NO_VIRTUALIZE(function()
 end)
 
 ---Return maid[key] - if not, it's not apart of the maid metatable - so we return the relevant task.
--- @return value
+---@return value
 Maid.__index = LPH_NO_VIRTUALIZE(function(self, index)
 	if Maid[index] then
 		return Maid[index]

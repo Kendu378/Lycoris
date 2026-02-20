@@ -118,5 +118,5 @@ function Deserializer.unmarshal_one(data)
 	return Deserializer.at(DeserializerStream.new(data))
 end
 
--- Return Deseralizer module.
+-- Return Deserializer module.
 return Deserializer

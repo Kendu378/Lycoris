@@ -23,7 +23,7 @@ Finder.near = LPH_NO_VIRTUALIZE(function(position, range)
 	return (position - localRootPart.Position).Magnitude <= range
 end)
 
----Wait for the shrine. Deepwoken is weird so it can be both thrown or non-thrown?
+---Wait for the shrine. Deepwoken is weird so it can be both thrown or non-thrown.
 ---@return Model?
 Finder.wshrine = LPH_NO_VIRTUALIZE(function()
 	local thrown = workspace:FindFirstChild("Thrown")
@@ -42,7 +42,7 @@ Finder.wshrine = LPH_NO_VIRTUALIZE(function()
 	return shrine
 end)
 
----Is a entity (not us or a player) within X studs of the specified position?
+---Is a entity (not us or a player) within X studs of the specified position.
 ---@param position Vector3
 ---@param range number
 ---@return Model|nil
@@ -76,7 +76,7 @@ Finder.enear = LPH_NO_VIRTUALIZE(function(position, range)
 	return nil
 end)
 
----Is a player within X studs of the specified position?
+---Is a player within X studs of the specified position.
 ---@param position Vector3
 ---@param range number
 ---@return Player|nil
@@ -124,7 +124,7 @@ Finder.entity = LPH_NO_VIRTUALIZE(function(name)
 	end
 end)
 
----Is a tool currently being locked by cooldown?
+---Is a tool currently being locked by cooldown.
 ---@param tool Tool
 ---@return boolean
 Finder.cdlocked = LPH_NO_VIRTUALIZE(function(tool)

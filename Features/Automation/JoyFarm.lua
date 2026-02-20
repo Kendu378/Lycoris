@@ -257,4 +257,5 @@ function JoyFarm.stop()
 	joyFarmMaid:clean()
 end
 
+-- Return JoyFarm module.
 return JoyFarm

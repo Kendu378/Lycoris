@@ -19,7 +19,7 @@ function AntiAFK.start(identifier)
 	AntiAFK.wanters[identifier] = true
 end
 
--- Remove a "wanter" for AntiAFK.
+---Remove a "wanter" for AntiAFK.
 function AntiAFK.stop(identifier)
 	AntiAFK.wanters[identifier] = nil
 end

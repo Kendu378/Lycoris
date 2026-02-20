@@ -145,7 +145,7 @@ EntityESP.cgb = LPH_NO_VIRTUALIZE(function(self, container, seperators, vertical
 	barArea.Size = UDim2.new(1, -2, 1, -2)
 	barArea.ZIndex = 1
 
-	-- separators only for vertical bars (to match original visual)
+	-- Separators only for vertical bars (to match original visual).
 	if seperators then
 		for Idx = 1, 4 do
 			local Separator = Instance.new("Frame")

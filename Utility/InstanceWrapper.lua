@@ -67,5 +67,5 @@ InstanceWrapper.create = LPH_NO_VIRTUALIZE(function(instanceMaid, identifier, ty
 	return newInstance
 end)
 
--- Return InstanceWrapper module
+-- Return InstanceWrapper module.
 return InstanceWrapper

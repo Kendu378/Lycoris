@@ -141,7 +141,7 @@ end
 ---Initialize tab.
 function LycorisTab.init(window)
 	-- Create tab.
-	local tab = window:AddTab("Settings") -- dont change the name, it's more confusing if its named that way
+	local tab = window:AddTab("Settings") -- Don't change the name, it's more confusing if its named that way.
 
 	-- Initialize sections.
 	LycorisTab.initCheatSettingsSection(tab:AddLeftGroupbox("Cheat Settings"))

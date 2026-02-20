@@ -246,7 +246,7 @@ local runPlayerScans = LPH_NO_VIRTUALIZE(function()
 	end
 end)
 
----Are there moderators in the server?
+---Are there moderators in the server.
 ---@return table
 function PlayerScanning.hasModerators()
 	for _, scanData in next, PlayerScanning.scanDataCache do
@@ -260,7 +260,7 @@ function PlayerScanning.hasModerators()
 	return false
 end
 
----Is a player an ally?
+---Is a player an ally.
 ---@param player Player
 ---@return boolean
 function PlayerScanning.isAlly(player)

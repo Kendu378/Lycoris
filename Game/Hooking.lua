@@ -161,8 +161,8 @@ local handleFlowState = LPH_NO_VIRTUALIZE(function(type)
 		flowStateRemote:FireServer()
 	end
 
-	-- If we've done an aerial attack -- (aerial cooldown effect)
-	-- If we've attacked also -- (light attack effect)
+	-- If we've done an aerial attack (aerial cooldown effect).
+	-- If we've attacked also (light attack effect).
 	if
 		effectReplicatorModule:FindEffect("AerialCD")
 		and effectReplicatorModule:FindEffect("LightAttack")
@@ -437,7 +437,7 @@ local replicateGesture = LPH_NO_VIRTUALIZE(function(gestureName)
 		task.wait()
 	until humanoid.MoveDirection.Magnitude > 0
 
-	-- Wait a bit...
+	-- Wait a bit.
 	task.wait(0.5)
 
 	-- Remove effects.
@@ -951,7 +951,7 @@ function Hooking.init()
 		banRemotes[request] = true
 	end
 
-	-- Did we execute with a standalone AC bypass?
+	-- Did we execute with a standalone AC bypass.
 	local nulledBanRemotes = {}
 
 	for _, instance in next, getnilinstances() do

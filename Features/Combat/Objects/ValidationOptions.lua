@@ -20,5 +20,5 @@ ValidationOptions.new = LPH_NO_VIRTUALIZE(function(action, timing)
 	return self
 end)
 
--- Return the module.
+-- Return ValidationOptions module.
 return ValidationOptions

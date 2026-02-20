@@ -256,7 +256,7 @@ return LPH_NO_VIRTUALIZE(function()
 		end
 	end
 
-	-- Restore no damage bricks.
+	---Restore no damage bricks.
 	local function restoreNoDamageBricks()
 		damageBricksMap:restore()
 		for _,v in next, game:GetService("CollectionService"):GetTagged("DamageBrick") do

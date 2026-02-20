@@ -37,7 +37,7 @@ local currentChoice = nil
 -- The queue of items to be looted from the remote.
 local lootQueue = {}
 
--- Are we currently in loot all mode?
+-- Are we currently in loot all mode.
 local lootAll = false
 
 -- Services.
@@ -121,7 +121,7 @@ local function waitForPromptDeletion(prompt, remote, param)
 	resetAutoLoot()
 end
 
----Is the auto loot active?
+---Is the auto loot active.
 ---@return boolean
 function AutoLoot.active()
 	return choiceRemote ~= nil and currentPrompt ~= nil and #lootQueue > 0
@@ -244,5 +244,5 @@ function AutoLoot.detach()
 	autoLootMaid:clean()
 end
 
--- Return the AutoLoot module.
+-- Return AutoLoot module.
 return AutoLoot

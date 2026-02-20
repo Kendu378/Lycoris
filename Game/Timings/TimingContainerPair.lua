@@ -47,5 +47,5 @@ function TimingContainerPair:list()
 	return timings
 end
 
--- Return TimingContainerStack module.
+-- Return TimingContainerPair module.
 return TimingContainerPair

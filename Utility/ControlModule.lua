@@ -93,6 +93,6 @@ return LPH_NO_VIRTUALIZE(function()
 		)
 	end
 
-	-- Return control module.
+	-- Return ControlModule module.
 	return ControlModule
 end)()

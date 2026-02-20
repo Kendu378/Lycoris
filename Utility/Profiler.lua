@@ -37,6 +37,6 @@ return LPH_NO_VIRTUALIZE(function()
 		end
 	end
 
-	-- Return profiler module.
+	-- Return Profiler module.
 	return Profiler
 end)()

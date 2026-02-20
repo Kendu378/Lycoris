@@ -69,7 +69,7 @@ local MAX_REPEAT_TIME = 5.0
 local HISTORY_STEPS = 5.0
 local PREDICT_FACING_DELTA = 3
 
----Is animation stopped? Made into a function for de-duplication.
+---Is animation stopped. Made into a function for de-duplication.
 ---@param self AnimatorDefender
 ---@param track AnimationTrack
 ---@param timing AnimationTiming

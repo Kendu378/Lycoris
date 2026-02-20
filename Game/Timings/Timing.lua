@@ -32,7 +32,7 @@ local ActionContainer = require("Game/Timings/ActionContainer")
 local Timing = {}
 Timing.__index = Timing
 
----Getter for repeat start delay in seconds
+---Getter for repeat start delay in seconds.
 ---@return number
 function Timing:rsd()
 	return PP_SCRAMBLE_NUM(self._rsd) / 1000

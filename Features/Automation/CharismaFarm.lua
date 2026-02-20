@@ -107,5 +107,5 @@ function CharismaFarm.detach()
 	Logger.warn("Charisma Farm detached.")
 end
 
--- Return CharismaFarm module
+-- Return CharismaFarm module.
 return CharismaFarm

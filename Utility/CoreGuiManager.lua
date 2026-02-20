@@ -34,5 +34,5 @@ function CoreGuiManager.clear()
 	instances = {}
 end
 
----Return CoreGuiManager module.
+-- Return CoreGuiManager module.
 return CoreGuiManager

@@ -200,5 +200,5 @@ function InteligenceFarm.detach()
 	Logger.warn("Inteligence Farm detached.")
 end
 
--- Return InteligenceFarm module
+-- Return InteligenceFarm module.
 return InteligenceFarm

@@ -20,6 +20,6 @@ return LPH_NO_VIRTUALIZE(function()
 		return true
 	end
 
-	-- Return AttributeFarm module
+	-- Return Attributes module.
 	return Attributes
 end)()
