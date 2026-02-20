@@ -825,7 +825,7 @@ class LuaPreprocessor:
                 if timing.get("rpd"):
                     timing["rpd"] = self.scramble_num(timing["rpd"])
                     timing["rsd"] = self.scramble_num(timing["rsd"])
-
+    
                 timing["hitbox"] = self.scramble_hitbox(timing["hitbox"])
                 timing["STOP_TRYING_TO_DUMP_TIMINGS_LOL"] = "You can't unless you reverse Luraph or dynamically dump them <3"
             
