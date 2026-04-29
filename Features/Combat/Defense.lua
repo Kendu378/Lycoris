@@ -62,6 +62,7 @@ local deletedPlaybackData = {}
 local mobAnimations = {}
 
 -- Current wisp string & position.
+local WISP_INPUT_MAP = { Z = 1, X = 2, C = 3, V = 4 }
 local cws = nil
 local cwp = nil
 
@@ -375,17 +376,9 @@ local hssp = LPH_NO_VIRTUALIZE(function(position, str)
 		return
 	end
 
-	local playerGui = localPlayer:FindFirstChild("PlayerGui")
-	if not playerGui then
-		return
-	end
-
-	local spellGui = playerGui:FindFirstChild("SpellGui")
-	if not spellGui then
-		return
-	end
-
-	local spellInput = spellGui:FindFirstChild("SpellInput")
+	local mantras = replicatedStorage:FindFirstChild("Requests")
+	mantras = mantras and mantras:FindFirstChild("Mantras")
+	local spellInput = mantras and mantras:FindFirstChild("RitualSpellInput")
 	if not spellInput then
 		return
 	end
@@ -413,7 +406,7 @@ local hssp = LPH_NO_VIRTUALIZE(function(position, str)
 	autoWispLocked = true
 	lastAutoWispUpdate = os.clock()
 
-	spellInput:FireServer(character)
+	spellInput:FireServer(WISP_INPUT_MAP[character] or character)
 end)
 
 ---Update defenders.
@@ -603,17 +596,12 @@ function Defense.init()
 		mobAnimations[animation.AnimationId] = animation
 	end
 
-	-- Local player.
-	local localPlayer = players.LocalPlayer
-	local playerGui = localPlayer:WaitForChild("PlayerGui")
-	local spellGui = playerGui:WaitForChild("SpellGui")
-
 	-- Requests.
 	local requests = replicatedStorage:WaitForChild("Requests")
 	local clientEffect = requests:WaitForChild("ClientEffect")
 	local clientEffectLarge = requests:WaitForChild("ClientEffectLarge")
 	local clientEffectDirect = requests:WaitForChild("ClientEffectDirect")
-	local spell = spellGui:WaitForChild("SpellInput")
+	local spell = requests:WaitForChild("Mantras"):WaitForChild("RitualSpellInput")
 
 	-- Signals.
 	local gameDescendantAdded = Signal.new(game.DescendantAdded)
