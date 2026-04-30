@@ -1,0 +1,56 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install luabundler
+        run: npm install -g luabundler
+
+      - name: Patch luaparse.js
+        run: |
+          LUAPARSE_PATH=$(npm root -g)/luabundler/node_modules/moonsharp-luaparse/luaparse.js
+          echo "Patching: $LUAPARSE_PATH"
+          cp luaparse.js "$LUAPARSE_PATH"
+
+      - name: Bundle
+        run: luabundler bundle Main.lua -p "./?.lua" -o Output/Bundled.lua -l 5.1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Python dependencies
+        run: pip install msgpack 
+
+      - name: Generate truth.txt
+        run: python GenerateTruth.py
+
+      - name: Run Preprocessor
+        run: python Preprocessor.py
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            Output/Bundled.lua
+            Output/Preprocessed_Bundled.lua
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
