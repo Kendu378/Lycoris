@@ -51,8 +51,6 @@
     - Mob Exploits ✅
         - Pathfind Breaker ✅
             - Bring Mobs ❌
-    - Void Mobs
-        - Optimize it (Sou) ❌ (I will do this by probably using querydescendants so it filters out exact property & cheaper)
     - Local Character Exploits ❌
         - Extended Item Pickup ❌
         - Extended Job Board Interact ❌
