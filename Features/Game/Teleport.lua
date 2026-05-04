@@ -22,6 +22,19 @@ local players = game:GetService("Players")
 -- Maids.
 local tmaid = Maid.new()
 
+-- Teleport state.
+local STREAM_REQUEST_INTERVAL = 1.0
+local REALM_ALIASES = {
+	EasternLuminant = { "EastLuminant", "East Luminant", "EasternLuminant", "Eastern Luminant" },
+	EtreanLuminant = { "EtreanLuminant", "Etrean Luminant" },
+}
+local REALM_TELEPORTER_PATHS = {
+	{ "ValleyExit", "RealmTeleport" },
+	{ "ValleyExit", "RealmTeleporter" },
+}
+local teleporterCache = {}
+local streamRequestTimes = {}
+
 ---On player GUI descendant added.
 ---@param child Instance
 local function onPlayerGuiDescendantAdded(child)
@@ -75,6 +88,104 @@ local function getGuildDoors(name)
 	return nil
 end
 
+---Fire touch interest on a part.
+---@param character Model
+---@param part BasePart
+local function fireTouchOn(character, part)
+	local hrp = character:FindFirstChild("HumanoidRootPart")
+	if not hrp then
+		return
+	end
+
+	pcall(firetouchinterest, hrp, part, 0)
+	pcall(firetouchinterest, hrp, part, 1)
+	pcall(firetouchinterest, hrp, part, 0)
+	pcall(firetouchinterest, hrp, part, 1)
+end
+
+---Reset teleport state.
+local function resetTeleportState()
+	teleporterCache = {}
+	streamRequestTimes = {}
+end
+
+---Request stream around a position.
+---@param label string
+---@param position Vector3
+local function requestStreamAround(label, position)
+	local timestamp = os.clock()
+	local lastRequestTime = streamRequestTimes[label]
+	if lastRequestTime and timestamp - lastRequestTime < STREAM_REQUEST_INTERVAL then
+		return
+	end
+
+	streamRequestTimes[label] = timestamp
+	tmaid:add(
+		TaskSpawner.spawn(
+			label,
+			players.LocalPlayer.RequestStreamAroundAsync,
+			players.LocalPlayer,
+			position,
+			0.1
+		)
+	)
+end
+
+---Check if realm name matches a destination.
+---@param realm string
+---@param destination string
+---@return boolean
+local function isRealmName(realm, destination)
+	for _, alias in next, REALM_ALIASES[destination] or { destination } do
+		if realm == alias then
+			return true
+		end
+	end
+
+	return false
+end
+
+---Get workspace child from path.
+---@param path table
+---@return Instance?
+local function getWorkspacePath(path)
+	local current = workspace
+	for _, name in next, path do
+		current = current:FindFirstChild(name)
+		if not current then
+			return nil
+		end
+	end
+
+	return current
+end
+
+---Get realm teleporter from direct workspace paths.
+---@param realm string
+---@return BasePart?
+local function getRealmTeleporter(realm)
+	local cachedTeleporter = teleporterCache[realm]
+	if cachedTeleporter and cachedTeleporter.Parent and isRealmName(cachedTeleporter:GetAttribute("Realm"), realm) then
+		return cachedTeleporter
+	end
+
+	for _, path in next, REALM_TELEPORTER_PATHS do
+		local teleporter = getWorkspacePath(path)
+		if not teleporter or not teleporter:IsA("BasePart") then
+			continue
+		end
+
+		if not isRealmName(teleporter:GetAttribute("Realm"), realm) then
+			continue
+		end
+
+		teleporterCache[realm] = teleporter
+		return teleporter
+	end
+
+	return nil
+end
+
 ---Loop for teleport module.
 local function onTeleportLoop()
 	local dest = Teleport.destination
@@ -89,51 +200,27 @@ local function onTeleportLoop()
 	end
 
 	if dest == "EasternLuminant" then
-		tmaid:add(
-			TaskSpawner.spawn(
-				"Teleport_EasternLuminantStream",
-				players.LocalPlayer.RequestStreamAroundAsync,
-				players.LocalPlayer,
-				Vector3.new(-2632.86084, 628.632935, -6707.99805),
-				0.1
-			)
-		)
+		requestStreamAround("Teleport_EasternLuminantStream", Vector3.new(-2632.86084, 628.632935, -6707.99805))
 
-		local valleyExit = workspace:FindFirstChild("ValleyExit")
-		if not valleyExit then
-			return
-		end
-
-		local realmTeleporter = valleyExit:FindFirstChild("RealmTeleporter")
+		local realmTeleporter = getRealmTeleporter("EasternLuminant")
 		if not realmTeleporter then
 			return
 		end
 
 		character:PivotTo(realmTeleporter.CFrame)
+		fireTouchOn(character, realmTeleporter)
 	end
 
 	if dest == "EtreanLuminant" then
-		tmaid:add(
-			TaskSpawner.spawn(
-				"Teleport_EtreanLuminantStream",
-				players.LocalPlayer.RequestStreamAroundAsync,
-				players.LocalPlayer,
-				Vector3.new(-514.263, 665.174316, -4772.3208),
-				0.1
-			)
-		)
+		requestStreamAround("Teleport_EtreanLuminantStream", Vector3.new(-514.263, 665.174316, -4772.3208))
 
-		local valleyExit = workspace:FindFirstChild("ValleyExit")
-		if not valleyExit then
-			return
-		end
-
-		local realmTeleporter = valleyExit:FindFirstChild("RealmTeleporter")
+		local realmTeleporter = getRealmTeleporter("EtreanLuminant")
 		if not realmTeleporter then
 			return
 		end
 
 		character:PivotTo(realmTeleporter.CFrame)
+		fireTouchOn(character, realmTeleporter)
 	end
 
 	if dest == "Depths" then
@@ -255,11 +342,13 @@ function Teleport.start(destination)
 		return error("Destination must be provided for teleporting.")
 	end
 
+	resetTeleportState()
 	Teleport.destination = destination
 end
 
 ---Stop teleport module.
 function Teleport.stop()
+	resetTeleportState()
 	Teleport.destination = nil
 end
 
