@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/assets/lycoris.png" alt="Lycoris" width="100%">
+</p>
+
 # Lycoris-Rewrite
 
 Rewritten Lycoris - better logging, optimizations, error handling, faster prototyping, and more.
