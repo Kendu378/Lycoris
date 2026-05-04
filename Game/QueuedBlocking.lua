@@ -19,9 +19,6 @@ local Signal = require("Utility/Signal")
 ---@module Utility.Maid
 local Maid = require("Utility/Maid")
 
----@module Features.Combat.StateListener
-local StateListener = require("Features/Combat/StateListener")
-
 -- Maids.
 local qiMaid = Maid.new()
 
@@ -31,6 +28,23 @@ local blockQueue = {}
 -- Services.
 local replicatedStorage = game:GetService("ReplicatedStorage")
 local runService = game:GetService("RunService")
+
+-- Cached references.
+local cachedStateListener = nil
+
+---Get cached StateListener module.
+local function getStateListener()
+	if cachedStateListener then
+		return cachedStateListener
+	end
+
+	local success, result = pcall(require, "Features/Combat/StateListener")
+	if success and result then
+		cachedStateListener = result
+	end
+
+	return cachedStateListener
+end
 
 ---On render stepped.
 local function onRenderStepped()
@@ -59,7 +73,8 @@ local function onRenderStepped()
 		return
 	end
 
-	if StateListener.hblock() then
+	local stateListener = getStateListener()
+	if stateListener and stateListener.hblock() then
 		return QueuedBlocking.empty()
 	end
 
