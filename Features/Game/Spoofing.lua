@@ -75,7 +75,7 @@ return LPH_NO_VIRTUALIZE(function()
 		end
 
 		local gestureFrame = gestureGui:FindFirstChild("GestureFrame")
-    if not gestureFrame then
+    	if not gestureFrame then
 			return
 		end
 

@@ -99,7 +99,12 @@ local function onTeleportLoop()
 			)
 		)
 
-		local realmTeleporter = workspace:FindFirstChild("RealmTeleporter")
+		local valleyExit = workspace:FindFirstChild("ValleyExit")
+		if not valleyExit then
+			return
+		end
+
+		local realmTeleporter = valleyExit:FindFirstChild("RealmTeleporter")
 		if not realmTeleporter then
 			return
 		end
@@ -118,7 +123,12 @@ local function onTeleportLoop()
 			)
 		)
 
-		local realmTeleporter = workspace:FindFirstChild("RealmTeleporter")
+		local valleyExit = workspace:FindFirstChild("ValleyExit")
+		if not valleyExit then
+			return
+		end
+
+		local realmTeleporter = valleyExit:FindFirstChild("RealmTeleporter")
 		if not realmTeleporter then
 			return
 		end
