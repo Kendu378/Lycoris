@@ -1,0 +1,104 @@
+name: Build & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, e.g. v1.0.0"
+        required: true
+        type: string
+
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Resolve release tag
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate tag
+        run: |
+          TAG="${{ steps.vars.outputs.tag }}"
+
+          if [[ ! "$TAG" =~ ^v.+ ]]; then
+            echo "Tag must start with v, for example v1.0.0"
+            exit 1
+          fi
+
+      - name: Create tag if missing
+        run: |
+          TAG="${{ steps.vars.outputs.tag }}"
+
+          git fetch --tags
+
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install luabundler
+        run: npm install -g luabundler
+
+      - name: Patch luaparse.js
+        run: |
+          LUAPARSE_PATH="$(npm root -g)/luabundler/node_modules/moonsharp-luaparse/luaparse.js"
+          echo "Patching: $LUAPARSE_PATH"
+          cp luaparse.js "$LUAPARSE_PATH"
+
+      - name: Bundle
+        run: luabundler bundle Main.lua -p "./?.lua" -o Output/Bundled.lua -l 5.1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Python dependencies
+        run: pip install msgpack
+
+      - name: Generate truth.txt
+        run: python GenerateTruth.py
+
+      - name: Run Preprocessor
+        run: python Preprocessor.py
+
+      - name: Verify output files
+        run: |
+          test -f Output/Bundled.lua
+          test -f Output/Preprocessed_Bundled.lua
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          generate_release_notes: true
+          files: |
+            Output/Bundled.lua
+            Output/Preprocessed_Bundled.lua
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
