@@ -23,6 +23,10 @@ local players = game:GetService("Players")
 local tmaid = Maid.new()
 
 -- Teleport state.
+local RUBBERBAND_THRESHOLD = 1000
+local teleportFrameCount = 0
+local SPAM_FRAMES = 30
+local PAUSE_FRAMES = 15
 local STREAM_REQUEST_INTERVAL = 1.0
 local REALM_ALIASES = {
 	EasternLuminant = { "EastLuminant", "East Luminant", "EasternLuminant", "Eastern Luminant" },
@@ -105,6 +109,7 @@ end
 
 ---Reset teleport state.
 local function resetTeleportState()
+	teleportFrameCount = 0
 	teleporterCache = {}
 	streamRequestTimes = {}
 end
@@ -186,6 +191,40 @@ local function getRealmTeleporter(realm)
 	return nil
 end
 
+---Scan voidheart teleporter.
+---@return BasePart?
+local function scanVoidheartTeleporter()
+	local warpPoints = workspace:FindFirstChild("WarpPoints")
+	local voidheartWarpPoint = warpPoints and warpPoints:FindFirstChild("Voidheart")
+	if voidheartWarpPoint and voidheartWarpPoint:IsA("BasePart") then
+		return voidheartWarpPoint
+	end
+
+	local voidheart = workspace:FindFirstChild("Voidheart")
+	local voidheartVoidWarp = voidheart and voidheart:FindFirstChild("VoidheartVoidWarp", true)
+	if voidheartVoidWarp and voidheartVoidWarp:IsA("BasePart") then
+		return voidheartVoidWarp
+	end
+
+	return nil
+end
+
+---Get voidheart teleporter.
+---@return BasePart?
+local function getVoidheartTeleporter()
+	local cachedTeleporter = teleporterCache.Voidheart
+	if cachedTeleporter and cachedTeleporter.Parent then
+		return cachedTeleporter
+	end
+
+	local teleporter = scanVoidheartTeleporter()
+	if teleporter then
+		teleporterCache.Voidheart = teleporter
+	end
+
+	return teleporter
+end
+
 ---Loop for teleport module.
 local function onTeleportLoop()
 	local dest = Teleport.destination
@@ -244,23 +283,34 @@ local function onTeleportLoop()
 	end
 
 	if dest == "Voidheart" then
-		tmaid:add(
-			TaskSpawner.spawn(
-				"Teleport_VoidheartStream",
-				players.LocalPlayer.RequestStreamAroundAsync,
-				players.LocalPlayer,
-				Vector3.new(-20000.0, 19713.9609, -20000.0),
-				0.1
-			)
+		local voidheartTeleporter = getVoidheartTeleporter()
+		requestStreamAround(
+			"Teleport_VoidheartStream",
+			voidheartTeleporter and voidheartTeleporter.Position or Vector3.new(-20000.0, 19713.9609, -20000.0)
 		)
 
-		local voidheart = workspace:FindFirstChild("Voidheart")
-		local voidheartVoidWarp = voidheart and voidheart:FindFirstChild("VoidheartVoidWarp")
-		if not voidheartVoidWarp then
+		if not voidheartTeleporter then
 			return
 		end
 
-		character:PivotTo(CFrame.new(-20000.0, 19713.9609, -20000.0))
+		local vhCFrame = voidheartTeleporter.CFrame
+		teleportFrameCount = teleportFrameCount + 1
+		local cycleFrame = (teleportFrameCount - 1) % (SPAM_FRAMES + PAUSE_FRAMES)
+
+		-- Spam phase: PivotTo + touch.
+		if cycleFrame < SPAM_FRAMES then
+			character:PivotTo(vhCFrame)
+			fireTouchOn(character, voidheartTeleporter)
+			return
+		end
+
+		-- Pause phase: let server respond. Check on the last pause frame.
+		if cycleFrame == SPAM_FRAMES + PAUSE_FRAMES - 1 then
+			local hrp = character:FindFirstChild("HumanoidRootPart")
+			if hrp and (hrp.Position - vhCFrame.Position).Magnitude <= RUBBERBAND_THRESHOLD then
+				return Teleport.stop()
+			end
+		end
 	end
 
 	if dest == "TrialOfOne" then
@@ -320,15 +370,17 @@ local function onTeleportLoop()
 		Teleport.gdp = guildDoorCFrame.Position
 
 		-- Stream in the guild base.
-		tmaid:add(
-			TaskSpawner.spawn(
-				"Teleport_GuildBaseStream",
-				players.LocalPlayer.RequestStreamAroundAsync,
-				players.LocalPlayer,
-				guildBaseCFrame.Position,
-				0.1
-			)
-		)
+		requestStreamAround("Teleport_GuildBaseStream", guildBaseCFrame.Position)
+
+		teleportFrameCount = teleportFrameCount + 1
+
+		-- Only check arrival after at least one PivotTo cycle.
+		if teleportFrameCount > 1 then
+			local hrp = character:FindFirstChild("HumanoidRootPart")
+			if hrp and (hrp.Position - entranceDoor.Position).Magnitude <= 50 then
+				return Teleport.stop()
+			end
+		end
 
 		-- Teleport over their bounds to trigger a forced game teleport.
 		character:PivotTo(CFrame.new(guildBaseCFrame.Position - Vector3.new(0, 150, 0)))
