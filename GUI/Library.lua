@@ -820,6 +820,10 @@ return LPH_NO_VIRTUALIZE(function()
 			})
 
 			DisplayFrame:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
+				if not PickerFrameOuter.Visible then
+					return
+				end
+
 				PickerFrameOuter.Position =
 					UDim2.fromOffset(DisplayFrame.AbsolutePosition.X, DisplayFrame.AbsolutePosition.Y + 18)
 			end)
@@ -1052,6 +1056,10 @@ return LPH_NO_VIRTUALIZE(function()
 				})
 
 				local function updateMenuPosition()
+					if not ContextMenu.Container.Visible then
+						return
+					end
+
 					ContextMenu.Container.Position = UDim2.fromOffset(
 						(DisplayFrame.AbsolutePosition.X + DisplayFrame.AbsoluteSize.X) + 4,
 						DisplayFrame.AbsolutePosition.Y + 1
@@ -1082,6 +1090,10 @@ return LPH_NO_VIRTUALIZE(function()
 				})
 
 				function ContextMenu:Show()
+					ContextMenu.Container.Position = UDim2.fromOffset(
+						(DisplayFrame.AbsolutePosition.X + DisplayFrame.AbsoluteSize.X) + 4,
+						DisplayFrame.AbsolutePosition.Y + 1
+					)
 					self.Container.Visible = true
 				end
 
@@ -1259,6 +1271,8 @@ return LPH_NO_VIRTUALIZE(function()
 					end
 				end
 
+				PickerFrameOuter.Position =
+					UDim2.fromOffset(DisplayFrame.AbsolutePosition.X, DisplayFrame.AbsolutePosition.Y + 18)
 				PickerFrameOuter.Visible = true
 				Library.OpenedFrames[PickerFrameOuter] = true
 			end
@@ -1464,6 +1478,10 @@ return LPH_NO_VIRTUALIZE(function()
 			ModeSelectFrames[#ModeSelectFrames + 1] = ModeSelectOuter
 
 			ToggleLabel:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
+				if not ModeSelectOuter.Visible then
+					return
+				end
+
 				ModeSelectOuter.Position = UDim2.fromOffset(
 					ToggleLabel.AbsolutePosition.X + ToggleLabel.AbsoluteSize.X + 4,
 					ToggleLabel.AbsolutePosition.Y + 1
@@ -1707,6 +1725,10 @@ return LPH_NO_VIRTUALIZE(function()
 				elseif
 					Input.UserInputType == Enum.UserInputType.MouseButton2 and not Library:MouseIsOverOpenedFrame()
 				then
+					ModeSelectOuter.Position = UDim2.fromOffset(
+						ToggleLabel.AbsolutePosition.X + ToggleLabel.AbsoluteSize.X + 4,
+						ToggleLabel.AbsolutePosition.Y + 1
+					)
 					ModeSelectOuter.Visible = true
 				end
 			end)
@@ -2827,6 +2849,10 @@ return LPH_NO_VIRTUALIZE(function()
 			})
 
 			local function RecalculateListPosition()
+				if not ListOuter.Visible then
+					return
+				end
+
 				ListOuter.Position = UDim2.fromOffset(
 					DropdownOuter.AbsolutePosition.X,
 					DropdownOuter.AbsolutePosition.Y + DropdownOuter.Size.Y.Offset + 1
@@ -3056,6 +3082,10 @@ return LPH_NO_VIRTUALIZE(function()
 			end
 
 			function Dropdown:OpenDropdown()
+				ListOuter.Position = UDim2.fromOffset(
+					DropdownOuter.AbsolutePosition.X,
+					DropdownOuter.AbsolutePosition.Y + DropdownOuter.Size.Y.Offset + 1
+				)
 				ListOuter.Visible = true
 				Library.OpenedFrames[ListOuter] = true
 				DropdownArrow.Rotation = 180
