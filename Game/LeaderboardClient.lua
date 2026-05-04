@@ -58,11 +58,8 @@ function LeaderboardClient.glrf()
 		local upvaluesFunction = upvalues[2]
 
 		-- Cache.
-		cachedUpvaluesFunction = upvaluesFunction
 		lastFunctionCacheTime = os.clock()
-
-		-- Return function.
-		return function()
+		cachedUpvaluesFunction = function()
 			-- Never allow a call when we already have an open one.
 			if LeaderboardClient.calling then
 				return
@@ -77,6 +74,9 @@ function LeaderboardClient.glrf()
 			-- Close calling!
 			LeaderboardClient.calling = false
 		end
+
+		-- Return function.
+		return cachedUpvaluesFunction
 	end
 
 	return nil

@@ -420,13 +420,10 @@ return LPH_NO_VIRTUALIZE(function()
 
 	---Update build stealing.
 	local function updateBuildStealing()
-		local leaderboardMap, refreshLeaderboard = LeaderboardClient.gld(), LeaderboardClient.glrf()
-		if not leaderboardMap or not refreshLeaderboard then
+		local leaderboardMap = LeaderboardClient.gld()
+		if not leaderboardMap then
 			return cameraSubject:restore()
 		end
-
-		-- Refresh leaderboard state.
-		refreshLeaderboard()
 
 		-- Update leaderboard based on state.
 		for player, frame in next, leaderboardMap do
@@ -449,13 +446,10 @@ return LPH_NO_VIRTUALIZE(function()
 
 	---Update player list whitelisting.
 	local function updatePlayerListWhitelisting()
-		local leaderboardMap, refreshLeaderboard = LeaderboardClient.gld(), LeaderboardClient.glrf()
-		if not leaderboardMap or not refreshLeaderboard then
+		local leaderboardMap = LeaderboardClient.gld()
+		if not leaderboardMap then
 			return cameraSubject:restore()
 		end
-
-		-- Refresh leaderboard state.
-		refreshLeaderboard()
 
 		-- Update leaderboard based on state.
 		for player, frame in next, leaderboardMap do
@@ -474,13 +468,10 @@ return LPH_NO_VIRTUALIZE(function()
 
 	---Update spectating.
 	local function updateSpectating()
-		local leaderboardMap, refreshLeaderboard = LeaderboardClient.gld(), LeaderboardClient.glrf()
-		if not leaderboardMap or not refreshLeaderboard then
+		local leaderboardMap = LeaderboardClient.gld()
+		if not leaderboardMap then
 			return cameraSubject:restore()
 		end
-
-		-- Refresh leaderboard state.
-		refreshLeaderboard()
 
 		-- Update leaderboard based on state.
 		for player, frame in next, leaderboardMap do

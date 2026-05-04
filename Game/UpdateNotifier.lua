@@ -284,7 +284,7 @@ function UpdateNotifier.show(version)
 	-- Fetch release notes from GitHub.
 	task.spawn(function()
 		local success, response = pcall(function()
-			return game:HttpGet("https://api.github.com/repos/Kendu378/Lycoris/releases/latest")
+			return game:HttpGet("https://api.github.com/repos/Blastbrean/Lycoris-Rewrite/releases/latest")
 		end)
 
 		if success and response then
