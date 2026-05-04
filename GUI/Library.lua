@@ -396,26 +396,137 @@ return LPH_NO_VIRTUALIZE(function()
 		return Library:Create(_Instance, Properties)
 	end
 
-	function Library:MakeDraggable(Instance, Cutoff)
-		Instance.Active = true
+	function Library:MakeDraggable(Frame, Cutoff)
+		Frame.Active = true
 
-		Instance.InputBegan:Connect(function(Input)
+		Frame.InputBegan:Connect(function(Input)
 			if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-				local ObjPos = Vector2.new(Mouse.X - Instance.AbsolutePosition.X, Mouse.Y - Instance.AbsolutePosition.Y)
+				local ObjPos = Vector2.new(Mouse.X - Frame.AbsolutePosition.X, Mouse.Y - Frame.AbsolutePosition.Y)
 
-				if ObjPos.Y > (Cutoff or 40) then
+				local TitleHeight = Cutoff or 40
+
+				if ObjPos.Y > TitleHeight then
 					return
 				end
 
-				while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-					Instance.Position = UDim2.new(
-						0,
-						Mouse.X - ObjPos.X + (Instance.Size.X.Offset * Instance.AnchorPoint.X),
-						0,
-						Mouse.Y - ObjPos.Y + (Instance.Size.Y.Offset * Instance.AnchorPoint.Y)
-					)
+				-- Acrylic drag effect (main window only).
+				if Cutoff then
+					local FrameTop = Frame.AbsolutePosition.Y
 
-					RenderStepped:Wait()
+					-- Save and hide all descendants.
+					local saved = {}
+
+					saved[Frame] = { bg = Frame.BackgroundTransparency }
+					Frame.BackgroundTransparency = 1
+
+					for _, child in next, Frame:GetDescendants() do
+						local entry = {}
+
+						if child:IsA("GuiObject") then
+							entry.bg = child.BackgroundTransparency
+							child.BackgroundTransparency = 1
+						end
+
+						if child:IsA("TextLabel") or child:IsA("TextButton") or child:IsA("TextBox") then
+							entry.text = child.TextTransparency
+							child.TextTransparency = 1
+						end
+
+						if child:IsA("ImageLabel") or child:IsA("ImageButton") then
+							entry.img = child.ImageTransparency
+							child.ImageTransparency = 1
+						end
+
+						if child:IsA("ScrollingFrame") then
+							entry.sbt = child.ScrollBarImageTransparency
+							child.ScrollBarImageTransparency = 1
+						end
+
+						if next(entry) then
+							saved[child] = entry
+						end
+					end
+
+					-- Title bar overlay.
+					local TitleBar = Instance.new("Frame")
+					TitleBar.BackgroundColor3 = Library.MainColor
+					TitleBar.BackgroundTransparency = 0.3
+					TitleBar.BorderSizePixel = 0
+					TitleBar.Position = UDim2.new(0, 0, 0, 0)
+					TitleBar.Size = UDim2.new(1, 0, 0, TitleHeight + 1)
+					TitleBar.ZIndex = 100
+					TitleBar.Parent = Frame
+
+					-- Accent line.
+					local AccentLine = Instance.new("Frame")
+					AccentLine.BackgroundColor3 = Library.AccentColor
+					AccentLine.BorderSizePixel = 0
+					AccentLine.Position = UDim2.new(0, 0, 0, 0)
+					AccentLine.Size = UDim2.new(1, 0, 0, 1)
+					AccentLine.ZIndex = 101
+					AccentLine.Parent = TitleBar
+
+					-- Re-show title text on top of the overlay.
+					for _, child in next, Frame:GetDescendants() do
+						if child:IsA("TextLabel") or child:IsA("TextButton") or child:IsA("TextBox") then
+							local childBottom = child.AbsolutePosition.Y + child.AbsoluteSize.Y - FrameTop
+							if childBottom <= TitleHeight then
+								child.TextTransparency = 0
+								child.ZIndex = 102
+							end
+						end
+					end
+
+					-- Frost overlay.
+					local FrostOverlay = Instance.new("Frame")
+					FrostOverlay.BackgroundColor3 = Library.MainColor
+					FrostOverlay.BackgroundTransparency = 0.5
+					FrostOverlay.BorderSizePixel = 0
+					FrostOverlay.Position = UDim2.new(0, 0, 0, TitleHeight - 1)
+					FrostOverlay.Size = UDim2.new(1, 0, 1, -(TitleHeight - 1))
+					FrostOverlay.ZIndex = 100
+					FrostOverlay.Parent = Frame
+
+					while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+						Frame.Position = UDim2.new(
+							0,
+							Mouse.X - ObjPos.X + (Frame.Size.X.Offset * Frame.AnchorPoint.X),
+							0,
+							Mouse.Y - ObjPos.Y + (Frame.Size.Y.Offset * Frame.AnchorPoint.Y)
+						)
+
+						RenderStepped:Wait()
+					end
+
+					-- Cleanup.
+					TitleBar:Destroy()
+					FrostOverlay:Destroy()
+
+					for obj, entry in next, saved do
+						if entry.bg then
+							obj.BackgroundTransparency = entry.bg
+						end
+						if entry.text then
+							obj.TextTransparency = entry.text
+						end
+						if entry.img then
+							obj.ImageTransparency = entry.img
+						end
+						if entry.sbt then
+							obj.ScrollBarImageTransparency = entry.sbt
+						end
+					end
+				else
+					-- Simple drag.
+					while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+						Frame.Position = UDim2.new(
+							0,
+							Mouse.X - ObjPos.X + (Frame.Size.X.Offset * Frame.AnchorPoint.X),
+							0,
+							Mouse.Y - ObjPos.Y + (Frame.Size.Y.Offset * Frame.AnchorPoint.Y)
+						)
+						RenderStepped:Wait()
+					end
 				end
 			end
 		end)
