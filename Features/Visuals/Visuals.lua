@@ -770,6 +770,8 @@ end
 ---Update talent sheet.
 ---@param rframe Frame
 local updateTalentSheet = LPH_NO_VIRTUALIZE(function(rframe)
+	task.wait()
+
 	local talentSheet = rframe:FindFirstChild("TalentSheet")
 	local container = talentSheet and talentSheet:FindFirstChild("Container")
 	local talentScroll = container and container:FindFirstChild("TalentScroll")
@@ -788,31 +790,30 @@ local updateTalentSheet = LPH_NO_VIRTUALIZE(function(rframe)
 		return
 	end
 
-	local divider = talentScroll:FindFirstChild("8ZQuestDivider")
-	if not divider then
-		return
-	end
-
-	-- Find a frame template with title child (new ui structure).
+	-- Find a talent Frame template and category group template.
 	local talentFrameTemplate = nil
-	for _, child in next, talentScroll:GetChildren() do
-		if child:IsA("Frame") and not child.Name:match("Divider$") and child:FindFirstChild("Title") then
-			talentFrameTemplate = child
-			break
+	local categoryGroupTemplate = nil
+	for _, category in next, talentScroll:GetChildren() do
+		if category:IsA("Frame") and category:FindFirstChild("Title") then
+			if not categoryGroupTemplate then
+				categoryGroupTemplate = category
+			end
+
+			for _, talent in next, category:GetChildren() do
+				if talent:IsA("Frame") and talent:FindFirstChild("Title") then
+					talentFrameTemplate = talent
+					break
+				end
+			end
+
+			if talentFrameTemplate then
+				break
+			end
 		end
 	end
 
-	if not talentFrameTemplate then
+	if not talentFrameTemplate or not categoryGroupTemplate then
 		return
-	end
-
-	-- Disable UIVanity script while modifying GUI.
-	local playerGui = players.LocalPlayer:FindFirstChild("PlayerGui")
-	local uiVanity = playerGui and playerGui:FindFirstChild("UIVanity")
-	local wasEnabled = uiVanity and uiVanity.Enabled
-
-	if uiVanity then
-		uiVanity.Enabled = false
 	end
 
 	-- Clean maid to re-setup.
@@ -824,21 +825,26 @@ local updateTalentSheet = LPH_NO_VIRTUALIZE(function(rframe)
 	-- First step: color everything inside and remove everything that is in the builder list already.
 	local filteredTalents = table.clone(bdata.talents)
 
+	-- Pre-build name to index lookup from talents for O(1) matching.
+	local talentNameToIdx = {}
+	for idx, talent in next, filteredTalents do
+		local talentClean = stripTags(talent)
+		talentNameToIdx[talentClean] = idx
+		talentNameToIdx[talent] = idx
+	end
+
+	-- Iterate through Title TextLabels inside category sub-frames.
 	for _, instance in next, talentScroll:GetDescendants() do
 		if not instance:IsA("TextLabel") then
 			continue
 		end
 
+		-- Only process Title labels.
 		if instance.Name ~= "Title" then
 			continue
 		end
 
-		local instanceText = instance.Text
-
-		local idx = Table.find(filteredTalents, function(value, _)
-			local valueClean = stripTags(value)
-			return instanceText == valueClean or instanceText == value
-		end)
+		local idx = talentNameToIdx[instance.Text]
 
 		if not idx then
 			continue
@@ -846,23 +852,42 @@ local updateTalentSheet = LPH_NO_VIRTUALIZE(function(rframe)
 
 		buildAssistanceMap:add(instance, "TextColor3", Color3.fromRGB(9, 255, 0))
 
+		-- Remove from lookup to prevent duplicate matches.
+		local talent = filteredTalents[idx]
+		talentNameToIdx[stripTags(talent)] = nil
+		talentNameToIdx[talent] = nil
 		filteredTalents[idx] = nil
 	end
 
-	-- Pre second step: create a nice looking separator.
-	local tseparator = InstanceWrapper.mark(builderAssistanceMaid, "tdivider", divider:Clone())
-	tseparator.Name = "LMissingTalentDivider"
-	tseparator.LayoutOrder = 9990
-	tseparator.Parent = talentScroll
+	-- Second step: create a missing talents group and add unmatched talents.
+	local missingTalentGroup = InstanceWrapper.mark(builderAssistanceMaid, "missingTalentGroup", categoryGroupTemplate:Clone())
+	for _, child in next, missingTalentGroup:GetChildren() do
+		if child:IsA("Frame") then
+			child:Destroy()
+		end
+	end
 
-	-- Second step: add every filtered talent as red (or purple if pre-shrine).
-	local talentOrder = 9991
+	missingTalentGroup.Name = "LMissingTalents"
+	missingTalentGroup.LayoutOrder = 9990
+
+	local missingTalentTitle = missingTalentGroup:FindFirstChild("Title")
+	if missingTalentTitle then
+		missingTalentTitle.Text = "MISSING"
+		missingTalentTitle.TextColor3 = Color3.fromRGB(255, 0, 2)
+	end
+
+	local hasMissingTalents = false
+	local talentOrder = 1
 	for _, talent in next, filteredTalents do
+		-- Use full talent name (WITH tag) for ddata lookup since API stores with tags.
 		local data = bdata.ddata:get(talent)
 		if not data then
 			continue
 		end
 
+		hasMissingTalents = true
+
+		-- Strip tags for display (game shows without tags).
 		local cleanTalent = stripTags(talent)
 
 		local newFrame = InstanceWrapper.mark(builderAssistanceMaid, talent, talentFrameTemplate:Clone())
@@ -876,6 +901,7 @@ local updateTalentSheet = LPH_NO_VIRTUALIZE(function(rframe)
 			icon:Destroy()
 		end
 
+		-- Update Title text and color - display WITHOUT tag.
 		local title = newFrame:FindFirstChild("Title")
 		if title then
 			title.Name = "M" .. cleanTalent
@@ -884,25 +910,42 @@ local updateTalentSheet = LPH_NO_VIRTUALIZE(function(rframe)
 			title.TextTransparency = 0.4
 		end
 
-		newFrame.Parent = talentScroll
+		newFrame.Parent = missingTalentGroup
 
 		labelMap["M" .. cleanTalent] = data
 	end
 
-	-- Pre third step: create a nice looking separator.
-	local mseparator = InstanceWrapper.mark(builderAssistanceMaid, "mdivider", divider:Clone())
-	mseparator.Name = "XMissingMantraDivider"
-	mseparator.LayoutOrder = 9995
-	mseparator.Parent = talentScroll
+	if hasMissingTalents then
+		missingTalentGroup.Parent = talentScroll
+	end
 
-	-- Third step: add every mantra as red (or purple if pre-shrine).
-	local mantraOrder = 9996
+	-- Third step: create a missing mantras group and add unmatched mantras.
+	local missingMantraGroup = InstanceWrapper.mark(builderAssistanceMaid, "missingMantraGroup", categoryGroupTemplate:Clone())
+	for _, child in next, missingMantraGroup:GetChildren() do
+		if child:IsA("Frame") then
+			child:Destroy()
+		end
+	end
+
+	missingMantraGroup.Name = "XMissingMantras"
+	missingMantraGroup.LayoutOrder = 9995
+
+	local missingMantraTitle = missingMantraGroup:FindFirstChild("Title")
+	if missingMantraTitle then
+		missingMantraTitle.Text = "MISSING MANTRAS"
+		missingMantraTitle.TextColor3 = Color3.fromRGB(255, 0, 2)
+	end
+
+	local hasMissingMantras = false
+	local mantraOrder = 1
 	for _, mantra in next, bdata.mantras do
+		-- Use full mantra name (WITH tag) for ddata lookup.
 		local data = bdata.ddata:get(mantra)
 		if not data then
 			continue
 		end
 
+		-- Strip tags and correct builder name mismatches for display.
 		local cleanMantra = correctBuilderName(stripTags(mantra))
 
 		local idx = Table.find(players.LocalPlayer.Backpack:GetChildren(), function(value, _)
@@ -913,6 +956,8 @@ local updateTalentSheet = LPH_NO_VIRTUALIZE(function(rframe)
 			local cleanDisplayName = stripTags(displayName)
 			return cleanDisplayName == cleanMantra or displayName == cleanMantra
 		end)
+
+		hasMissingMantras = true
 
 		local newFrame = InstanceWrapper.mark(builderAssistanceMaid, mantra, talentFrameTemplate:Clone())
 		local pshlocked = (bdata.ddata:possible(mantra, bdata.pre) and not bdata.ddata:possible(mantra, bdata.post))
@@ -937,14 +982,13 @@ local updateTalentSheet = LPH_NO_VIRTUALIZE(function(rframe)
 			end
 		end
 
-		newFrame.Parent = talentScroll
+		newFrame.Parent = missingMantraGroup
 
 		labelMap["Z" .. cleanMantra] = data
 	end
 
-	-- Re-enable UIVanity script.
-	if uiVanity and wasEnabled then
-		uiVanity.Enabled = true
+	if hasMissingMantras then
+		missingMantraGroup.Parent = talentScroll
 	end
 end)
 
@@ -2026,12 +2070,65 @@ function Visuals.init()
 	local dataReplication = info:WaitForChild("DataReplication")
 	local dataReplicationModule = require(dataReplication)
 
-	-- GetData() can fail on hot reload.
+	-- GetData() can fail on hot reload after remotes have been called because
+	-- The game's internal DataReplication state changes (require cache corruption).
+	-- Strategy: Try GetData() first, fall back to reading directly from character attributes.
 	local success, drinfo = pcall(function()
 		return dataReplicationModule.GetData()
 	end)
 
-	Visuals.drinfo = success and drinfo or nil
+	if success and type(drinfo) == "table" then
+		Visuals.drinfo = drinfo
+	else
+		-- GetData() failed - read data directly from character attributes (always fresh).
+		Logger.warn("GetData() failed, reading stats directly from character...")
+
+		local character = localPlayer and localPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+		if humanoid then
+			local fallbackData = {}
+			local statNames = {
+				"Agility",
+				"Strength",
+				"Fortitude",
+				"Intelligence",
+				"Willpower",
+				"Charisma",
+				"ElementBlood",
+				"ElementFire",
+				"ElementIce",
+				"ElementLightning",
+				"ElementWind",
+				"ElementShadow",
+				"ElementMetal",
+				"WeaponHeavy",
+				"WeaponMedium",
+				"WeaponLight",
+			}
+
+			for _, statName in ipairs(statNames) do
+				local key = "Stat" .. statName
+				fallbackData[key] = humanoid:GetAttribute(key) or character:GetAttribute(key) or 0
+			end
+
+			-- Read trait attributes.
+			fallbackData["TraitHealth"] = humanoid:GetAttribute("TraitHealth") or character:GetAttribute("TraitHealth") or 0
+			fallbackData["TraitEther"] = humanoid:GetAttribute("TraitEther") or character:GetAttribute("TraitEther") or 0
+			fallbackData["TraitWeaponDamage"] = humanoid:GetAttribute("TraitWeaponDamage")
+				or character:GetAttribute("TraitWeaponDamage")
+				or 0
+			fallbackData["TraitMantraDamage"] = humanoid:GetAttribute("TraitMantraDamage")
+				or character:GetAttribute("TraitMantraDamage")
+				or 0
+
+			Visuals.drinfo = fallbackData
+			Logger.warn("Successfully read stats from character attributes (fallback mode).")
+		else
+			Visuals.drinfo = nil
+			Logger.warn("Could not read character attributes - BuildAssistance disabled.")
+		end
+	end
 
 	Logger.warn("Visuals initialized.")
 end
