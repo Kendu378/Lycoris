@@ -6,7 +6,7 @@ Powered & inspired by parts of Serenity's framework rewritten to the new coding 
 
 For code related questions (not troubleshooting / tutorial on anything basic), issues, pull requests, and more...
 
-https://discord.gg/lyc
+https://discord.gg/4wWJRJxXaS
 
 ```lua
 -- script here
