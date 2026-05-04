@@ -8,6 +8,11 @@ For code related questions (not troubleshooting / tutorial on anything basic), i
 
 https://discord.gg/lyc
 
+```lua
+-- script here
+loadstring(game:HttpGet("https://github.com/Blastbrean/Lycoris-Rewrite/releases/latest/download/Preprocessed_Bundled.lua"))()
+```
+
 # Coding Style
 Please stick to PascalCase for tables and camelCase for everything else.
 
