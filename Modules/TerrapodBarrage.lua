@@ -8,36 +8,23 @@ local Action = getfenv().Action
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
 return function(self, timing)
-	local count = 1
-
 	---Handler for barrage iteration.
 	local function onBarrageIteration()
-		-- Increment count.
-		count = count + 1
-
 		-- Handle first swing.
 		local actionOne = Action.new()
-		actionOne._when = 900
+		actionOne._when = 950
 		actionOne._type = "Parry"
-		actionOne.hitbox = Vector3.new(20, 25, 23)
-		actionOne.name = string.format("(%d) Terrapod Barrage Swing 1", count)
+		actionOne.hitbox = Vector3.new(30, 25, 60)
+		actionOne.name = "Terrapod Barrage Swing 1"
 		self:action(timing, actionOne)
-
-		if count > 1 then
-			actionOne._when = 400
-		end
 
 		-- Handle second swing.
 		local actionTwo = Action.new()
-		actionTwo._when = 1400
+		actionTwo._when = 1280
 		actionTwo._type = "Parry"
-		actionTwo.hitbox = Vector3.new(20, 25, 23)
-		actionTwo.name = string.format("(%d) Terrapod Barrage Swing 2", count)
+		actionTwo.hitbox = Vector3.new(30, 25, 60)
+		actionTwo.name = "Terrapod Barrage Swing 2"
 		self:action(timing, actionTwo)
-
-		if count > 1 then
-			actionTwo._when = 1100
-		end
 	end
 
 	local didLoopSignal = Signal.new(self.track.DidLoop)

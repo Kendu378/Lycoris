@@ -4,12 +4,6 @@ local Action = getfenv().Action
 ---@module Modules.Globals.Mantra
 local Mantra = getfenv().Mantra
 
----@module Utility.Signal
-local Signal = getfenv().Signal
-
--- Services.
-local players = game:GetService("Players")
-
 ---Module function.
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
@@ -19,12 +13,31 @@ return function(self, timing)
 		return
 	end
 
+	timing.pbfb = true
+	timing.ndfb = true
+
 	local player = game:GetService("Players"):GetPlayerFromCharacter(self.entity)
 	local backpack = player and player:FindFirstChild("Backpack")
+	if not backpack then return end
 
-	if backpack and backpack:FindFirstChild("Mantra:SquadFire{{Burning Servants}}") then
-		local data = Mantra.data(self.entity, "Mantra:SquadFire{{Burning Servants}}")
+	local fireMantra = nil
+	local iceMantra = nil
+
+	for _, item in next, backpack:GetChildren() do
+		if item.Name:find("SquadFire") then
+			fireMantra = item
+			break
+		elseif item.Name:find("SquadIce") then
+			iceMantra = item
+			break
+		end
+	end
+
+	if fireMantra then
+		local data = Mantra.data(self.entity, fireMantra.Name)
 		local range = data.stratus * 2 + data.cloud * 1
+
+		timing.bfht = 1
 
 		local action = Action.new()
 		action._when = 325
@@ -34,13 +47,13 @@ return function(self, timing)
 		self:action(timing, action)
 
 		local secondAction = Action.new()
-		secondAction._when = 2150
+		secondAction._when = 2200
 		secondAction._type = "Parry"
 		secondAction.hitbox = Vector3.new(30 + range, 25, 30 + range)
 		secondAction.name = "(2) Burning Servants Timing 2"
 		return self:action(timing, secondAction)
-	else
-		local data = Mantra.data(self.entity, "Mantra:SquadIce{{Frozen Servants}}")
+	elseif iceMantra then
+		local data = Mantra.data(self.entity, iceMantra.Name)
 		local range = data.stratus * 2 + data.cloud * 1
 
 		local action3 = Action.new()

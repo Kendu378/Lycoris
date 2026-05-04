@@ -61,7 +61,7 @@ return function(self, timing)
 	local action = Action.new()
 	action._when = 300
 	action._type = "Parry"
-	action.hitbox = Vector3.new(16, 10, 20)
+	action.hitbox = Vector3.new(16, 10, 23)
 	action.name = "Rapid Punches First Part"
 	self:action(firstPartTiming, action)
 

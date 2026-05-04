@@ -44,7 +44,16 @@ return function(self, timing)
 
 	timing.iae = false
 
-	if hrp:WaitForChild("REP_SOUND_15214335898", 0.1) then
+	-- Detect stormblade via sound on entity HRP.
+	-- Search entity for any sound with the stormblade sound ID.
+	local stormbladeFound = false
+	for _, desc in next, entity:GetDescendants() do
+		if desc:IsA("Sound") and desc.SoundId == "rbxassetid://9171003382" then
+			stormbladeFound = true
+			break
+		end
+	end
+	if stormbladeFound then
 		local action = Action.new()
 		action._when = 0
 		action._type = "Parry"

@@ -313,7 +313,7 @@ class LuaPreprocessor:
         - Keep printable ASCII (32-126) except backslash and double quote as-is.
         - Escape backslash and double quote with a preceding backslash.
         - Encode all other bytes using decimal escape sequences ``\\ddd`` (zero-padded to 3 digits) so they are unambiguous.
-        This guarantees round-trip for any scrambled / binary content produced by XOR.
+        This guarantees round-trip for any binary content in embedded data.
         """
         out_chars: list[str] = []
         for ch in s:
@@ -442,23 +442,9 @@ class LuaPreprocessor:
         new_src, n = pattern.subn(repl, src)
         return new_src, n
 
-    def scramble_str(self, s: str) -> str:
-        encrypted = ''.join(chr(ord(char) ^ 42) for char in s)
-        return encrypted
-
-    def scramble_num(self, n):
-        return ((n + 5) / 12) - 69
-
-    def scramble_hitbox(self, hitbox: dict[str, Any]) -> dict[str, Any]:
-        return {
-            "X": self.scramble_num(hitbox.get("X")),
-            "Y": self.scramble_num(hitbox.get("Y")),
-            "Z": self.scramble_num(hitbox.get("Z")),
-        }
-    
     # -------------------------- Macro Expansion --------------------------
     def _expand_macros(self, src: str) -> str:
-        """Inline-expand PP_SCRAMBLE_NUM(expr) and PP_SCRAMBLE_STR(expr).
+        """Inline-expand PP_SCRAMBLE_* macros as raw passthroughs.
 
         Uses a simple token scan (not regex) so nested parentheses in the
         expression are handled by the existing balanced paren finder.
@@ -498,22 +484,12 @@ class LuaPreprocessor:
                 i = end_idx
             return ''.join(out)
 
-        def build_num(expr: str) -> str:
-            return f"(((({expr}) + 69) * 12) - 5)"
+        def build_identity(expr: str) -> str:
+            return f"({expr})"
 
-        def build_re_num(expr: str) -> str:
-            return f"(((({expr}) + 5) / 12) - 69)"
-
-        def build_str(expr: str) -> str:
-            return (
-                "(function(_s)local _r={} for _i=1,#_s do "
-                "_r[_i]=string.char(bit32.bxor(string.byte(_s,_i),42)) end "
-                "return table.concat(_r) end)(" + expr + ")"
-            )
-
-        src = expand_one("PP_SCRAMBLE_NUM", build_num)
-        src = expand_one("PP_SCRAMBLE_STR", build_str)
-        src = expand_one("PP_SCRAMBLE_RE_NUM", build_re_num)
+        src = expand_one("PP_SCRAMBLE_NUM", build_identity)
+        src = expand_one("PP_SCRAMBLE_STR", build_identity)
+        src = expand_one("PP_SCRAMBLE_RE_NUM", build_identity)
         return src
 
     
@@ -807,35 +783,10 @@ class LuaPreprocessor:
                 continue
         
             for i, timing in enumerate(arr):
-                # Scramble important properties
-                if timing.get("_id"):
-                    timing["_id"] = self.scramble_str(timing["_id"])
-                
-                if timing.get("pname"):
-                    timing["pname"] = self.scramble_str(timing["pname"])
-                
-                if timing.get("ename"):
-                    timing["ename"] = self.scramble_str(timing["ename"])
-                
-                timing["smod"] = self.scramble_str(timing["smod"])
-                timing["name"] = self.scramble_str(timing["name"])
-                timing["imxd"] = self.scramble_num(timing["imxd"])
-                timing["imdd"] = self.scramble_num(timing["imdd"])
-                
-                if timing.get("rpd"):
-                    timing["rpd"] = self.scramble_num(timing["rpd"])
-                    timing["rsd"] = self.scramble_num(timing["rsd"])
-    
-                timing["hitbox"] = self.scramble_hitbox(timing["hitbox"])
-                timing["STOP_TRYING_TO_DUMP_TIMINGS_LOL"] = "You can't unless you reverse Luraph or dynamically dump them <3"
-            
-                # Scramble actions
+                if not isinstance(timing, dict):
+                    continue
+
                 action_list = timing.get("actions") or []
-                for action in action_list:
-                    action["_type"] = self.scramble_str(action["_type"])
-                    action["name"] = self.scramble_str(action["name"])
-                    action["when"] = self.scramble_num(action["when"])
-                    action["hitbox"] = self.scramble_hitbox(action["hitbox"])
 
                 # Update stats
                 stats[var]["timings"] += 1
@@ -860,8 +811,8 @@ class LuaPreprocessor:
             )
             total_t = sum(v["timings"] for v in stats.values())
             total_a = sum(v["actions"] for v in stats.values())
-            print(f"Inlined timing data into {replaced} container load call(s).")
-            print(f"Scrambled {total_t} timings / {total_a} actions ({summary}).")
+            print(f"Inlined raw timing data into {replaced} container load call(s).")
+            print(f"Embedded {total_t} timings / {total_a} actions ({summary}).")
         
         return out, replaced
 

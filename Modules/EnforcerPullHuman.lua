@@ -14,12 +14,9 @@ return function(self, timing)
 		return
 	end
 
-	local backpack = player:FindFirstChild("Backpack")
-	if not backpack then
-		return
-	end
-
-	local assumeJailer = backpack:FindFirstChild("Talent:Rending Needle: Jailer")
+	local playerPassives = self.entity and self.entity:GetAttribute("ssv_Passives")
+	local playerBackpack = player:FindFirstChild("Backpack")
+	local assumeJailer = (playerPassives and playerPassives:find("Rending Needle: Jailer")) or (playerBackpack and playerBackpack:FindFirstChild("Talent:Rending Needle: Jailer"))
 
 	local action = Action.new()
 	action._when = assumeJailer and 0 or 700

@@ -39,7 +39,7 @@ return function(self, timing)
 		action.name = "Shadow Chains Timing"
 		timing.fhb = false
 	else
-		action._when = 0
+		action._when = 280
 		action.hitbox = Vector3.new(35 + size, 35 + size, 35 + size)
 		action.name = "Shadow Eruption Timing"
 		timing.fhb = false

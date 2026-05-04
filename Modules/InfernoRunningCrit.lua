@@ -31,7 +31,7 @@ return function(self, timing)
 			end
 
 			local tracker = ProjectileTracker.new(function(candidate)
-				return candidate and candidate.Name and candidate.Name == "Fireball"
+			return candidate and candidate.Name and string.find(candidate.Name, "Fireball")
 			end)
 
 			local projectile = tracker:wait()
@@ -55,7 +55,7 @@ return function(self, timing)
 			pt.actions:push(action)
 			pt.cbm = true
 
-			Defense.cdpo(tracker:wait(), pt)
+			Defense.cdpo(projectile, pt)  -- Use the projectile we already got
 		end)
 	end
 end

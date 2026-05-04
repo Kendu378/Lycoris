@@ -41,6 +41,24 @@ jobs:
             exit 1
           fi
 
+      - name: Patch menu version
+        run: |
+          TAG="${{ steps.vars.outputs.tag }}"
+          VERSION="${TAG#v}"
+          export VERSION
+
+          python - <<'PY'
+          from pathlib import Path
+          import os
+          import re
+
+          version = os.environ["VERSION"]
+          path = Path("Menu.lua")
+          source = path.read_text()
+          source = re.sub(r'local VERSION = "[^"]+"', f'local VERSION = "{version}"', source, count=1)
+          path.write_text(source)
+          PY
+
       - name: Create tag if missing
         run: |
           TAG="${{ steps.vars.outputs.tag }}"

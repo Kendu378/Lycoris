@@ -168,7 +168,7 @@ Defender.srpue = LPH_NO_VIRTUALIZE(function(self, ref, timing, info)
 	end
 
 	local cache = {
-		["name"] = PP_SCRAMBLE_STR(timing.name),
+		["name"] = timing.name,
 		["imdd"] = PP_SCRAMBLE_NUM(timing.imdd),
 		["imxd"] = PP_SCRAMBLE_NUM(timing.imxd),
 		["rsd"] = timing:rsd(),
@@ -289,7 +289,7 @@ Defender.valid = LPH_NO_VIRTUALIZE(function(self, options)
 		return self:notify(...)
 	end
 
-	local overrideData = Library:GetOverrideData(PP_SCRAMBLE_STR(timing.name))
+	local overrideData = Library:GetOverrideData(timing.name)
 
 	if overrideData then
 		rate = overrideData.fr
@@ -547,7 +547,7 @@ Defender.notify = LPH_NO_VIRTUALIZE(function(self, timing, str, ...)
 		return
 	end
 
-	Logger.qnotify("[%s] (%s) %s", PP_SCRAMBLE_STR(timing.name), self.__type, string.format(str, ...))
+	Logger.qnotify("[%s] (%s) %s", timing.name, self.__type, string.format(str, ...))
 end)
 
 ---Repeat conditional.
@@ -840,7 +840,7 @@ Defender.parry = LPH_NO_VIRTUALIZE(function(self, timing, action)
 
 	-- Rate.
 	local rate = (Configuration.expectOptionValue("DashInsteadOfParryRate") or 0.0)
-	local overrideData = Library:GetOverrideData(PP_SCRAMBLE_STR(timing.name))
+	local overrideData = Library:GetOverrideData(timing.name)
 	if overrideData then
 		rate = overrideData.dipr
 	end
@@ -1382,7 +1382,6 @@ Defender.action = LPH_NO_VIRTUALIZE(function(self, timing, action)
 
 	if timing.umoa or timing.cbm then
 		action["_type"] = PP_SCRAMBLE_STR(action["_type"])
-		action["name"] = PP_SCRAMBLE_STR(action["name"])
 		action["_when"] = PP_SCRAMBLE_RE_NUM(action["_when"])
 		action["hitbox"] = Vector3.new(
 			PP_SCRAMBLE_RE_NUM(action["hitbox"].X),
@@ -1440,7 +1439,7 @@ Defender.action = LPH_NO_VIRTUALIZE(function(self, timing, action)
 		self:notify(
 			timing,
 			"Added action '%s' (%.2fs) with ping '%.2f' (changing) subtracted.",
-			PP_SCRAMBLE_STR(action.name),
+			action.name,
 			action:when(),
 			Latency.rtt()
 		)
@@ -1448,7 +1447,7 @@ Defender.action = LPH_NO_VIRTUALIZE(function(self, timing, action)
 		self:notify(
 			timing,
 			"Added action '%s' ([redacted]) with ping '%.2f' (changing) subtracted.",
-			PP_SCRAMBLE_STR(action.name),
+			action.name,
 			Latency.rtt()
 		)
 	end

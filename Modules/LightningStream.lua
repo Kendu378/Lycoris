@@ -36,21 +36,28 @@ return function(self, timing)
 
 	if self:distance(self.entity) <= 25 then
 		local action = Action.new()
-		action._type = "Parry"
+		action._type = "Start Crouch"
 		action._when = 0
 		action.name = "Lightning Stream Close Timing"
 		action.ihbc = true
-		return self:action(timing, action)
+		self:action(timing, action)
+
+		local actionEnd = Action.new()
+		actionEnd._type = "End Crouch"
+		actionEnd._when = 100
+		actionEnd.name = "Lightning Stream Close End"
+		actionEnd.ihbc = true
+		return self:action(timing, actionEnd)
 	end
 
 	local action = Action.new()
 	action._when = 0
-	action._type = "Start Block"
+	action._type = "Start Crouch"
 	action.name = "Lightning Stream Part"
 
 	local actionTwo = Action.new()
 	actionTwo._when = 500
-	actionTwo._type = "End Block"
+	actionTwo._type = "End Crouch"
 	actionTwo.name = "Lightning Stream End"
 	actionTwo.ihbc = true
 

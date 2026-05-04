@@ -84,7 +84,7 @@ AnimatorDefender.stopped = LPH_NO_VIRTUALIZE(function(self, track, timing, notif
 		return self:notify(...)
 	end
 
-	local overrideData = Library:GetOverrideData(PP_SCRAMBLE_STR(timing.name))
+	local overrideData = Library:GetOverrideData(timing.name)
 	local rate = (Configuration.expectOptionValue("IgnoreAnimationEndRate") or 0.0)
 
 	if overrideData then
@@ -119,7 +119,7 @@ AnimatorDefender.rc = LPH_NO_VIRTUALIZE(function(self, info)
 	if not info.track then
 		return Logger.warn(
 			"(%s) Did you forget to pass the track? Or perhaps you forgot to place a hook before using this function.",
-			PP_SCRAMBLE_STR(info.timing.name)
+			info.timing.name
 		)
 	end
 

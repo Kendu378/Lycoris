@@ -94,11 +94,25 @@ local groups = {}
 -- Original stores.
 local fieldOfView = nil
 
+-- Mystery reveal state.
+local roll2Notified = false
+local roll2Dismissals = {}
+local cachedRoll2Selection = nil
+
+---Dismiss all Roll 2 notifications.
+local function dismissRoll2()
+	for _, dismiss in next, roll2Dismissals do
+		task.spawn(dismiss)
+	end
+	roll2Dismissals = {}
+end
+
 -- Original store managers.
 local showRobloxChatMap = visualsMaid:mark(OriginalStoreManager.new())
 local noAnimatedSeaMap = visualsMaid:mark(OriginalStoreManager.new())
 local noPersistentMap = visualsMaid:mark(OriginalStoreManager.new())
 local buildAssistanceMap = visualsMaid:mark(OriginalStoreManager.new())
+local mysteryRevealMap = visualsMaid:mark(OriginalStoreManager.new())
 local jobBoardMap = visualsMaid:mark(OriginalStoreManager.new())
 
 ---Update chain of perfection tracker.
@@ -265,6 +279,9 @@ local onPlayerGuiDescendantAdded = LPH_NO_VIRTUALIZE(function(descendant)
 	end
 
 	cardFrames[descendant] = true
+	roll2Notified = false
+	cachedRoll2Selection = nil
+	dismissRoll2()
 end)
 
 ---On Player GUI descendant removed.
@@ -275,6 +292,8 @@ local onPlayerGuiDescendantRemoving = LPH_NO_VIRTUALIZE(function(descendant)
 	end
 
 	cardFrames[descendant] = nil
+	dismissRoll2()
+	roll2Notified = false
 end)
 
 ---Update card frames.
@@ -1124,6 +1143,119 @@ local updateTerrainAttachments = LPH_NO_VIRTUALIZE(function()
 	end
 end)
 
+---Update mystery mantra reveal.
+local updateMysteryReveal = LPH_NO_VIRTUALIZE(function()
+	local drinfo = Visuals.drinfo
+	if not drinfo or not drinfo.AvailableMantras then
+		return
+	end
+
+	-- Build mantra data lookup from AvailableMantras.
+	local mantraDataLookup = {}
+	for _, mantra in next, drinfo.AvailableMantras do
+		if mantra.Name then
+			mantraDataLookup[mantra.Name] = mantra
+		end
+	end
+
+	for frame in next, cardFrames do
+		local parent = frame.Parent
+		if not parent then
+			continue
+		end
+
+		-- Only process ChoiceFrame cards.
+		local choiceFrame = parent.Parent
+		if not choiceFrame or choiceFrame.Name ~= "ChoiceFrame" then
+			continue
+		end
+
+		-- Check if this card is a mystery card by its class text.
+		local details = frame:FindFirstChild("Details")
+		if not details then
+			continue
+		end
+
+		local class = details:FindFirstChild("Class")
+		if not class or class.Text ~= "Mystery" then
+			continue
+		end
+
+		-- Look up the real mantra data by the card's internal name.
+		local realData = mantraDataLookup[parent.Name]
+		if not realData then
+			continue
+		end
+
+		local title = frame:FindFirstChild("Title")
+		if title and realData.MantraName then
+			mysteryRevealMap:add(title, "Text", realData.MantraName)
+		end
+
+		if realData.Class then
+			mysteryRevealMap:add(class, "Text", realData.Class)
+		end
+
+		local desc = details:FindFirstChild("Desc")
+		if desc and realData.Desc then
+			mysteryRevealMap:add(desc, "Text", realData.Desc)
+		end
+	end
+end)
+
+---Update Roll 2 reveal.
+local updateRoll2Reveal = LPH_NO_VIRTUALIZE(function()
+	-- Cache Roll 2 selection from TalentChoice when available.
+	local drinfo = Visuals.drinfo
+	if drinfo then
+		local talentChoice = drinfo.TalentChoice
+		if talentChoice and talentChoice.Selection then
+			for _, entry in next, talentChoice.Selection do
+				if entry.Type == "Roll2" and entry.Selection then
+					cachedRoll2Selection = entry.Selection
+					break
+				end
+			end
+		end
+	end
+
+	if roll2Notified or not cachedRoll2Selection then
+		return
+	end
+
+	-- Verify the Roll 2 card is actually visible in ChoiceFrame.
+	local found = false
+	for frame in next, cardFrames do
+		local parent = frame.Parent
+		if parent and parent.Name == "Roll 2" then
+			local choiceFrame = parent.Parent
+			if choiceFrame and choiceFrame.Name == "ChoiceFrame" then
+				found = true
+				break
+			end
+		end
+	end
+
+	if not found then
+		return
+	end
+
+	roll2Notified = true
+
+	local dismiss = Logger.mnnotify("Available Roll 2 Talents:")
+	if dismiss then
+		table.insert(roll2Dismissals, dismiss)
+	end
+
+	for _, talent in next, cachedRoll2Selection do
+		local talentDismiss =
+			Logger.mnnotify("  %s (%s) - %s", talent.Name or "Unknown", talent.Class or "Unknown", talent.Desc or "")
+		if talentDismiss then
+			table.insert(roll2Dismissals, talentDismiss)
+		end
+	end
+end)
+
 ---Update ESP.
 local updateESP = LPH_NO_VIRTUALIZE(function()
 	if os.clock() - lastESPUpdate <= (1 / (Configuration.expectOptionValue("ESPRefreshRate") or 30)) then
@@ -1150,6 +1282,19 @@ local updateVisuals = LPH_NO_VIRTUALIZE(function()
 	end
 
 	lastVisualsUpdate = os.clock()
+
+	if Configuration.expectToggleValue("MysteryMantraRevealer") then
+		updateMysteryReveal()
+	else
+		mysteryRevealMap:restore()
+	end
+
+	if Configuration.expectToggleValue("Roll2Revealer") then
+		updateRoll2Reveal()
+	else
+		dismissRoll2()
+		roll2Notified = false
+	end
 
 	if Configuration.idToggleValue("JobBoard", "Enable") then
 		updateTerrainAttachments()
@@ -1589,6 +1734,11 @@ function Visuals.detach()
 	for _, group in next, groups do
 		group:detach()
 	end
+
+	mysteryRevealMap:restore()
+	dismissRoll2()
+	roll2Notified = false
+	cachedRoll2Selection = nil
 
 	visualsMaid:clean()
 	builderAssistanceMaid:clean()

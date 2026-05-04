@@ -5,11 +5,12 @@ local Action = getfenv().Action
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
 return function(self, timing)
+	timing.duih = true
+
 	local distance = self:distance(self.entity)
 	local action = Action.new()
-	action._when = 400
+	action._when = 350
 	action._type = "Parry"
-	action.hitbox = Vector3.new(20, 15, 26)
-	action.name = string.format("(%.2f) Static Rocket Lance Timing", distance)
+	action.name = string.format("(%.2f) Dynamic Rocket Lance Timing", distance)
 	return self:action(timing, action)
 end

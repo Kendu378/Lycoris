@@ -14,7 +14,7 @@ return function(self, timing)
 	timing.ffh = true
 
 	local action = Action.new()
-	action._when = 400
+	action._when = 500
 	action._type = "Parry"
 	action.hitbox = Vector3.new(20, 20, 30 + range)
 	action.name = "Dynamic Revenge Timing"

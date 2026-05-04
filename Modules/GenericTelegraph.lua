@@ -30,17 +30,17 @@ return function(self, timing)
             "block_only",
             "parry_only"
         }, telegraphType) then return; end
-        
+
 	    self:hook("target", function(_)
-	    	return true
+		return true
 	    end)
 
 	    local action = Action.new()
 	    action._when = 950 -- it is 1s but we do want to parry earlier due to the fact the user might not have 'Ping Compensation' on.
 	    action._type = telegraphType == "dodge_only" and "Dodge" or "Parry"
 	    action.ihbc = true
-	    action.name = "Dynamic Weapon Manual Timing"       
-        
+	    action.name = "Dynamic Weapon Manual Timing"
+
         return self:action(timing, action)
     end
 

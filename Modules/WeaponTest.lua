@@ -10,10 +10,47 @@ local Signal = getfenv().Signal
 ---@module Utility.Configuration
 local Configuration = getfenv().Configuration
 
+---@module Features.Combat.Objects.RepeatInfo
+local RepeatInfo = getfenv().RepeatInfo
+
+---@module Game.Latency
+local Latency = getfenv().Latency
+
+---@module Utility.TaskSpawner
+local TaskSpawner = getfenv().TaskSpawner
+
 ---Module function.
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
 return function(self, timing)
+	if self.entity.Name:match("evengarde") and (timing.name:match("1SwordSwing1") or timing.name:match("1SwordSwing2")) then
+		-- Skip if already running parry loop.
+		if _G.EvengardeSwingGuard and (os.clock() - _G.EvengardeSwingGuard) < 4 then
+			return
+		end
+		_G.EvengardeSwingGuard = os.clock()
+
+		timing.ndfb = true
+		timing.pbfb = true
+		timing.bfht = 0.15
+
+		-- Repeat parry via actions in spawned task (avoids task cleanup on animation spam).
+		TaskSpawner.spawn("EvengardeSwingParry", function()
+			task.wait(0.4)
+			local startTime = os.clock()
+			while (os.clock() - startTime) < 3 do
+				local action = Action.new()
+				action._when = 0
+				action._type = "Parry"
+				action.hitbox = Vector3.new(55, 55, 55)
+				action.name = "Evengarde Sword Swing"
+				self:action(timing, action)
+				task.wait(0.01)
+			end
+		end)
+		return
+	end
+
 	local data = Weapon.data(self.entity)
 	if not data then
 		return
@@ -54,6 +91,7 @@ return function(self, timing)
 
 	if
 		data.type == "Sword"
+		or data.type == "Staff"
 		or data.type == "Twinblade"
 		or data.type == "Spear"
 		or data.type == "Club"
@@ -63,6 +101,7 @@ return function(self, timing)
 		timing.pbfb = true
 		timing.bfht = 0.3
 		timing.phd = false
+		timing.duih = false
 		timing.ffh = true
 		timing.pfht = 0.5
 	end
@@ -74,6 +113,7 @@ return function(self, timing)
 		or data.type == "Greataxe"
 	then
 		timing.phd = false
+		timing.duih = false
 		timing.ffh = true
 		timing.pfht = 0.5
 		timing.dp = false
@@ -138,8 +178,28 @@ return function(self, timing)
 		windup = (0.140 / self.track.Speed) + 0.130
 	elseif data.type == "Dagger" then
 		windup = (0.150 / self.track.Speed) + 0.075
+	elseif data.type == "Staff" then
+		windup = 0.350
 	elseif data.type == "Sword" then
 		windup = (0.150 / self.track.Speed) + 0.100
+	end
+
+	if self.entity.Name:lower():match("titus") and data.type == "Fist" then
+		repeat
+			task.wait()
+		until self.track.Speed > 0
+
+		local finalSpeed = self.track.Speed + 0.2
+
+		self:notify(timing, "Titus M1 Windup")
+
+		local action = Action.new()
+		action._when = (565 * 0.76) / finalSpeed
+		action._type = "Parry"
+		action.hitbox = Vector3.new(data.length * 2.1, data.length * 2.1, data.length * 2.1)
+		action.name = string.format("(%.2f) Titus M1 Windup", finalSpeed)
+
+		return self:action(timing, action)
 	end
 
 	if not windup then
@@ -150,7 +210,7 @@ return function(self, timing)
 	local action = Action.new()
 	action._when = windup * 1000
 	action._type = "Parry"
-	action.hitbox = Vector3.new(data.length * 2.8, data.length * 2.8, data.length * 2.8)
+	action.hitbox = Vector3.new(data.length * 2.1, data.length * 2.1, data.length * 2.1)
 	action.name = string.format(
 		"(%.2f, %.2f, %.2f) (%.2f) Dynamic Weapon Swing",
 		data.oss,

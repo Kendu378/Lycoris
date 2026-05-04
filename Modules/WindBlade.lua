@@ -4,6 +4,9 @@ local PartTiming = getfenv().PartTiming
 ---@type Action
 local Action = getfenv().Action
 
+---@module Utility.Finder
+local Finder = getfenv().Finder
+
 ---@type ProjectileTracker
 ---@diagnostic disable-next-line: unused-local
 local ProjectileTracker = getfenv().ProjectileTracker
@@ -15,9 +18,26 @@ local Defense = getfenv().Defense
 local Latency = getfenv().Latency
 
 ---Module function.
----@param self AnimatorDefender
----@param timing AnimationTiming
+---@param self AnimatorDefender|PartDefender
+---@param timing AnimationTiming|PartTiming
 return function(self, timing)
+	if self.__type == "Part" then
+		local duke = Finder.entity("theduke")
+		local root = duke and duke:FindFirstChild("HumanoidRootPart")
+
+		if root and (self.part.Position - root.Position).Magnitude <= 10 then
+			return
+		end
+
+		local action = Action.new()
+		action._when = timing.name == "WindSlashProjectile" and 150 or 0
+		action._type = "Parry"
+		action.hitbox = Vector3.zero
+		action.ihbc = false
+		action.name = timing.name == "WindSlashProjectile" and "Wind Slash Projectile Timing" or "Wind Blade Timing"
+		return self:action(timing, action)
+	end
+
 	local thrown = workspace:FindFirstChild("Thrown")
 	if not thrown then
 		return

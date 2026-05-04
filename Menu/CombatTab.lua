@@ -16,6 +16,9 @@ local Library = require("GUI/Library")
 ---@module Game.Timings.SaveManager
 local SaveManager = require("Game/Timings/SaveManager")
 
+---@module Features.Combat.RhythmSpoofer
+local RhythmSpoofer = require("Features/Combat/RhythmSpoofer")
+
 -- Initialize combat targeting section.
 ---@param tab table
 function CombatTab.initCombatTargetingSection(tab)
@@ -395,7 +398,7 @@ function CombatTab:initTimingsSection(groupbox)
 	---@todo: There should be a specific method for this; I mean as far as I'm aware THERE IS ONE. But, I'm too lazy.
 	for _, pair in next, plist do
 		for _, timing in next, pair:list() do
-			names[#names + 1] = PP_SCRAMBLE_STR(timing.name)
+			names[#names + 1] = timing.name
 		end
 	end
 
@@ -588,6 +591,20 @@ function CombatTab.initCombatAssistance(groupbox)
 		Default = false,
 		Tooltip = "When you feint during a move, it will attempt to delay it to be as late as possible.",
 	})
+
+	groupbox:AddToggle("RhythmSpoofer", {
+		Text = "Rhythm Spoofer",
+		Default = false,
+		Tooltip = "Spoofs the Murmur: Rhythm talent effects without having the talent.",
+	})
+
+	Toggles.RhythmSpoofer:OnChanged(function(state)
+		if state then
+			RhythmSpoofer.init()
+		else
+			RhythmSpoofer.detach()
+		end
+	end)
 
 	local ascToggle = groupbox:AddToggle("AnimationSpeedChanger", {
 		Text = "Animation Speed Changer",

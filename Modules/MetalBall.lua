@@ -8,16 +8,29 @@ local Latency = getfenv().Latency
 ---@param self AnimatorDefender
 ---@param timing AnimationTiming
 return function(self, timing)
-	task.wait(0.5 - Latency.rtt())
-
 	timing.ieae = true
 	timing.iae = true
 
-	local spikeBall = self.entity:WaitForChild("SpikeBall")
+	task.wait(0.5 - Latency.rtt())
+
+	-- Wait for SpikeBall (partial match, can have number suffix).
+	local spikeBall = nil
 	local isBlocking = false
 
 	while task.wait() do
-		if not spikeBall or not spikeBall.Parent then
+		if not spikeBall then
+			for _, child in next, self.entity:GetChildren() do
+				if child.Name:match("^SpikeBall") then
+					spikeBall = child
+					break
+				end
+			end
+			if not spikeBall then
+				continue
+			end
+		end
+
+		if not spikeBall.Parent then
 			local endAction = Action.new()
 			endAction._when = 0
 			endAction._type = "End Block"

@@ -43,6 +43,7 @@ return function(self, timing)
 
 	if
 		data.type == "Sword"
+		or data.type == "Staff"
 		or data.type == "Twinblade"
 		or data.type == "Spear"
 		or data.type == "Club"
@@ -93,7 +94,7 @@ return function(self, timing)
 		windup = (0.135 / self.track.Speed) + 0.180
 	elseif data.type == "Fist" then
 		windup = (0.160 / self.track.Speed) + 0.140
-	elseif data.type == "Sword" then
+	elseif data.type == "Sword" or data.type == "Staff" then
 		windup = (0.16 / self.track.Speed) + 0.120
 	elseif data.type == "Club" then
 		windup = (0.16 / self.track.Speed) + 0.150
@@ -109,7 +110,7 @@ return function(self, timing)
 	local action = Action.new()
 	action._when = windup * 1000
 	action._type = "Parry"
-	action.hitbox = Vector3.new(data.length * 2.8, data.length * 2.8, data.length * 2.8)
+	action.hitbox = Vector3.new(data.length * 2.1, data.length * 2.1, data.length * 2.1)
 	action.name = string.format(
 		"(%.2f, %.2f, %.2f) (%.2f) Dynamic Weapon Flourish",
 		data.oss,

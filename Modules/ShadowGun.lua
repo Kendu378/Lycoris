@@ -13,9 +13,9 @@ return function(self, timing)
 	local size = data.stratus * 0.4 + data.cloud * 0.3
 
 	local action = Action.new()
-	action._when = 650
+	action._when = (100 * 1.02)
 	action._type = "Parry"
-	action.hitbox = Vector3.new(10 + size, 10 + size, 25 + range)
+	action.hitbox = Vector3.new(20 + size, 20 + size, 50 + range)
 	action.name = "Dynamic Shadow Gun Timing"
 
 	if data.blast then
