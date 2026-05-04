@@ -54,6 +54,9 @@ local Signal = require("Utility/Signal")
 ---@module Utility.Configuration
 local Configuration = require("Utility/Configuration")
 
+---@module Game.QueuedBlocking
+local QueuedBlocking = require("Game/QueuedBlocking")
+
 -- Module filesystem.
 local fs = Filesystem.new("Lycoris-Rewrite-Modules")
 local gfs = Filesystem.new(fs:append("Globals"))
@@ -93,6 +96,7 @@ function ModuleManager.execute(lf, id, file, global)
 	getfenv(lf).StateListener = StateListener
 	getfenv(lf).Latency = Latency
 	getfenv(lf).Configuration = Configuration
+	getfenv(lf).QueuedBlocking = QueuedBlocking
 
 	-- Load globals if we should.
 	for name, entry in next, (not global) and ModuleManager.globals or {} do
