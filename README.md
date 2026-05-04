@@ -2,7 +2,7 @@
 
 > **This is a fork of [Blastbrean/Lycoris-Rewrite](https://github.com/Blastbrean/Lycoris-Rewrite)**
 >
-> Updates come when I have time or see fit. PRs welcome.
+> As of May 4, 2026, this fork is no longer maintained, as I now actively contribute to the main repository.
 
 ```lua
 -- script here
