@@ -168,7 +168,7 @@ Defender.srpue = LPH_NO_VIRTUALIZE(function(self, ref, timing, info)
 	end
 
 	local cache = {
-		["name"] = PP_SCRAMBLE_STR(timing.name),
+		["name"] = timing.name,
 		["imdd"] = PP_SCRAMBLE_NUM(timing.imdd),
 		["imxd"] = PP_SCRAMBLE_NUM(timing.imxd),
 		["rsd"] = timing:rsd(),
@@ -289,7 +289,7 @@ Defender.valid = LPH_NO_VIRTUALIZE(function(self, options)
 		return self:notify(...)
 	end
 
-	local overrideData = Library:GetOverrideData(PP_SCRAMBLE_STR(timing.name))
+	local overrideData = Library:GetOverrideData(timing.name)
 
 	if overrideData then
 		rate = overrideData.fr
@@ -337,12 +337,16 @@ Defender.valid = LPH_NO_VIRTUALIZE(function(self, options)
 	end
 
 	local actionType = options.action and options.action._type or "N/A"
+	local isCrouchOrSlide = actionType == "Start Crouch"
+		or actionType == "End Crouch"
+		or actionType == "Start Slide"
+		or actionType == "End Slide"
 
 	if
 		not Configuration.expectToggleValue("BlatantRoll")
 		or (actionType ~= PP_SCRAMBLE_STR("Dodge") and actionType ~= PP_SCRAMBLE_STR("Forced Full Dodge"))
 	then
-		if not self.afeinted and not options.sstun and StateListener.astun() then
+		if not self.afeinted and not options.sstun and not isCrouchOrSlide and StateListener.astun() then
 			return internalNotifyFunction(timing, "User is in action stun.")
 		end
 
@@ -352,7 +356,8 @@ Defender.valid = LPH_NO_VIRTUALIZE(function(self, options)
 	end
 
 	if actionType == PP_SCRAMBLE_STR("Parry") then
-		if effectReplicatorModule:FindEffect("AutoParry") then
+		local isPlayer = self.entity and players:GetPlayerFromCharacter(self.entity)
+		if effectReplicatorModule:FindEffect("AutoParry") and isPlayer and Configuration.expectToggleValue("UseAutoParryFrames") then
 			return internalNotifyFunction(timing, "User has auto parry frames.")
 		end
 	end
@@ -547,7 +552,7 @@ Defender.notify = LPH_NO_VIRTUALIZE(function(self, timing, str, ...)
 		return
 	end
 
-	Logger.qnotify("[%s] (%s) %s", PP_SCRAMBLE_STR(timing.name), self.__type, string.format(str, ...))
+	Logger.qnotify("[%s] (%s) %s", timing.name, self.__type, string.format(str, ...))
 end)
 
 ---Repeat conditional.
@@ -739,8 +744,10 @@ Defender.handle = LPH_NO_VIRTUALIZE(function(self, timing, action, started)
 	local inIFrame = effectReplicatorModule:FindEffect("Immortal")
 		or effectReplicatorModule:FindEffect("Dodge")
 		or effectReplicatorModule:FindEffect("Ghost")
-	
-	if (actionType == "Dodge" or actionType == "Forced Full Dodge") and Configuration.expectToggleValue("ParryOnly") then
+
+	if
+		(actionType == "Dodge" or actionType == "Forced Full Dodge") and Configuration.expectToggleValue("ParryOnly")
+	then
 		actionType = "Parry"
 		self:notify(timing, "Action 'Dodge' changed to 'Parry'")
 	end
@@ -762,29 +769,19 @@ Defender.handle = LPH_NO_VIRTUALIZE(function(self, timing, action, started)
 	end
 
 	if actionType == "Start Slide" then
-		local serverSlide = KeyHandling.getRemote("ServerSlide")
-		if not serverSlide then
-			return
-		end
-
-		return serverSlide:FireServer(true)
+		return InputClient.slide()
 	end
 
 	if actionType == "End Slide" then
-		local serverSlideStop = KeyHandling.getRemote("ServerSlideStop")
-		if not serverSlideStop then
-			return
-		end
-
-		return serverSlideStop:FireServer(false)
+		return InputClient.unslide()
 	end
 
 	if actionType == "Start Crouch" then
-		return InputClient.crouch(true)
+		return InputClient.crouch()
 	end
 
 	if actionType == "End Crouch" then
-		return InputClient.crouch(false)
+		return InputClient.uncrouch()
 	end
 
 	if actionType == "Jump" then
@@ -838,7 +835,7 @@ Defender.parry = LPH_NO_VIRTUALIZE(function(self, timing, action)
 
 	-- Rate.
 	local rate = (Configuration.expectOptionValue("DashInsteadOfParryRate") or 0.0)
-	local overrideData = Library:GetOverrideData(PP_SCRAMBLE_STR(timing.name))
+	local overrideData = Library:GetOverrideData(timing.name)
 	if overrideData then
 		rate = overrideData.dipr
 	end
@@ -867,7 +864,7 @@ Defender.parry = LPH_NO_VIRTUALIZE(function(self, timing, action)
 	if timing.umoa or timing.actions:count() ~= 1 then
 		dashReplacement = false
 	end
-	
+
 	if Configuration.expectToggleValue("ParryOnly") then
 		dashReplacement = false
 	end
@@ -987,6 +984,15 @@ Defender.clean = LPH_NO_VIRTUALIZE(function(self)
 	-- Clean-up tasks.
 	for idx, task in next, self.tasks do
 		if task.forced then
+			continue
+		end
+
+		if
+			task.identifier == "Start Crouch"
+			or task.identifier == "End Crouch"
+			or task.identifier == "Start Slide"
+			or task.identifier == "End Slide"
+		then
 			continue
 		end
 
@@ -1126,7 +1132,12 @@ Defender.prediction = LPH_NO_VIRTUALIZE(function(self, timing, action)
 
 	local onCooldown = false
 	for _, effect in next, effectReplicatorModule.Effects do
-		if effect.Class == "ToolLockCD" and effect.index and effect.index.Value and tostring(effect.index.Value):find("PredictionIntelligence") then
+		if
+			effect.Class == "ToolLockCD"
+			and effect.index
+			and effect.index.Value
+			and tostring(effect.index.Value):find("PredictionIntelligence")
+		then
 			onCooldown = true
 			break
 		end
@@ -1145,7 +1156,7 @@ Defender.prediction = LPH_NO_VIRTUALIZE(function(self, timing, action)
 	end
 
 	activateMantra:FireServer(predictionMantra)
-	self:notify(timing, PP_SCRAMBLE_STR("Action 'Parry' replaced with 'Prediction' mantra."))
+	self:notify(timing, "Action 'Parry' replaced with 'Prediction' mantra.")
 end)
 
 ---Activate Punishment mantra instead of parrying.
@@ -1200,7 +1211,12 @@ Defender.punishment = LPH_NO_VIRTUALIZE(function(self, timing, action)
 		if predictionMantra then
 			local predictionOnCooldown = false
 			for _, effect in next, effectReplicatorModule.Effects do
-				if effect.Class == "ToolLockCD" and effect.index and effect.index.Value and tostring(effect.index.Value):find("PredictionIntelligence") then
+				if
+					effect.Class == "ToolLockCD"
+					and effect.index
+					and effect.index.Value
+					and tostring(effect.index.Value):find("PredictionIntelligence")
+				then
 					predictionOnCooldown = true
 					break
 				end
@@ -1254,7 +1270,12 @@ Defender.punishment = LPH_NO_VIRTUALIZE(function(self, timing, action)
 
 	local onCooldown = false
 	for _, effect in next, effectReplicatorModule.Effects do
-		if effect.Class == "ToolLockCD" and effect.index and effect.index.Value and tostring(effect.index.Value):find("RevengeWeaponHeavy") then
+		if
+			effect.Class == "ToolLockCD"
+			and effect.index
+			and effect.index.Value
+			and tostring(effect.index.Value):find("RevengeWeaponHeavy")
+		then
 			onCooldown = true
 			break
 		end
@@ -1273,7 +1294,7 @@ Defender.punishment = LPH_NO_VIRTUALIZE(function(self, timing, action)
 	end
 
 	activateMantra:FireServer(punishmentMantra)
-	self:notify(timing, PP_SCRAMBLE_STR("Action 'Parry' replaced with 'Punishment' mantra."))
+	self:notify(timing, "Action 'Parry' replaced with 'Punishment' mantra.")
 end)
 
 ---Handle auto feint.
@@ -1365,7 +1386,6 @@ Defender.action = LPH_NO_VIRTUALIZE(function(self, timing, action)
 
 	if timing.umoa or timing.cbm then
 		action["_type"] = PP_SCRAMBLE_STR(action["_type"])
-		action["name"] = PP_SCRAMBLE_STR(action["name"])
 		action["_when"] = PP_SCRAMBLE_RE_NUM(action["_when"])
 		action["hitbox"] = Vector3.new(
 			PP_SCRAMBLE_RE_NUM(action["hitbox"].X),
@@ -1423,7 +1443,7 @@ Defender.action = LPH_NO_VIRTUALIZE(function(self, timing, action)
 		self:notify(
 			timing,
 			"Added action '%s' (%.2fs) with ping '%.2f' (changing) subtracted.",
-			PP_SCRAMBLE_STR(action.name),
+			action.name,
 			action:when(),
 			Latency.rtt()
 		)
@@ -1431,7 +1451,7 @@ Defender.action = LPH_NO_VIRTUALIZE(function(self, timing, action)
 		self:notify(
 			timing,
 			"Added action '%s' ([redacted]) with ping '%.2f' (changing) subtracted.",
-			PP_SCRAMBLE_STR(action.name),
+			action.name,
 			Latency.rtt()
 		)
 	end
